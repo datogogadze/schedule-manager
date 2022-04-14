@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server-dev": "nodemon index.js",
+    "server-dev": "npx sequelize-cli db:migrate && nodemon index.js",
     "client-dev": "npm start --prefix ../client",
-    "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
-    "server": "nodemon index.js",
+    "dev": "concurrently \"npx sequelize-cli db:migrate && npm run server-dev\" \"npm run client-dev\"",
+    "server": "npx sequelize-cli db:migrate && node index.js",
     "client": "npm start --prefix ../client",
-    "start": "concurrently \"npm run server\" \"npm run client\""
+    "start": "concurrently \"npx sequelize-cli db:migrate && npm run server\" \"npm run client\""
   },
   "keywords": [],
   "author": "",
