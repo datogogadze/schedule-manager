@@ -1,20 +1,45 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import * as eva from '@eva-design/eva';
+import * as Linking from 'expo-linking';
+import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
+import { EvaIconsPack } from '@ui-kitten/eva-icons';
+
+import LoginScreen from './screens/LoginScreen';
+import HomeScreen from './screens/HomeScreen';
+
+const prefix = Linking.createURL('/');
+
+const Stack = createStackNavigator();
+
+const linking = {
+  prefixes: [prefix],
+  config: {
+    screens: {
+      Login: 'login',
+      Home: 'home',
+    },
   },
-});
+};
+
+export default () => (
+  <>
+    <IconRegistry icons={EvaIconsPack} />
+    <ApplicationProvider {...eva} theme={eva.light}>
+      <NavigationContainer linking={linking} >
+        <Stack.Navigator
+          initialRouteName="Login"
+          screenOptions={{
+            headerShown: false,
+            cardStyle: { backgroundColor: '#fff' }
+          }}>
+          <Stack.Screen name='Login' component={LoginScreen}></Stack.Screen>
+          <Stack.Screen name='Home' component={HomeScreen}></Stack.Screen>
+        </Stack.Navigator>
+      </NavigationContainer>
+     </ApplicationProvider>
+  </>
+);
