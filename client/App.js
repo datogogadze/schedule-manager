@@ -3,12 +3,11 @@ import * as eva from '@eva-design/eva';
 import * as Linking from 'expo-linking';
 import { createStackNavigator } from '@react-navigation/stack';
 import { NavigationContainer } from '@react-navigation/native';
-
-
 import { ApplicationProvider, IconRegistry } from '@ui-kitten/components';
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 
 import LoginScreen from './screens/LoginScreen';
+import SignUpScreen from './screens/SignUpScreen';
 import HomeScreen from './screens/HomeScreen';
 
 const prefix = Linking.createURL('/');
@@ -37,6 +36,7 @@ export default () => (
             cardStyle: { backgroundColor: '#fff' }
           }}>
           <Stack.Screen name='Login' component={LoginScreen}></Stack.Screen>
+          <Stack.Screen name='SignUp' component={SignUpScreen}></Stack.Screen>
           <Stack.Screen name='Home' component={HomeScreen}></Stack.Screen>
         </Stack.Navigator>
       </NavigationContainer>

@@ -3,17 +3,15 @@ import { TouchableWithoutFeedback, StyleSheet, View, Image } from 'react-native'
 import { Text, Icon, Input, Button } from '@ui-kitten/components';
 import * as Linking from 'expo-linking';
 
+import { validateEmail, validatePassword } from '../utils/formValidators'
+
 
 const logo = require('../assets/logo.png');
 
-const AlertIcon = (props) => (
-  <Icon {...props} name='alert-circle-outline'/>
-);
-
 export default LoginScreen = ({ navigation }) => {
 
-  const [emailValue, setEmailValue] = React.useState('');
-  const [passwordValue, setPasswordValue] = React.useState('');
+  const [emailInput, setEmailInput] = React.useState({ value: '', errorMessage: '' });
+  const [passwordInput, setPasswordInput] = React.useState({ value: '', errorMessage: '' });
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
   const refPasswordInput = useRef();
@@ -38,17 +36,43 @@ export default LoginScreen = ({ navigation }) => {
     </TouchableWithoutFeedback>
   );
 
-  const renderCaption = (text = '') => {
-    return (
-      <View style={styles.captionContainer}>
-        {AlertIcon(styles.captionIcon)}
-        <Text style={styles.captionText}>{text}</Text>
-      </View>
-    )
-  }
-
   const handleLogin = () => {
-    navigation.navigate('Home')
+    const emailValidation = validateEmail(emailInput.value);
+    const passwordValidation = validatePassword(passwordInput.value);
+  
+    let formValid = true;
+
+    if (emailValidation.valid) {
+      setEmailInput({
+        ...emailInput,
+        errorMessage: ''
+      })
+    } else {
+      formValid = false
+      setEmailInput({
+        ...emailInput,
+        errorMessage: emailValidation.message
+      })
+    }
+
+    if (passwordValidation.valid) {
+      setPasswordInput({
+        ...passwordInput,
+        errorMessage: ''
+      })
+    } else {
+      formValid = false
+      setPasswordInput({
+        ...passwordInput,
+        errorMessage: passwordValidation.message
+      })
+    }
+
+    if (formValid) {
+      if (emailInput.value == 'test@test.ge' && passwordInput.value == '12345678') {
+        navigation.navigate('Home')
+      }
+    }
   }
 
   const handleGoogleLogin = async () => {
@@ -74,29 +98,32 @@ export default LoginScreen = ({ navigation }) => {
       <Text style={styles.header} category='h1'>Log In</Text>
       
       <Input
-        value={emailValue}
+        value={emailInput.value}
         label='Email'
         placeholder='Email'
-        onChangeText={nextValue => setEmailValue(nextValue)}
+        status={ emailInput.errorMessage ? 'danger' : 'basic' }
+        caption={emailInput.errorMessage || ' '}
+        onChangeText={nextValue => setEmailInput({ ...emailInput, value: nextValue })}
         style={styles.textInput} 
         onSubmitEditing={() => refPasswordInput.current.focus()}
         size='large'
       />
 
       <Input
-        value={passwordValue}
+        value={passwordInput.value}
         label='Password'
         placeholder='Password'
-        caption={() => renderCaption('Should contain at least 8 symbols')}
+        status={ passwordInput.errorMessage ? 'danger' : 'basic' }
+        caption={passwordInput.errorMessage || 'Should contain at least 8 symbols'}
         accessoryRight={renderIcon}
         secureTextEntry={secureTextEntry}
-        onChangeText={nextValue => setPasswordValue(nextValue)}
+        onChangeText={nextValue => setPasswordInput({ ...passwordInput, value: nextValue })}
         style={styles.textInput}
         ref={refPasswordInput}
         size='large'
       />
 
-      <Button size='small' appearance='ghost' status='primary'>
+      <Button size='small' appearance='ghost' status='primary' onPress={() => navigation.navigate('SignUp') }>
         Don't have an account? Sign up here.
       </Button>
       
