@@ -46,7 +46,7 @@ const authenticateUser = async (email, password, done) => {
     }
     if (await bcrypt.compare(password, user.password_hash)) {
       delete user.dataValues.password_hash;
-      return done(null, user);
+      return done(null, user.dataValues);
     } else {
       return done(null, null, { message: 'password incorrect' });
     }
@@ -65,9 +65,14 @@ passport.use(
 );
 
 passport.serializeUser((user, done) => {
-  done(null, user);
+  done(null, user.id);
 });
 
-passport.deserializeUser((user, done) => {
-  done(null, user);
+passport.deserializeUser((id, done) => {
+  User.findOne({ where: { id } })
+    .then(user => {
+      delete user.dataValues.password_hash;
+      done(null, user.dataValues);
+    })
+    .catch(err => done(err));
 });

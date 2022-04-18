@@ -15,14 +15,13 @@ router.get(
     failureRedirect: `${process.env.CLIENT_ADDRESS}`,
   }),
   (req, res) => {
-    console.log(req.headers.cookie);
-    console.log(req.user);
     // return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
     return res.redirect(`/auth/success`);
   }
 );
 
-router.get('/success', (req, res) => {
+router.get('/success', auth, (req, res) => {
+  console.log(req.user);
   return res.send('success');
 });
 
@@ -61,36 +60,48 @@ function validateLoginForm(payload) {
 }
 
 router.post('/local', (req, res, next) => {
-  const validationResult = validateLoginForm(req.body);
-  if (!validationResult.success) {
-    return res.status(400).json({
-      success: false,
-      message: validationResult.message,
-      errors: validationResult.errors,
+  try {
+    const validationResult = validateLoginForm(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: validationResult.message,
+        errors: validationResult.errors,
+      });
+    }
+
+    return passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: info.message,
+        });
+      }
+
+      req.login(user, err => {
+        if (err) {
+          return res.status(502).json({ message: err.message });
+        }
+      });
+
+      return res.json({
+        success: true,
+        message: 'logged in',
+        id: user.id,
+      });
+    })(req, res, next);
+  } catch (err) {
+    return res.status(502).json({
+      message: err.message,
     });
   }
-
-  return passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      return res.status(400).json({
-        success: false,
-        message: err.message,
-      });
-    }
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: info.message,
-      });
-    }
-
-    return res.json({
-      success: true,
-      message: 'logged in',
-      id: user.id,
-    });
-  })(req, res, next);
 });
 
 router.post('/register', async (req, res) => {
@@ -139,7 +150,7 @@ router.get('/user/:id', auth, async (req, res) => {
 
 router.get('/logout', function (req, res) {
   req.logout();
-  res.redirect('/');
+  return res.json({ message: 'logged out' });
 });
 
 module.exports = router;
