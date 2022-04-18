@@ -1,5 +1,7 @@
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const LocalStrategy = require('passport-local').Strategy;
 const passport = require('passport');
+const bcrypt = require('bcrypt');
 const { User } = require('./models/index');
 
 passport.use(
@@ -13,9 +15,10 @@ passport.use(
       try {
         const user = await User.findOne({ where: { external_id: profile.id } });
         if (user) {
-          done(null, user);
+          delete user.dataValues.password_hash;
+          done(null, user.dataValues);
         } else {
-          const newUser = {
+          const userPayload = {
             email: profile.emails[0].value,
             display_name: profile.displayName,
             first_name: profile.name.givenName,
@@ -24,13 +27,40 @@ passport.use(
             external_type: 'google',
             external_id: profile.id,
           };
-          const user = await User.create(newUser);
-          done(null, user);
+          const createdUser = await User.create(userPayload);
+          delete createdUser.dataValues.password_hash;
+          done(null, createdUser.dataValues);
         }
       } catch (err) {
         done(err, null);
       }
     }
+  )
+);
+
+const authenticateUser = async (email, password, done) => {
+  try {
+    const user = await User.findOne({ where: { email } });
+    if (user == null) {
+      return done(null, null, { message: 'user not found' });
+    }
+    if (await bcrypt.compare(password, user.password_hash)) {
+      delete user.dataValues.password_hash;
+      return done(null, user);
+    } else {
+      return done(null, null, { message: 'password incorrect' });
+    }
+  } catch (err) {
+    return done(err);
+  }
+};
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+    },
+    authenticateUser
   )
 );
 

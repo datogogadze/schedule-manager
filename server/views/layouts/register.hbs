@@ -32,9 +32,10 @@
     <script>
       document.querySelector('#login').addEventListener('click', function() {
       let body = JSON.stringify({ email: document.querySelector('#email').value,
-      password: document.querySelector('#password').value});
-      fetch('/auth/local', { method: 'POST', headers: {'content-type':
-      'application/json'}, body }) })
+      password: document.querySelector('#password').value, firstName:
+      document.querySelector('#firstName').value, lastName:
+      document.querySelector('#lastName').value}); fetch('/auth/register', {
+      method: 'POST', headers: {'content-type': 'application/json'}, body }) })
     </script>
   </body>
 
