@@ -6,7 +6,10 @@ const User = require('../models/index').User;
 
 router.get(
   '/google',
-  passport.authenticate('google', { scope: ['openid', 'profile', 'email'] })
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+  })
 );
 
 router.get(
@@ -21,7 +24,6 @@ router.get(
 );
 
 router.get('/success', auth, (req, res) => {
-  console.log(req.user);
   return res.send('success');
 });
 
