@@ -26,7 +26,7 @@ module.exports = {
         allowNull: false,
       },
       password_hash: {
-        type: Sequelize.STRING(32),
+        type: Sequelize.STRING(128),
       },
       image_url: {
         type: Sequelize.STRING(128),
