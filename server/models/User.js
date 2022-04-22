@@ -30,6 +30,11 @@ module.exports = function (sequelize, DataTypes) {
       password_hash: {
         type: DataTypes.STRING,
       },
+      email_verified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+      },
       image_url: {
         type: DataTypes.STRING(128),
       },

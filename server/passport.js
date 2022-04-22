@@ -41,8 +41,11 @@ passport.use(
 const authenticateUser = async (email, password, done) => {
   try {
     const user = await User.findOne({ where: { email } });
-    if (user == null) {
+    if (!user) {
       return done(null, null, { message: 'user not found' });
+    }
+    if (!user.email_verified) {
+      return done(null, null, { message: 'email not verified' });
     }
     if (await bcrypt.compare(password, user.password_hash)) {
       delete user.dataValues.password_hash;

@@ -9,8 +9,8 @@ const session = require('express-session');
 const exphbs = require('express-handlebars');
 const flash = require('express-flash');
 const MySQLStore = require('express-mysql-session')(session);
-var mysql2 = require('mysql2/promise');
-
+const mysql2 = require('mysql2/promise');
+const logger = require('./utils/winston');
 require('./passport');
 
 app.engine('.hbs', exphbs.engine({ extname: '.hbs' }));
@@ -47,7 +47,6 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 60 * 60 * 1000,
-      httpOnly: false,
     },
   })
 );
@@ -57,13 +56,13 @@ app.use(passport.session());
 db.sequelize
   .authenticate()
   .then(() =>
-    console.log('Database connected: ' + db.sequelize.config.database)
+    logger.info('Database connected: ' + db.sequelize.config.database)
   )
-  .catch(err => console.log('Database connection error: ' + err));
+  .catch(err => logger.error('Database connection error: ' + err));
 
 app.use('/auth', auth);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  logger.info(`Example app listening on port ${port}`);
 });
