@@ -28,6 +28,10 @@ module.exports = {
       password_hash: {
         type: Sequelize.STRING(128),
       },
+      email_verified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+      },
       image_url: {
         type: Sequelize.STRING(128),
       },

@@ -15,6 +15,5 @@ web-build/
 
 .env
 .vscode
-
 combined.log
 error.log

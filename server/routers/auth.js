@@ -3,6 +3,8 @@ const passport = require('passport');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
 const { registerSchema, loginSchema } = require('../validation');
+const sendMail = require('../utils/mail');
+const jwt = require('jsonwebtoken');
 const User = require('../models/index').User;
 
 router.get(
@@ -80,6 +82,8 @@ router.post('/register', async (req, res) => {
       password_hash: hashedPassword,
     };
     const createdUser = await User.create(userPayload);
+    const token = '';
+    sendMail(req.body.email);
     res.json({
       message: 'created',
       id: createdUser.id,
@@ -89,21 +93,36 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.get('/user/:id', auth, async (req, res) => {
+router.get('/confirm/:token', async (req, res) => {
   try {
-    const id = req.params.id;
-    const user = await User.findOne({ where: { id } });
-    if (!user) {
-      return res.status(404).json({
-        message: 'not found',
-      });
-    }
-    delete user.dataValues.password_hash;
-    return res.json(user);
+    jwt.verify(
+      req.params.token,
+      process.env.EMAIL_SECRET,
+      async (err, decoded) => {
+        if (err) {
+          return res.json(400).json({ message: err.message });
+        }
+        const id = decoded.id;
+        await User.update({ email_verified: true }, { where: { id } });
+        return res.json({ message: 'email verified' });
+      }
+    );
   } catch (err) {
-    return res.status(502).json({
-      message: err.message,
-    });
+    return res.status(502).json({ message: err.message });
+  }
+});
+
+router.post('/confirm/resend', async (req, res) => {
+  try {
+    const email = req.body.email;
+    const user = await User.findOne({ where: { email } });
+    if (user) {
+      sendMail(email);
+      return res.json({ message: 'email sent' });
+    }
+    return res.status(400).json({ message: 'user not found' });
+  } catch (err) {
+    return res.status(502).json({ message: err.message });
   }
 });
 
