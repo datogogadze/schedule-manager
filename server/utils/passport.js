@@ -2,7 +2,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const LocalStrategy = require('passport-local').Strategy;
 const passport = require('passport');
 const bcrypt = require('bcrypt');
-const { User } = require('./models/index');
+const { User } = require('../models/index');
 
 passport.use(
   new GoogleStrategy(

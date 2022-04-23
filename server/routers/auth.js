@@ -2,8 +2,13 @@ const router = require('express').Router();
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
-const { registerSchema, loginSchema } = require('../validation');
-const sendMail = require('../utils/mail');
+const {
+  registerSchema,
+  loginSchema,
+  passwordSchema,
+  emailSchema,
+} = require('../utils/validation');
+const { sendVerificationMail, sendResetPasswrdMail } = require('../utils/mail');
 const jwt = require('jsonwebtoken');
 const User = require('../models/index').User;
 
@@ -82,9 +87,8 @@ router.post('/register', async (req, res) => {
       password_hash: hashedPassword,
     };
     const createdUser = await User.create(userPayload);
-    const token = '';
-    sendMail(req.body.email);
-    res.json({
+    sendVerificationMail(req.body.email);
+    return res.json({
       message: 'created',
       id: createdUser.id,
     });
@@ -97,7 +101,7 @@ router.get('/confirm/:token', async (req, res) => {
   try {
     jwt.verify(
       req.params.token,
-      process.env.EMAIL_SECRET,
+      process.env.JWT_SECRET,
       async (err, decoded) => {
         if (err) {
           return res.json(400).json({ message: err.message });
@@ -117,10 +121,46 @@ router.post('/confirm/resend', async (req, res) => {
     const email = req.body.email;
     const user = await User.findOne({ where: { email } });
     if (user) {
-      sendMail(email);
+      sendVerificationMail(email);
       return res.json({ message: 'email sent' });
     }
     return res.status(400).json({ message: 'user not found' });
+  } catch (err) {
+    return res.status(502).json({ message: err.message });
+  }
+});
+
+router.post('/password/reset/send', async (req, res) => {
+  try {
+    await emailSchema.validateAsync(req.body, { abortEarly: false });
+    const { email } = req.body;
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(400).json({ message: 'user not found' });
+    }
+    sendResetPasswrdMail(email);
+    return res.json({ message: 'password reset mail sent' });
+  } catch (err) {
+    return res.status(502).json({ message: err.message });
+  }
+});
+
+router.post('/password/reset/:token', async (req, res) => {
+  try {
+    await passwordSchema.validateAsync(req.body, { abortEarly: false });
+    jwt.verify(
+      req.params.token,
+      process.env.JWT_SECRET,
+      async (err, decoded) => {
+        if (err) {
+          return res.json(400).json({ message: err.message });
+        }
+        const id = decoded.id;
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        await User.update({ password_hash: hashedPassword }, { where: { id } });
+        return res.json({ message: 'password changed' });
+      }
+    );
   } catch (err) {
     return res.status(502).json({ message: err.message });
   }

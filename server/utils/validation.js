@@ -13,7 +13,18 @@ const loginSchema = Joi.object({
   password: Joi.string().min(8).max(128).required(),
 });
 
+const passwordSchema = Joi.object({
+  password: Joi.string().min(8).max(128).required(),
+  passwordConfirmation: Joi.valid(Joi.ref('password')).required(),
+});
+
+const emailSchema = Joi.object({
+  email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
+  passwordSchema,
+  emailSchema,
 };
