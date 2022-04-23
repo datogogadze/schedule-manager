@@ -32,7 +32,8 @@
     <script>
       document.querySelector('#login').addEventListener('click', function() {
       let body = JSON.stringify({ email: document.querySelector('#email').value,
-      password: document.querySelector('#password').value, firstName:
+      password: document.querySelector('#password').value, passwordConfirmation:
+      document.querySelector('#passwordConf').value, firstName:
       document.querySelector('#firstName').value, lastName:
       document.querySelector('#lastName').value}); fetch('/auth/register', {
       method: 'POST', headers: {'content-type': 'application/json'}, body }) })

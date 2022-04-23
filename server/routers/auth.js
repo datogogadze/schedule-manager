@@ -2,6 +2,7 @@ const router = require('express').Router();
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
+const { registerSchema, loginSchema } = require('../validation');
 const User = require('../models/index').User;
 
 router.get(
@@ -27,62 +28,18 @@ router.get('/success', auth, (req, res) => {
   return res.send('success');
 });
 
-function validateLoginForm(payload) {
-  const errors = {};
-  let isFormValid = true;
-  let message = '';
-
-  if (
-    !payload ||
-    typeof payload.email !== 'string' ||
-    payload.email.trim().length === 0
-  ) {
-    isFormValid = false;
-    errors.email = 'Please provide your email address.';
-  }
-
-  if (
-    !payload ||
-    typeof payload.password !== 'string' ||
-    payload.password.trim().length === 0
-  ) {
-    isFormValid = false;
-    errors.password = 'Please provide your password.';
-  }
-
-  if (!isFormValid) {
-    message = 'Check the form for errors.';
-  }
-
-  return {
-    success: isFormValid,
-    message,
-    errors,
-  };
-}
-
-router.post('/local', (req, res, next) => {
+router.post('/local', async (req, res, next) => {
   try {
-    const validationResult = validateLoginForm(req.body);
-    if (!validationResult.success) {
-      return res.status(400).json({
-        success: false,
-        message: validationResult.message,
-        errors: validationResult.errors,
-      });
-    }
-
+    await loginSchema.validateAsync(req.body, { abortEarly: false });
     return passport.authenticate('local', (err, user, info) => {
       if (err) {
         return res.status(400).json({
-          success: false,
           message: err.message,
         });
       }
 
       if (!user) {
         return res.status(400).json({
-          success: false,
           message: info.message,
         });
       }
@@ -94,7 +51,6 @@ router.post('/local', (req, res, next) => {
       });
 
       return res.json({
-        success: true,
         message: 'logged in',
         id: user.id,
       });
@@ -108,6 +64,7 @@ router.post('/local', (req, res, next) => {
 
 router.post('/register', async (req, res) => {
   try {
+    await registerSchema.validateAsync(req.body, { abortEarly: false });
     const user = await User.findOne({ where: { email: req.body.email } });
     if (user) {
       return res.status(400).json({
