@@ -11,7 +11,7 @@ const flash = require('express-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const mysql2 = require('mysql2/promise');
 const logger = require('./utils/winston');
-require('./passport');
+require('./utils/passport');
 
 app.engine('.hbs', exphbs.engine({ extname: '.hbs' }));
 app.set('view engine', '.hbs');
@@ -23,6 +23,11 @@ app.get('/', (req, res) => {
 app.get('/register', (req, res) => {
   res.render('register', {
     layout: 'register',
+  });
+});
+app.get('/resetPassword', (req, res) => {
+  res.render('resetPassword', {
+    layout: 'resetPassword',
   });
 });
 

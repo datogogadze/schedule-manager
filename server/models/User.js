@@ -36,7 +36,7 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
       },
       image_url: {
-        type: DataTypes.STRING(128),
+        type: DataTypes.STRING(256),
       },
       external_type: {
         type: DataTypes.STRING,

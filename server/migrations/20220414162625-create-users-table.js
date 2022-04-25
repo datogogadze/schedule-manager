@@ -33,7 +33,7 @@ module.exports = {
         allowNull: false,
       },
       image_url: {
-        type: Sequelize.STRING(128),
+        type: Sequelize.STRING(256),
       },
       external_type: {
         type: Sequelize.STRING(16),
