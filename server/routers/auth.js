@@ -31,6 +31,19 @@ router.get(
   }
 );
 
+router.get('/facebook', passport.authenticate('facebook'));
+
+router.get(
+  '/facebook/callback',
+  passport.authenticate('facebook', {
+    failureRedirect: `${process.env.CLIENT_ADDRESS}`,
+  }),
+  (req, res) => {
+    // return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
+    return res.redirect(`/auth/success`);
+  }
+);
+
 router.get('/success', auth, (req, res) => {
   return res.send('success');
 });
