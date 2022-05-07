@@ -81,16 +81,16 @@ const authenticateUser = async (email, password, done) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return done(null, null, { message: 'user not found' });
+      return done(null, null, { message: 'User not found' });
     }
     if (!user.email_verified) {
-      return done(null, null, { message: 'email not verified' });
+      return done(null, null, { message: 'Email not verified' });
     }
     if (await bcrypt.compare(password, user.password_hash)) {
       delete user.dataValues.password_hash;
       return done(null, user.dataValues);
     } else {
-      return done(null, null, { message: 'password incorrect' });
+      return done(null, null, { message: 'Incorrect password' });
     }
   } catch (err) {
     return done(err);

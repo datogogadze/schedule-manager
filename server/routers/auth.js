@@ -26,8 +26,7 @@ router.get(
     failureRedirect: `${process.env.CLIENT_ADDRESS}`,
   }),
   (req, res) => {
-    // return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
-    return res.redirect(`/auth/success`);
+    return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
   }
 );
 
@@ -54,30 +53,37 @@ router.post('/local', async (req, res, next) => {
     return passport.authenticate('local', (err, user, info) => {
       if (err) {
         return res.status(400).json({
-          message: err.message,
+          success: false,
+          message: err.message
         });
       }
 
       if (!user) {
         return res.status(400).json({
-          message: info.message,
+          success: false,
+          message: info.message
         });
       }
 
       req.login(user, err => {
         if (err) {
-          return res.status(502).json({ message: err.message });
+          return res.status(502).json({
+            success: false,
+            message: err.message
+          });
         }
       });
 
       return res.json({
-        message: 'logged in',
+        success: true,
         id: user.id,
+        message: 'Login successful',
       });
     })(req, res, next);
   } catch (err) {
     return res.status(502).json({
-      message: err.message,
+      success: false,
+      message: err.message
     });
   }
 });

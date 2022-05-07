@@ -15,7 +15,7 @@ module.exports = {
           last_name: 'Doe',
           display_name: 'John Doe',
           password_hash:
-            '$2a$10$LHNg807mSDh38zFZJdvf0uY7WKZSo8lNVhFllDUhyV3.hOyn5rug.',
+            '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
         },
         {
           id: uuidv4(),
@@ -25,7 +25,7 @@ module.exports = {
           last_name: 'Doe',
           display_name: 'John Doe',
           password_hash:
-            '$2a$10$LHNg807mSDh38zFZJdvf0uY7WKZSo8lNVhFllDUhyV3.hOyn5rug.',
+            '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
         },
         {
           id: uuidv4(),
@@ -35,7 +35,7 @@ module.exports = {
           last_name: 'Doe',
           display_name: 'John Doe',
           password_hash:
-            '$2a$10$LHNg807mSDh38zFZJdvf0uY7WKZSo8lNVhFllDUhyV3.hOyn5rug.',
+            '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
         },
       ],
       {}
