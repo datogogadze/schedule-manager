@@ -3,9 +3,11 @@ import { StyleSheet, View, } from 'react-native';
 import { Text, Button} from '@ui-kitten/components';
 
 
-export default HomeScreen = ({ navigation }) => {
+export default HomeScreen = ({ navigation, route }) => {
+    const { id } = route.params;
+
     return< View style={styles.container}>
-        <Text>This is home page</Text>
+        <Text>This is home page for user with id: {id}</Text>
         <Button onPress={() => navigation.navigate('Login')}>Login Page</Button>
     </View>
 }

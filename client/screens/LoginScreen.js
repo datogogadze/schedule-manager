@@ -1,7 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { TouchableWithoutFeedback, StyleSheet, View, Image } from 'react-native';
-import { Text, Icon, Input, Button } from '@ui-kitten/components';
+import Toast from 'react-native-toast-message';
+import { Text, Icon, Input, Button, Spinner } from '@ui-kitten/components';
+import OverlaySpinner from '../components/OverlaySpinner';
 import * as Linking from 'expo-linking';
+import axios from 'axios';
 
 import { validateEmail, validatePassword } from '../utils/formValidators'
 
@@ -13,13 +16,16 @@ export default LoginScreen = ({ navigation }) => {
   const [emailInput, setEmailInput] = React.useState({ value: '', errorMessage: '' });
   const [passwordInput, setPasswordInput] = React.useState({ value: '', errorMessage: '' });
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
+  const [loading, setLoading] = React.useState(false);
 
   const refPasswordInput = useRef();
 
   handleDeepLink = async (event) => {
     let data = Linking.parse(event.url);
     let id = data.queryParams.id;
-    console.log('id', id);
+    navigation.navigate('Home', {
+      id
+    });
   }
 
   useEffect(() => {
@@ -69,24 +75,35 @@ export default LoginScreen = ({ navigation }) => {
     }
 
     if (formValid) {
-      if (emailInput.value == 'test@test.ge' && passwordInput.value == '12345678') {
-        navigation.navigate('Home')
-      }
+      setLoading(true);
+      axios.post('https://smserver.loca.lt/auth/local', {
+        email: emailInput.value,
+        password: passwordInput.value
+      }).then(res => {
+        setLoading(false);
+
+        const { success, message, id } = res.data
+        if (success) {
+          console.log(id)
+          navigation.navigate('Home', {
+            id
+          });
+        }
+      }).catch(e => {
+        setLoading(false);
+        const { message } = e.response.data;
+
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: message
+        });
+      })
     }
   }
 
   const handleGoogleLogin = async () => {
-    // if (Constants.platform.ios) {
-    //   await WebBrowser.openAuthSessionAsync(
-    //     'http://192.168.1.106:3000/auth/google'
-    //   );
-    //   // WebBrowser.dismissBrowser();
-    // } else {
-    //   await WebBrowser.openBrowserAsync(
-    //     'http://192.168.1.106:3000/auth/google'
-    //   );
-    // }
-    Linking.openURL('http://192.168.1.106:3000/auth/google');
+    Linking.openURL('https://smserver.loca.lt/auth/google');
   }
 
   return (
@@ -127,14 +144,15 @@ export default LoginScreen = ({ navigation }) => {
         Don't have an account? Sign up here.
       </Button>
       
-      <Button size='large' style={styles.loginButton} onPress={handleLogin}>
+      <Button size='large' style={styles.loginButton} onPress={handleLogin} disabled={ loading }>
         Log In
       </Button>
 
       <Button
         size='large'
         status='basic'
-        onPress={handleGoogleLogin}
+        onPress={ handleGoogleLogin }
+        disabled={ loading }
         accessoryLeft={
           <Icon
             style={styles.icon}
@@ -145,6 +163,10 @@ export default LoginScreen = ({ navigation }) => {
       >
         Log In With Google
       </Button>
+
+      <Toast />
+
+      <OverlaySpinner visible={loading} />
     </View>
   );
 };
