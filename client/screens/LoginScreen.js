@@ -1,20 +1,30 @@
 import React, { useRef, useEffect } from 'react';
-import { TouchableWithoutFeedback, StyleSheet, View, Image } from 'react-native';
+import {
+  TouchableWithoutFeedback,
+  StyleSheet,
+  View,
+  Image,
+} from 'react-native';
 import Toast from 'react-native-toast-message';
 import { Text, Icon, Input, Button, Spinner } from '@ui-kitten/components';
 import OverlaySpinner from '../components/OverlaySpinner';
 import * as Linking from 'expo-linking';
 import axios from 'axios';
+import { SERVER_ADDRESS } from '@env';
 
-import { validateEmail, validatePassword } from '../utils/formValidators'
-
+import { validateEmail, validatePassword } from '../utils/formValidators';
 
 const logo = require('../assets/logo.png');
 
 export default LoginScreen = ({ navigation }) => {
-
-  const [emailInput, setEmailInput] = React.useState({ value: '', errorMessage: '' });
-  const [passwordInput, setPasswordInput] = React.useState({ value: '', errorMessage: '' });
+  const [emailInput, setEmailInput] = React.useState({
+    value: '',
+    errorMessage: '',
+  });
+  const [passwordInput, setPasswordInput] = React.useState({
+    value: '',
+    errorMessage: '',
+  });
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
 
@@ -24,9 +34,9 @@ export default LoginScreen = ({ navigation }) => {
     let data = Linking.parse(event.url);
     let id = data.queryParams.id;
     navigation.navigate('Home', {
-      id
+      id,
     });
-  }
+  };
 
   useEffect(() => {
     Linking.addEventListener('url', handleDeepLink);
@@ -38,127 +48,144 @@ export default LoginScreen = ({ navigation }) => {
 
   const renderIcon = (props) => (
     <TouchableWithoutFeedback onPress={toggleSecureEntry}>
-      <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'}/>
+      <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'} />
     </TouchableWithoutFeedback>
   );
 
   const handleLogin = () => {
     const emailValidation = validateEmail(emailInput.value);
     const passwordValidation = validatePassword(passwordInput.value);
-  
+
     let formValid = true;
 
     if (emailValidation.valid) {
       setEmailInput({
         ...emailInput,
-        errorMessage: ''
-      })
+        errorMessage: '',
+      });
     } else {
-      formValid = false
+      formValid = false;
       setEmailInput({
         ...emailInput,
-        errorMessage: emailValidation.message
-      })
+        errorMessage: emailValidation.message,
+      });
     }
 
     if (passwordValidation.valid) {
       setPasswordInput({
         ...passwordInput,
-        errorMessage: ''
-      })
+        errorMessage: '',
+      });
     } else {
-      formValid = false
+      formValid = false;
       setPasswordInput({
         ...passwordInput,
-        errorMessage: passwordValidation.message
-      })
+        errorMessage: passwordValidation.message,
+      });
     }
 
     if (formValid) {
       setLoading(true);
-      axios.post('https://smserver.loca.lt/auth/local', {
-        email: emailInput.value,
-        password: passwordInput.value
-      }).then(res => {
-        setLoading(false);
+      axios
+        .post(`${SERVER_ADDRESS}/auth/local`, {
+          email: emailInput.value,
+          password: passwordInput.value,
+        })
+        .then((res) => {
+          setLoading(false);
 
-        const { success, message, id } = res.data
-        if (success) {
-          console.log(id)
-          navigation.navigate('Home', {
-            id
+          const { success, message, id } = res.data;
+          if (success) {
+            console.log(id);
+            navigation.navigate('Home', {
+              id,
+            });
+          }
+        })
+        .catch((e) => {
+          setLoading(false);
+          const { message } = e.response.data;
+
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: message,
           });
-        }
-      }).catch(e => {
-        setLoading(false);
-        const { message } = e.response.data;
-
-        Toast.show({
-          type: 'error',
-          text1: 'Whoops',
-          text2: message
         });
-      })
     }
-  }
+  };
 
   const handleGoogleLogin = async () => {
-    Linking.openURL('https://smserver.loca.lt/auth/google');
-  }
+    Linking.openURL(`${SERVER_ADDRESS}/auth/google`);
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
-          <Image style={styles.logo} source={logo} />
+        <Image style={styles.logo} source={logo} />
       </View>
 
-      <Text style={styles.header} category='h1'>Log In</Text>
-      
+      <Text style={styles.header} category="h1">
+        Log In
+      </Text>
+
       <Input
         value={emailInput.value}
-        label='Email'
-        placeholder='Email'
-        status={ emailInput.errorMessage ? 'danger' : 'basic' }
+        label="Email"
+        placeholder="Email"
+        status={emailInput.errorMessage ? 'danger' : 'basic'}
         caption={emailInput.errorMessage || ' '}
-        onChangeText={nextValue => setEmailInput({ ...emailInput, value: nextValue })}
-        style={styles.textInput} 
+        onChangeText={(nextValue) =>
+          setEmailInput({ ...emailInput, value: nextValue })
+        }
+        style={styles.textInput}
         onSubmitEditing={() => refPasswordInput.current.focus()}
-        size='large'
+        size="large"
       />
 
       <Input
         value={passwordInput.value}
-        label='Password'
-        placeholder='Password'
-        status={ passwordInput.errorMessage ? 'danger' : 'basic' }
-        caption={passwordInput.errorMessage || 'Should contain at least 8 symbols'}
+        label="Password"
+        placeholder="Password"
+        status={passwordInput.errorMessage ? 'danger' : 'basic'}
+        caption={
+          passwordInput.errorMessage || 'Should contain at least 8 symbols'
+        }
         accessoryRight={renderIcon}
         secureTextEntry={secureTextEntry}
-        onChangeText={nextValue => setPasswordInput({ ...passwordInput, value: nextValue })}
+        onChangeText={(nextValue) =>
+          setPasswordInput({ ...passwordInput, value: nextValue })
+        }
         style={styles.textInput}
         ref={refPasswordInput}
-        size='large'
+        size="large"
       />
 
-      <Button size='small' appearance='ghost' status='primary' onPress={() => navigation.navigate('SignUp') }>
+      <Button
+        size="small"
+        appearance="ghost"
+        status="primary"
+        onPress={() => navigation.navigate('SignUp')}
+      >
         Don't have an account? Sign up here.
       </Button>
-      
-      <Button size='large' style={styles.loginButton} onPress={handleLogin} disabled={ loading }>
+
+      <Button
+        size="large"
+        style={styles.loginButton}
+        onPress={handleLogin}
+        disabled={loading}
+      >
         Log In
       </Button>
 
       <Button
-        size='large'
-        status='basic'
-        onPress={ handleGoogleLogin }
-        disabled={ loading }
+        size="large"
+        status="basic"
+        onPress={handleGoogleLogin}
+        disabled={loading}
         accessoryLeft={
-          <Icon
-            style={styles.icon}
-            fill='#8F9BB3'
-            name='google-outline'
-          />
+          <Icon style={styles.icon} fill="#8F9BB3" name="google-outline" />
         }
       >
         Log In With Google
@@ -173,7 +200,7 @@ export default LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 30
+    padding: 30,
   },
   captionContainer: {
     display: 'flex',
@@ -183,13 +210,13 @@ const styles = StyleSheet.create({
   captionIcon: {
     width: 10,
     height: 10,
-    marginRight: 5
+    marginRight: 5,
   },
   captionText: {
     fontSize: 12,
-    fontWeight: "400",
-    fontFamily: "opensans-regular",
-    color: "#8F9BB3",
+    fontWeight: '400',
+    fontFamily: 'opensans-regular',
+    color: '#8F9BB3',
   },
   textInput: {
     marginBottom: 20,
@@ -199,15 +226,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   header: {
-    marginBottom: 30
+    marginBottom: 30,
   },
   imageContainer: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 80
+    height: 80,
   },
   logo: {
     width: 140,
-    resizeMode: 'contain'
-  }
+    resizeMode: 'contain',
+  },
 });
