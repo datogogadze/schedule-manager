@@ -5,12 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "server-dev": "npx sequelize-cli db:migrate && nodemon index.js",
-    "client-dev": "npm start --prefix ../client",
-    "dev": "concurrently \"npx sequelize-cli db:migrate && npm run server-dev\" \"npm run client-dev\"",
+    "dev": "npx sequelize-cli db:migrate && nodemon index.js",
     "server": "npx sequelize-cli db:migrate && node index.js",
-    "client": "npm start --prefix ../client",
-    "start": "concurrently \"npx sequelize-cli db:migrate && npm run server\" \"npm run client\""
+    "start": "npm run server"
   },
   "keywords": [],
   "author": "",
@@ -21,7 +18,7 @@
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
     "express-flash": "0.0.2",
-    "express-handlebars": "^5.3.5",
+    "express-handlebars": "^6.0.5",
     "express-mysql-session": "^2.1.7",
     "express-session": "^1.17.2",
     "joi": "^17.6.0",

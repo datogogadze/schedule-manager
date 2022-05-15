@@ -1,0 +1,33 @@
+{
+  "name": "schedule-manager",
+  "version": "1.0.0",
+  "description": "Project for bachelor's degree",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server-dev": "npm run dev --prefix ./server",
+    "client-dev": "npm run dev --prefix ./client",
+    "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server-dependencies": "npm install --prefix ./server",
+    "client-dependencies": "npm install --prefix ./client",
+    "install-all": "npm run server-dependencies && npm run client-dependencies"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datogogadze/schedule-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/datogogadze/schedule-manager/issues"
+  },
+  "homepage": "https://github.com/datogogadze/schedule-manager#readme",
+  "dependencies": {
+    "babel-preset-react-native": "^4.0.1",
+    "concurrently": "^7.1.0"
+  },
+  "devDependencies": {
+    "prettier": "^2.6.2"
+  }
+}

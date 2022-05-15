@@ -94,6 +94,7 @@ router.post('/register', async (req, res) => {
     const user = await User.findOne({ where: { email: req.body.email } });
     if (user) {
       return res.status(400).json({
+        success: false,
         message: 'user already exists',
       });
     }
@@ -108,11 +109,12 @@ router.post('/register', async (req, res) => {
     const createdUser = await User.create(userPayload);
     sendVerificationMail(req.body.email);
     return res.json({
+      success: true,
       message: 'created',
       id: createdUser.id,
     });
   } catch (err) {
-    return res.status(502).json({ message: err.message });
+    return res.status(502).json({ successs: false, message: err.message });
   }
 });
 

@@ -4,33 +4,29 @@ import {
   StyleSheet,
   View,
   Image,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-import { Text, Icon, Input, Button, Spinner } from '@ui-kitten/components';
+import { Text, Icon, Input, Button } from '@ui-kitten/components';
 import OverlaySpinner from '../components/OverlaySpinner';
 import * as Linking from 'expo-linking';
 import axios from 'axios';
 import { SERVER_ADDRESS } from '@env';
 
-import { validateEmail, validatePassword } from '../utils/formValidators';
+import { Formik } from 'formik';
+
+import { LoginSchema } from '../utils/formik-schemas';
 
 const logo = require('../assets/logo.png');
 
-export default LoginScreen = ({ navigation }) => {
-  const [emailInput, setEmailInput] = React.useState({
-    value: '',
-    errorMessage: '',
-  });
-  const [passwordInput, setPasswordInput] = React.useState({
-    value: '',
-    errorMessage: '',
-  });
+const LoginScreen = ({ navigation }) => {
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
 
   const refPasswordInput = useRef();
 
-  handleDeepLink = async (event) => {
+  const handleDeepLink = async (event) => {
     let data = Linking.parse(event.url);
     let id = data.queryParams.id;
     navigation.navigate('Home', {
@@ -52,67 +48,46 @@ export default LoginScreen = ({ navigation }) => {
     </TouchableWithoutFeedback>
   );
 
-  const handleLogin = () => {
-    const emailValidation = validateEmail(emailInput.value);
-    const passwordValidation = validatePassword(passwordInput.value);
+  const handleLogin = (values) => {
+    const {
+      email,
+      password
+    } = values;
 
-    let formValid = true;
+    setLoading(true);
+    axios
+      .post(`${SERVER_ADDRESS}/auth/local`, {
+        email,
+        password,
+      })
+      .then((res) => {
+        setLoading(false);
 
-    if (emailValidation.valid) {
-      setEmailInput({
-        ...emailInput,
-        errorMessage: '',
-      });
-    } else {
-      formValid = false;
-      setEmailInput({
-        ...emailInput,
-        errorMessage: emailValidation.message,
-      });
-    }
-
-    if (passwordValidation.valid) {
-      setPasswordInput({
-        ...passwordInput,
-        errorMessage: '',
-      });
-    } else {
-      formValid = false;
-      setPasswordInput({
-        ...passwordInput,
-        errorMessage: passwordValidation.message,
-      });
-    }
-
-    if (formValid) {
-      setLoading(true);
-      axios
-        .post(`${SERVER_ADDRESS}/auth/local`, {
-          email: emailInput.value,
-          password: passwordInput.value,
-        })
-        .then((res) => {
-          setLoading(false);
-
-          const { success, message, id } = res.data;
-          if (success) {
-            console.log(id);
-            navigation.navigate('Home', {
-              id,
-            });
-          }
-        })
-        .catch((e) => {
-          setLoading(false);
-          const { message } = e.response.data;
-
+        const { success, message, id } = res.data;
+        if (success) {
+          navigation.navigate('Home', {
+            id,
+          });
+        } else {
           Toast.show({
             type: 'error',
             text1: 'Whoops',
             text2: message,
           });
+        }
+      })
+      .catch((e) => {
+        setLoading(false);
+        const { message } = e.response.data;
+
+        console.log(e.response);
+
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: message,
         });
-    }
+      });
   };
 
   const handleGoogleLogin = async () => {
@@ -121,63 +96,92 @@ export default LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image style={styles.logo} source={logo} />
-      </View>
-
-      <Text style={styles.header} category="h1">
-        Log In
-      </Text>
-
-      <Input
-        value={emailInput.value}
-        label="Email"
-        placeholder="Email"
-        status={emailInput.errorMessage ? 'danger' : 'basic'}
-        caption={emailInput.errorMessage || ' '}
-        onChangeText={(nextValue) =>
-          setEmailInput({ ...emailInput, value: nextValue })
-        }
-        style={styles.textInput}
-        onSubmitEditing={() => refPasswordInput.current.focus()}
-        size="large"
-      />
-
-      <Input
-        value={passwordInput.value}
-        label="Password"
-        placeholder="Password"
-        status={passwordInput.errorMessage ? 'danger' : 'basic'}
-        caption={
-          passwordInput.errorMessage || 'Should contain at least 8 symbols'
-        }
-        accessoryRight={renderIcon}
-        secureTextEntry={secureTextEntry}
-        onChangeText={(nextValue) =>
-          setPasswordInput({ ...passwordInput, value: nextValue })
-        }
-        style={styles.textInput}
-        ref={refPasswordInput}
-        size="large"
-      />
-
-      <Button
-        size="small"
-        appearance="ghost"
-        status="primary"
-        onPress={() => navigation.navigate('SignUp')}
+      <KeyboardAvoidingView
+        behavior='position'
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
       >
-        Don't have an account? Sign up here.
-      </Button>
+        <View style={styles.imageContainer}>
+          <Image style={styles.logo} source={logo} />
+        </View>
 
-      <Button
-        size="large"
-        style={styles.loginButton}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        Log In
-      </Button>
+        <Text style={styles.header} category="h1">
+          Log In
+        </Text>
+
+        <Formik
+          initialValues={{
+            email: '',
+            password: '',
+          }}
+          validationSchema={LoginSchema}
+          validateOnChange={false}
+          validateOnBlur={false}
+          onSubmit={values => {
+            handleLogin(values);
+          }}
+        >
+          {({ handleChange, handleBlur, handleSubmit, values, errors}) => (
+            <>
+              <Input
+                value={values.email}
+                label="Email"
+                placeholder="Email"
+                status={errors.email ? 'danger' : 'basic'}
+                caption={errors.email || ' '}
+                onChangeText={handleChange('email')}
+                onBlur={handleBlur('email')}
+                keyboardType='email-address'
+                style={styles.textInput}
+                onSubmitEditing={() => refPasswordInput.current.focus()}
+                size="large"
+              />
+
+              <Input
+                value={values.password}
+                label="Password"
+                placeholder="Password"
+                status={errors.password ? 'danger' : 'basic'}
+                caption={errors.password || ' '}
+                onChangeText={handleChange('password')}
+                onBlur={handleBlur('password')}
+                accessoryRight={renderIcon}
+                style={styles.textInput}
+                ref={refPasswordInput}
+                secureTextEntry={secureTextEntry}
+                size="large"
+              />
+
+              <Button
+                size="small"
+                appearance="ghost"
+                status="primary"
+                onPress={() => navigation.navigate('SignUp')}
+              >
+                Don't have an account? Sign up here.
+              </Button>
+            
+              <Button
+                size="small"
+                appearance="ghost"
+                status="primary"
+                onPress={() => navigation.navigate('ForgotPassword')}
+                style={styles.forgotPassowordButton}
+              >
+                Forgot Password? Click here.
+              </Button>
+
+              <Button
+                size="large"
+                style={styles.loginButton}
+                onPress={handleSubmit}
+                disabled={loading}
+              >
+                Log In
+              </Button>
+            </>
+          )}
+        </Formik>
+      </KeyboardAvoidingView>
 
       <Button
         size="large"
@@ -221,8 +225,11 @@ const styles = StyleSheet.create({
   textInput: {
     marginBottom: 20,
   },
+  forgotPassowordButton: {
+    marginTop: 10
+  },
   loginButton: {
-    marginTop: 70,
+    marginTop: 40,
     marginBottom: 10,
   },
   header: {
@@ -238,3 +245,5 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 });
+
+export default LoginScreen;

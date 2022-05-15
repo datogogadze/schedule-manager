@@ -3,11 +3,11 @@ import {StyleSheet, View} from 'react-native';
 import { Spinner } from '@ui-kitten/components';
 
 
-export default OverlaySpinner = ({ visible }) => {
+const OverlaySpinner = ({ visible }) => {
   return (
     <>
       { visible && <View style={styles.loading}>
-          <Spinner size='giant'/>
+        <Spinner size='giant'/>
       </View> }
     </>
   );
@@ -25,3 +25,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF88'
   }
 });
+
+export default OverlaySpinner;
