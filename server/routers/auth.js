@@ -143,11 +143,11 @@ router.post('/confirm/resend', async (req, res) => {
     const user = await User.findOne({ where: { email } });
     if (user) {
       sendVerificationMail(email);
-      return res.json({ message: 'email sent' });
+      return res.json({ success: true, message: 'Email sent' });
     }
-    return res.status(400).json({ message: 'user not found' });
+    return res.status(400).json({ success: false, message: 'User not found' });
   } catch (err) {
-    return res.status(502).json({ message: err.message });
+    return res.status(502).json({ success: false, message: err.message });
   }
 });
 

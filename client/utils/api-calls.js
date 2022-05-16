@@ -24,3 +24,7 @@ export const signUp = (
 export const sendResetPasswordMail = (email) => axios.post(`${SERVER_ADDRESS}/auth/password/reset/send`, {
   email
 });
+
+export const resendConfirmationMail= (email) => axios.post(`${SERVER_ADDRESS}/auth/confirm/resend`, {
+  email
+});

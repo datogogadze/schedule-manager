@@ -50,7 +50,6 @@ const SignUpScreen = ({ navigation }) => {
 
       const { success, message, id } = res.data;
 
-      console.log(res.data);
       if (success) {
         navigation.navigate('VerifyEmail', {
           id,
@@ -62,17 +61,16 @@ const SignUpScreen = ({ navigation }) => {
           text2: message,
         });
       }
-    })
-      .catch((e) => {
-        setLoading(false);
-        const { message } = e.response.data;
+    }).catch((e) => {
+      setLoading(false);
+      const { message } = e.response.data;
 
-        Toast.show({
-          type: 'error',
-          text1: 'Whoops',
-          text2: message,
-        });
+      Toast.show({
+        type: 'error',
+        text1: 'Whoops',
+        text2: message,
       });
+    });
   };
 
   return (
