@@ -157,12 +157,12 @@ router.post('/password/reset/send', async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(400).json({ message: 'user not found' });
+      return res.status(400).json({ success: false, message: 'User not found' });
     }
     sendResetPasswrdMail(email);
-    return res.json({ message: 'password reset mail sent' });
+    return res.json({ success: true, message: 'Password reset mail sent' });
   } catch (err) {
-    return res.status(502).json({ message: err.message });
+    return res.status(502).json({ success: false, message: err.message });
   }
 });
 
