@@ -36,14 +36,15 @@
         ],
         "react/prop-types": 0,
         "import/namespace": 0,
-        "import/no-unresolved": 0,
         "react/no-unescaped-entities": 0
     },
 
     "settings": {
         "import/extensions": [
             ".js",
-            ".jsx"
+            ".jsx",
+            ".env",
+            "@env"
         ]
     }
 }

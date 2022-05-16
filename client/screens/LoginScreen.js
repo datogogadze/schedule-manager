@@ -9,14 +9,15 @@ import {
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { Text, Icon, Input, Button } from '@ui-kitten/components';
-import OverlaySpinner from '../components/OverlaySpinner';
 import * as Linking from 'expo-linking';
-import axios from 'axios';
-import { SERVER_ADDRESS } from '@env';
 
+import OverlaySpinner from '../components/OverlaySpinner';
 import { Formik } from 'formik';
-
 import { LoginSchema } from '../utils/formik-schemas';
+import { login } from '../utils/api-calls';
+
+// eslint-disable-next-line import/no-unresolved
+import { SERVER_ADDRESS } from '@env';
 
 const logo = require('../assets/logo.png');
 
@@ -55,39 +56,34 @@ const LoginScreen = ({ navigation }) => {
     } = values;
 
     setLoading(true);
-    axios
-      .post(`${SERVER_ADDRESS}/auth/local`, {
-        email,
-        password,
-      })
-      .then((res) => {
-        setLoading(false);
 
-        const { success, message, id } = res.data;
-        if (success) {
-          navigation.navigate('Home', {
-            id,
-          });
-        } else {
-          Toast.show({
-            type: 'error',
-            text1: 'Whoops',
-            text2: message,
-          });
-        }
-      })
-      .catch((e) => {
-        setLoading(false);
-        const { message } = e.response.data;
+    login(email, password).then((res) => {
+      setLoading(false);
 
-        console.log(e.response);
-
+      const { success, message, id } = res.data;
+      if (success) {
+        navigation.navigate('Home', {
+          id,
+        });
+      } else {
         Toast.show({
           type: 'error',
           text1: 'Whoops',
           text2: message,
         });
+      }
+    }).catch((e) => {
+      setLoading(false);
+      const { message } = e.response.data;
+
+      console.log(e.response);
+
+      Toast.show({
+        type: 'error',
+        text1: 'Whoops',
+        text2: message,
       });
+    });
   };
 
   const handleGoogleLogin = async () => {

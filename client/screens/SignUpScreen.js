@@ -7,15 +7,11 @@ import {
   Text, Input, Button,
 } from '@ui-kitten/components';
 import { Formik } from 'formik';
-import axios from 'axios';
 import Toast from 'react-native-toast-message';
 
 import { SignupSchema } from '../utils/formik-schemas';
-
 import OverlaySpinner from '../components/OverlaySpinner';
-
-import { SERVER_ADDRESS } from '@env';
-
+import { signUp } from '../utils/api-calls';
 
 
 const logo = require('../assets/logo.png');
@@ -42,32 +38,31 @@ const SignUpScreen = ({ navigation }) => {
     } = values;
 
     setLoading(true);
-    axios
-      .post(`${SERVER_ADDRESS}/auth/register`, {
-        email,
-        firstName,
-        lastName,
-        password,
-        passwordConfirmation: confirmPassword 
-      })
-      .then((res) => {
-        setLoading(false);
 
-        const { success, message, id } = res.data;
+    signUp(
+      email,
+      firstName,
+      lastName,
+      password,
+      confirmPassword 
+    ).then((res) => {
+      setLoading(false);
 
-        console.log(res.data);
-        if (success) {
-          navigation.navigate('VerifyEmail', {
-            id,
-          });
-        } else {
-          Toast.show({
-            type: 'error',
-            text1: 'Whoops',
-            text2: message,
-          });
-        }
-      })
+      const { success, message, id } = res.data;
+
+      console.log(res.data);
+      if (success) {
+        navigation.navigate('VerifyEmail', {
+          id,
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: message,
+        });
+      }
+    })
       .catch((e) => {
         setLoading(false);
         const { message } = e.response.data;
