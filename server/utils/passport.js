@@ -112,9 +112,9 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser((id, done) => {
   User.findOne({ where: { id } })
-    .then(user => {
+    .then((user) => {
       delete user.dataValues.password_hash;
       done(null, user.dataValues);
     })
-    .catch(err => done(err));
+    .catch((err) => done(err));
 });

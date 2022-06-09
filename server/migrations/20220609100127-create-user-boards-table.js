@@ -16,6 +16,10 @@ module.exports = {
         type: Sequelize.UUID,
         allowNull: false,
       },
+      role: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
     });
 
     queryInterface.addConstraint('user_board', {

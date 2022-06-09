@@ -14,6 +14,7 @@ require('./utils/passport');
 // Routers
 const auth = require('./routers/auth');
 const board = require('./routers/board');
+const user = require('./routers/user');
 
 app.get('/register', (req, res) => {
   res.render('register', {
@@ -62,6 +63,7 @@ db.sequelize
 
 app.use('/auth', auth);
 app.use('/board', board);
+app.use('/user', user);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {

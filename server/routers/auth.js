@@ -175,7 +175,7 @@ router.post('/password/reset/:token', async (req, res) => {
       process.env.JWT_SECRET,
       async (err, decoded) => {
         if (err) {
-          return res.json(400).json({ message: err.message });
+          return res.json(400).json({ success: false, message: err.message });
         }
         const id = decoded.id;
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
@@ -190,7 +190,7 @@ router.post('/password/reset/:token', async (req, res) => {
 
 router.get('/logout', function (req, res) {
   req.logout();
-  return res.json({ message: 'logged out' });
+  return res.json({ success: true, message: 'logged out' });
 });
 
 module.exports = router;

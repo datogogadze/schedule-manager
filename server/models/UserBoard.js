@@ -17,6 +17,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.UUID,
         allowNull: false,
       },
+      role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
     },
     {
       timestamps: false,
@@ -24,14 +28,6 @@ module.exports = function (sequelize, DataTypes) {
       underscored: true,
     }
   );
-
-  UserBoard.associate = function (models) {
-    UserBoard.hasMany(models.User);
-  };
-
-  UserBoard.associate = function (models) {
-    UserBoard.hasMany(models.Board);
-  };
 
   return UserBoard;
 };
