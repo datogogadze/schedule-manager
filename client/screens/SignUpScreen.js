@@ -1,20 +1,18 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
-  StyleSheet, View, Image,
+  StyleSheet, View, Keyboard, TouchableWithoutFeedback
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
 import {
-  Text, Input, Button,
+  Input, Button,
 } from '@ui-kitten/components';
-import { Formik } from 'formik';
+import { Formik, useFormikContext } from 'formik';
 import Toast from 'react-native-toast-message';
 
+import { signUp } from '../utils/api-calls';
 import { SignupSchema } from '../utils/formik-schemas';
 import OverlaySpinner from '../components/OverlaySpinner';
-import { signUp } from '../utils/api-calls';
-
-
-const logo = require('../assets/logo.png');
+import Header from '../components/Header';
 
 const SignUpScreen = ({ navigation }) => {
   const [loading, setLoading] = React.useState(false);
@@ -26,6 +24,14 @@ const SignUpScreen = ({ navigation }) => {
     password: useRef(),
     confirmPassword: useRef(),
     submitButton: useRef()
+  };
+
+  const refForm = useRef();
+
+  const handleSubmit = () => {
+    if (refForm.current) {
+      refForm.current.handleSubmit();
+    }
   };
 
   const handleSignUp = (values) => {
@@ -74,121 +80,123 @@ const SignUpScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image style={styles.logo} source={logo} />
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={styles.container}>
+        <Header text="Sign Up" />
+        <KeyboardAwareScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <Formik
+            innerRef={refForm}
+            initialValues={{
+              email: '',
+              firstName: '',
+              lastName: '',
+              password: '',
+              confirmPassword: '',
+            }}
+            validationSchema={SignupSchema}
+            validateOnChange={false}
+            validateOnBlur={false}
+            onSubmit={values => {
+              handleSignUp(values);
+            }}
+          >
+            {({ handleChange, handleBlur, values, errors}) => (
+              <>
+                <Input
+                  value={values.email}
+                  label="Email"
+                  placeholder="Email"
+                  status={errors.email ? 'danger' : 'basic'}
+                  caption={errors.email || ' '}
+                  onChangeText={handleChange('email')}
+                  onBlur={handleBlur('email')}
+                  style={styles.textInput}
+                  onSubmitEditing={() => refs.firstName.current.focus()}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  size="large"
+                />
 
-      <Text style={styles.header} category="h1">Sign Up</Text>
+                <Input
+                  value={values.firstName}
+                  label="First Name"
+                  placeholder="First Name"
+                  status={errors.firstName ? 'danger' : 'basic'}
+                  caption={errors.firstName || ' '}
+                  onChangeText={handleChange('firstName')}
+                  onBlur={handleBlur('firstName')}
+                  style={styles.textInput}
+                  onSubmitEditing={() => refs.lastName.current.focus()}
+                  size="large"
+                  ref={refs.firstName}
+                />
 
-      <KeyboardAwareScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Formik
-          initialValues={{
-            email: '',
-            firstName: '',
-            lastName: '',
-            password: '',
-            confirmPassword: '',
-          }}
-          validationSchema={SignupSchema}
-          validateOnChange={false}
-          validateOnBlur={false}
-          onSubmit={values => {
-            handleSignUp(values);
-          }}
-        >
-          {({ handleChange, handleBlur, handleSubmit, values, errors}) => (
-            <>
-              <Input
-                value={values.email}
-                label="Email"
-                placeholder="Email"
-                status={errors.email ? 'danger' : 'basic'}
-                caption={errors.email || ' '}
-                onChangeText={handleChange('email')}
-                onBlur={handleBlur('email')}
-                style={styles.textInput}
-                onSubmitEditing={() => refs.firstName.current.focus()}
-                keyboardType="email-address"
-                size="large"
-              />
+                <Input
+                  value={values.lastName}
+                  label="Last Name"
+                  placeholder="Last Name"
+                  status={errors.lastName ? 'danger' : 'basic'}
+                  caption={errors.lastName || ' '}
+                  onChangeText={handleChange('lastName')}
+                  onBlur={handleBlur('lastName')}
+                  style={styles.textInput}
+                  onSubmitEditing={() => refs.password.current.focus()}
+                  size="large"
+                  ref={refs.lastName}
+                />
 
-              <Input
-                value={values.firstName}
-                label="First Name"
-                placeholder="First Name"
-                status={errors.firstName ? 'danger' : 'basic'}
-                caption={errors.firstName || ' '}
-                onChangeText={handleChange('firstName')}
-                onBlur={handleBlur('firstName')}
-                style={styles.textInput}
-                onSubmitEditing={() => refs.lastName.current.focus()}
-                size="large"
-                ref={refs.firstName}
-              />
+                <Input
+                  value={values.password}
+                  label="Password"
+                  placeholder="Password"
+                  status={errors.password ? 'danger' : 'basic'}
+                  caption={errors.password || ' '}
+                  onChangeText={handleChange('password')}
+                  onBlur={handleBlur('password')}
+                  style={styles.textInput}
+                  onSubmitEditing={() => refs.confirmPassword.current.focus()}
+                  size="large"
+                  secureTextEntry
+                  ref={refs.password}
+                />
 
-              <Input
-                value={values.lastName}
-                label="Last Name"
-                placeholder="Last Name"
-                status={errors.lastName ? 'danger' : 'basic'}
-                caption={errors.lastName || ' '}
-                onChangeText={handleChange('lastName')}
-                onBlur={handleBlur('lastName')}
-                style={styles.textInput}
-                onSubmitEditing={() => refs.password.current.focus()}
-                size="large"
-                ref={refs.lastName}
-              />
+                <Input
+                  value={values.confirmPassword}
+                  label="Confirm Password"
+                  placeholder="Confirm Password"
+                  status={errors.confirmPassword ? 'danger' : 'basic'}
+                  caption={errors.confirmPassword || ' '}
+                  onChangeText={handleChange('confirmPassword')}
+                  onBlur={handleBlur('confirmPassword')}
+                  style={styles.textInput}
+                  ref={refs.confirmPassword}
+                  size="large"
+                  secureTextEntry
+                />
 
-              <Input
-                value={values.password}
-                label="Password"
-                placeholder="Password"
-                status={errors.password ? 'danger' : 'basic'}
-                caption={errors.password || ' '}
-                onChangeText={handleChange('password')}
-                onBlur={handleBlur('password')}
-                style={styles.textInput}
-                onSubmitEditing={() => refs.confirmPassword.current.focus()}
-                size="large"
-                secureTextEntry
-                ref={refs.password}
-              />
-
-              <Input
-                value={values.confirmPassword}
-                label="Confirm Password"
-                placeholder="Confirm Password"
-                status={errors.confirmPassword ? 'danger' : 'basic'}
-                caption={errors.confirmPassword || ' '}
-                onChangeText={handleChange('confirmPassword')}
-                onBlur={handleBlur('confirmPassword')}
-                style={styles.textInput}
-                ref={refs.confirmPassword}
-                size="large"
-                secureTextEntry
-              />
-
-              <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
-                Already have an account? Log In here.
-              </Button>
-
-              <Button size="large" style={styles.loginButton} onPress={handleSubmit}>
-                Sign Up
-              </Button>
-            </>
-          )}
+                <ScrollToError/>
+              </>
+            )}
           
-        </Formik>
+          </Formik>
         
-      </KeyboardAwareScrollView>
+        </KeyboardAwareScrollView>
 
-      <Toast />
+        <Button size="large" style={styles.signUpButton} onPress={handleSubmit}>
+        Sign Up
+        </Button>
 
-      <OverlaySpinner visible={loading} />
+        <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
+        Already have an account? Log In here.
+        </Button>
 
-    </View>
+        <Toast />
+
+        <OverlaySpinner visible={loading} />
+
+      </View>
+    </TouchableWithoutFeedback>
+
   );
 };
 
@@ -213,10 +221,10 @@ const styles = StyleSheet.create({
     color: '#8F9BB3',
   },
   textInput: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
-  loginButton: {
-    marginTop: 70,
+  signUpButton: {
+    marginTop: 30,
     marginBottom: 10,
   },
   header: {
@@ -232,7 +240,8 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   scrollView: {
-    marginBottom: 140,
+    height: '60%'
+    // marginBottom: 140,
   },
 });
 

@@ -2,7 +2,6 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  Image,
 } from 'react-native';
 
 import {
@@ -13,7 +12,7 @@ import {
 import Toast from 'react-native-toast-message';
 import { resendConfirmationMail } from '../utils/api-calls';
 
-const logo = require('../assets/logo.png');
+import Header from '../components/Header';
 
 const VerifyEmailScreen = ({ navigation, email }) => {
   const [loading, setLoading] = React.useState(false);
@@ -47,12 +46,7 @@ const VerifyEmailScreen = ({ navigation, email }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image style={styles.logo} source={logo} />
-      </View>
-      <Text style={styles.header} category="h1">
-        Verify Email
-      </Text>
+      <Header text="Verify Email"/>
       <Text category="h6">
         We sent you verification mail. Please check your inbox
       </Text>

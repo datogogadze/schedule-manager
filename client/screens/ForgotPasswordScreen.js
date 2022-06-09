@@ -2,19 +2,17 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  Image,
 } from 'react-native';
 
 import {
   Input,
   Button,
-  Text
 } from '@ui-kitten/components';
 
 import Toast from 'react-native-toast-message';
 import { sendResetPasswordMail } from '../utils/api-calls';
 
-const logo = require('../assets/logo.png');
+import Header from '../components/Header';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = React.useState('');
@@ -49,12 +47,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image style={styles.logo} source={logo} />
-      </View>
-      <Text style={styles.header} category="h1">
-        Reset Password
-      </Text>
+      <Header text="Reset Password" />
       <Input
         value={email}
         label="Email"
