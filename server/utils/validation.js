@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { Role } = require('./enums');
 
 const registerSchema = Joi.object({
   email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
@@ -24,7 +25,18 @@ const emailSchema = Joi.object({
 
 const boardSchema = Joi.object({
   name: Joi.string().min(3).max(254).lowercase().trim().required(),
-  role: Joi.string().min(3).max(254).lowercase().trim().required(),
+  role: Joi.string()
+    .min(3)
+    .max(254)
+    .lowercase()
+    .trim()
+    .required()
+    .custom((value, helpers) => {
+      if (!Role.has(value)) {
+        return helpers.message({ custom: 'Incorrect role' });
+      }
+      return value;
+    }),
 });
 
 module.exports = {

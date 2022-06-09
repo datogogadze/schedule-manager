@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const auth = require('../middleware/auth');
+const { Role } = require('../utils/enums');
 const { boardSchema } = require('../utils/validation');
 const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
@@ -19,6 +20,11 @@ router.post('/', auth, async (req, res) => {
     await boardSchema.validateAsync(req.body, { abortEarly: false });
     const userId = req.user.id;
     const { name, role } = req.body;
+    // if (!Role.has(role)) {
+    //   return res
+    //     .status(400)
+    //     .json({ success: false, message: 'Incorrect role' });
+    // }
     const code = Math.floor(Math.random() * 1000000000);
     const boardPayload = {
       name,
