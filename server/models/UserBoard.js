@@ -1,0 +1,37 @@
+const { v4: uuidv4 } = require('uuid');
+
+module.exports = function (sequelize, DataTypes) {
+  const UserBoard = sequelize.define(
+    'UserBoard',
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      user_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      board_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+    },
+    {
+      timestamps: false,
+      tableName: 'user_board',
+      underscored: true,
+    }
+  );
+
+  UserBoard.associate = function (models) {
+    UserBoard.hasMany(models.User);
+  };
+
+  UserBoard.associate = function (models) {
+    UserBoard.hasMany(models.Board);
+  };
+
+  return UserBoard;
+};

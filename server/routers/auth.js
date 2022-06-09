@@ -38,8 +38,7 @@ router.get(
     failureRedirect: `${process.env.CLIENT_ADDRESS}`,
   }),
   (req, res) => {
-    // return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
-    return res.redirect(`/auth/success`);
+    return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
   }
 );
 
@@ -54,22 +53,22 @@ router.post('/local', async (req, res, next) => {
       if (err) {
         return res.status(400).json({
           success: false,
-          message: err.message
+          message: err.message,
         });
       }
 
       if (!user) {
         return res.status(400).json({
           success: false,
-          message: info.message
+          message: info.message,
         });
       }
 
-      req.login(user, err => {
+      req.login(user, (err) => {
         if (err) {
           return res.status(502).json({
             success: false,
-            message: err.message
+            message: err.message,
           });
         }
       });
@@ -83,7 +82,7 @@ router.post('/local', async (req, res, next) => {
   } catch (err) {
     return res.status(502).json({
       success: false,
-      message: err.message
+      message: err.message,
     });
   }
 });
@@ -125,15 +124,15 @@ router.get('/confirm/:token', async (req, res) => {
       process.env.JWT_SECRET,
       async (err, decoded) => {
         if (err) {
-          return res.json(400).json({ message: err.message });
+          return res.json(400).json({ success: false, message: err.message });
         }
         const id = decoded.id;
         await User.update({ email_verified: true }, { where: { id } });
-        return res.json({ message: 'email verified' });
+        return res.json({ success: true, message: 'email verified' });
       }
     );
   } catch (err) {
-    return res.status(502).json({ message: err.message });
+    return res.status(502).json({ success: false, message: err.message });
   }
 });
 
@@ -157,7 +156,9 @@ router.post('/password/reset/send', async (req, res) => {
     const { email } = req.body;
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(400).json({ success: false, message: 'User not found' });
+      return res
+        .status(400)
+        .json({ success: false, message: 'User not found' });
     }
     sendResetPasswrdMail(email);
     return res.json({ success: true, message: 'Password reset mail sent' });
@@ -179,11 +180,11 @@ router.post('/password/reset/:token', async (req, res) => {
         const id = decoded.id;
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         await User.update({ password_hash: hashedPassword }, { where: { id } });
-        return res.json({ message: 'password changed' });
+        return res.json({ success: true, message: 'password changed' });
       }
     );
   } catch (err) {
-    return res.status(502).json({ message: err.message });
+    return res.status(502).json({ success: false, message: err.message });
   }
 });
 

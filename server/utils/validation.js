@@ -22,9 +22,15 @@ const emailSchema = Joi.object({
   email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
 });
 
+const boardSchema = Joi.object({
+  name: Joi.string().min(3).max(254).lowercase().trim().required(),
+  role: Joi.string().min(3).max(254).lowercase().trim().required(),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   passwordSchema,
   emailSchema,
+  boardSchema,
 };

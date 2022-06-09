@@ -3,23 +3,18 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const db = require('./models/index');
-const auth = require('./routers/auth');
 const passport = require('passport');
 const session = require('express-session');
-const exphbs = require('express-handlebars');
 const flash = require('express-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const mysql2 = require('mysql2/promise');
 const logger = require('./utils/winston');
 require('./utils/passport');
 
-app.engine('.hbs', exphbs.engine({ extname: '.hbs' }));
-app.set('view engine', '.hbs');
-app.get('/', (req, res) => {
-  res.render('login', {
-    layout: 'login',
-  });
-});
+// Routers
+const auth = require('./routers/auth');
+const board = require('./routers/board');
+
 app.get('/register', (req, res) => {
   res.render('register', {
     layout: 'register',
@@ -63,9 +58,10 @@ db.sequelize
   .then(() =>
     logger.info('Database connected: ' + db.sequelize.config.database)
   )
-  .catch(err => logger.error('Database connection error: ' + err));
+  .catch((err) => logger.error('Database connection error: ' + err));
 
 app.use('/auth', auth);
+app.use('/board', board);
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
