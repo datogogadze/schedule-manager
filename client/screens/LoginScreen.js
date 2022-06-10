@@ -31,7 +31,7 @@ const LoginScreen = ({ navigation }) => {
   const handleDeepLink = async (event) => {
     let data = Linking.parse(event.url);
     let id = data.queryParams.id;
-    navigation.navigate('Home', {
+    navigation.navigate('Boards', {
       id,
     });
   };
@@ -69,7 +69,7 @@ const LoginScreen = ({ navigation }) => {
 
       const { success, message, id } = res.data;
       if (success) {
-        navigation.navigate('Home', {
+        navigation.navigate('Boards', {
           id,
         });
       } else {

@@ -173,8 +173,6 @@ const SignUpScreen = ({ navigation }) => {
                   size="large"
                   secureTextEntry
                 />
-
-                <ScrollToError/>
               </>
             )}
           
