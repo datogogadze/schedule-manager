@@ -65,10 +65,6 @@ const boardUsersSchema = Joi.object({
   board_id: Joi.string().guid().required(),
 });
 
-const userBoardsSchema = Joi.object({
-  user_id: Joi.string().guid().required(),
-});
-
 module.exports = {
   registerSchema,
   loginSchema,
@@ -78,5 +74,4 @@ module.exports = {
   boardAddUserSchema,
   boardRemoveUserSchema,
   boardUsersSchema,
-  userBoardsSchema,
 };

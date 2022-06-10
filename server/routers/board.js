@@ -12,16 +12,6 @@ const User = require('../models/index').User;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 
-router.get('/', auth, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const boards = await UserBoard.findAll({ where: { user_id: userId } });
-    return res.json({ success: true, ...boards.dataValues });
-  } catch (err) {
-    return res.status(502).json({ success: false, message: err.message });
-  }
-});
-
 const generateCode = async () => {
   const code = crypto.randomBytes(3).toString('hex');
   const board = await Board.findOne({ where: { code } });

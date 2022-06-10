@@ -8,18 +8,8 @@ const { Op } = require('sequelize');
 
 router.get('/boards', auth, async (req, res) => {
   try {
-    await userBoardsSchema.validateAsync(req.body, { abortEarly: false });
-    const { user_id } = req.body;
-    if (user_id != req.user.id) {
-      return res.status(403).json({ success: false, message: 'unauthorized' });
-    }
-    const user = await User.findOne({ where: { id: user_id } });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Incorrect user_id' });
-    }
-    const userBoards = await UserBoard.findAll({ where: { user_id } });
+    const userId = req.user.id;
+    const userBoards = await UserBoard.findAll({ where: { user_id: userId } });
     const boardIds = userBoards.map((board) => board.board_id);
     const boards = await Board.findAll({
       attributes: ['id', 'name', 'code', 'image_url'],
