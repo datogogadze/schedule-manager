@@ -48,22 +48,17 @@ router.post('/', auth, async (req, res) => {
 router.post('/add-user', auth, async (req, res) => {
   try {
     await boardAddUserSchema.validateAsync(req.body, { abortEarly: false });
-    const { code, user_id, role } = req.body;
+    const { code, role } = req.body;
     const board = await Board.findOne({ where: { code } });
     if (!board) {
       return res
         .status(400)
         .json({ success: false, message: 'Incorrect code' });
     }
-    const user = await User.findOne({ where: { id: user_id } });
-    if (!user) {
-      return res
-        .status(400)
-        .json({ success: false, message: 'Incorrect user_id' });
-    }
+    const userId = req.user.id;
     const userBoard = await UserBoard.findOne({
       where: {
-        user_id,
+        user_id: userId,
         board_id: board.id,
       },
     });
@@ -75,7 +70,7 @@ router.post('/add-user', auth, async (req, res) => {
     }
 
     const addUserPayload = {
-      user_id,
+      user_id: userId,
       board_id: board.id,
       role,
     };

@@ -41,7 +41,6 @@ const boardSchema = Joi.object({
 
 const boardAddUserSchema = Joi.object({
   code: Joi.string().length(6).trim().required(),
-  user_id: Joi.string().guid().required(),
   role: Joi.string()
     .min(3)
     .max(254)
