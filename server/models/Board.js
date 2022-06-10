@@ -1,8 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 
 module.exports = function (sequelize, DataTypes) {
-  const User = sequelize.define(
-    'User',
+  const Board = sequelize.define(
+    'Board',
     {
       id: {
         type: DataTypes.UUID,
@@ -10,39 +10,20 @@ module.exports = function (sequelize, DataTypes) {
         allowNull: false,
         primaryKey: true,
       },
-      email: {
+      creator_id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+      },
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
-      display_name: {
+      code: {
         type: DataTypes.STRING,
-        allowNull: false,
-      },
-      first_name: {
-        type: DataTypes.STRING(64),
-        allowNull: false,
-      },
-      last_name: {
-        type: DataTypes.STRING(64),
-        allowNull: false,
-      },
-      password_hash: {
-        type: DataTypes.STRING,
-      },
-      email_verified: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
         allowNull: false,
       },
       image_url: {
         type: DataTypes.STRING(256),
-      },
-      external_type: {
-        type: DataTypes.STRING,
-      },
-      external_id: {
-        type: DataTypes.STRING,
       },
       created_at: {
         type: DataTypes.DATE,
@@ -54,20 +35,20 @@ module.exports = function (sequelize, DataTypes) {
       },
     },
     {
-      tableName: 'users',
+      tableName: 'boards',
       createdAt: 'created_at',
       updatedAt: 'updated_at',
       underscored: true,
     }
   );
 
-  User.associate = function (models) {
-    User.belongsToMany(models.Board, {
+  Board.associate = function (models) {
+    Board.belongsToMany(models.User, {
       through: 'UserBoard',
-      as: 'boards',
-      foreignKey: 'user_id',
+      as: 'users',
+      foreignKey: 'board_id',
     });
   };
 
-  return User;
+  return Board;
 };
