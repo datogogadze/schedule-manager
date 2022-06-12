@@ -23,7 +23,7 @@ router.get(
 router.get(
   '/google/callback',
   passport.authenticate('google', {
-    failureRedirect: `${process.env.CLIENT_ADDRESS}`,
+    failureRedirect: `${process.env.CLIENT_ADDRESS}?error`,
   }),
   (req, res) => {
     return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
@@ -92,10 +92,14 @@ router.post('/register', async (req, res) => {
     await registerSchema.validateAsync(req.body, { abortEarly: false });
     const user = await User.findOne({ where: { email: req.body.email } });
     if (user) {
-      return res.status(400).json({
-        success: false,
-        message: 'user already exists',
-      });
+      if (user.email_verified) {
+        return res.status(400).json({
+          success: false,
+          message: 'user already exists',
+        });
+      } else {
+        await User.destroy({ where: { email: req.body.email } });
+      }
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const userPayload = {
