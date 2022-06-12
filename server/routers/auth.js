@@ -22,9 +22,18 @@ router.get(
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: `${process.env.CLIENT_ADDRESS}?error`,
-  }),
+  (req, res, next) => {
+    passport.authenticate('google', {}, (err, user, info) => {
+      let query = '?error=';
+      if (err) {
+        if (err.message == 'wrong auth') {
+          query += 'wrong-auth';
+        }
+        return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+      }
+      next();
+    })(req, res, next);
+  },
   (req, res) => {
     return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
   }
@@ -34,9 +43,18 @@ router.get('/facebook', passport.authenticate('facebook'));
 
 router.get(
   '/facebook/callback',
-  passport.authenticate('facebook', {
-    failureRedirect: `${process.env.CLIENT_ADDRESS}`,
-  }),
+  (req, res, next) => {
+    passport.authenticate('facebook', {}, (err, user, info) => {
+      let query = '?error=';
+      if (err) {
+        if (err.message == 'wrong auth') {
+          query += 'wrong-auth';
+        }
+        return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+      }
+      next();
+    })(req, res, next);
+  },
   (req, res) => {
     return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
   }

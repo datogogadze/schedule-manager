@@ -42,7 +42,7 @@ passport.use(
           done(null, createdUser.dataValues);
         }
       } catch (err) {
-        logger.error('Error in google strategy', err);
+        logger.error('Error in google strategy:', err);
         done(err, null);
       }
     }
@@ -85,7 +85,7 @@ passport.use(
           done(null, createdUser.dataValues);
         }
       } catch (err) {
-        logger.error('Error in facebook strategy', err);
+        logger.error('Error in facebook strategy:', err);
         done(err, null);
       }
     }
