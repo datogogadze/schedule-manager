@@ -6,14 +6,17 @@ const logger = require('../utils/winston');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   host: 'smtp.gmail.com',
-  port: 587,
+  port: 465,
   auth: {
+    type: 'OAuth2',
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASSWORD,
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
   },
 });
 
-const sendVerificationMail = async email => {
+const sendVerificationMail = async (email) => {
   try {
     const { id } = await User.findOne({ where: { email } });
 
@@ -49,6 +52,7 @@ const sendVerificationMail = async email => {
           (err, info) => {
             if (err) {
               logger.error('nodemailer error: ', err);
+              return;
             }
             logger.debug('nodemailer info', info.messageId);
           }
@@ -60,7 +64,7 @@ const sendVerificationMail = async email => {
   }
 };
 
-const sendResetPasswrdMail = async email => {
+const sendResetPasswrdMail = async (email) => {
   try {
     const { id } = await User.findOne({ where: { email } });
 
@@ -96,6 +100,7 @@ const sendResetPasswrdMail = async email => {
           (err, info) => {
             if (err) {
               logger.error('nodemailer error: ', err);
+              return;
             }
             logger.debug('nodemailer info', info.messageId);
           }

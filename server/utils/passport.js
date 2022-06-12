@@ -4,6 +4,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const passport = require('passport');
 const bcrypt = require('bcrypt');
 const { User } = require('../models/index');
+const logger = require('./winston');
 
 passport.use(
   new GoogleStrategy(
@@ -15,10 +16,16 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const user = await User.findOne({ where: { external_id: profile.id } });
+        const user = await User.findOne({
+          where: { email: profile.emails[0].value },
+        });
         if (user) {
-          delete user.dataValues.password_hash;
-          done(null, user.dataValues);
+          if (user.external_type == 'google') {
+            delete user.dataValues.password_hash;
+            done(null, user.dataValues);
+          } else {
+            throw new Error('wrong auth');
+          }
         } else {
           const userPayload = {
             email: profile.emails[0].value,
@@ -35,6 +42,7 @@ passport.use(
           done(null, createdUser.dataValues);
         }
       } catch (err) {
+        logger.error('Error in google strategy:', err);
         done(err, null);
       }
     }
@@ -46,15 +54,21 @@ passport.use(
     {
       clientID: process.env.FB_APP_ID,
       clientSecret: process.env.FB_APP_SECRET,
-      callbackURL: `http://localhost:3000/auth/facebook/callback`,
+      callbackURL: `${process.env.HOST_ADDRESS}/auth/facebook/callback`,
       profileFields: ['id', 'emails', 'name', 'photos', 'displayName'],
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const user = await User.findOne({ where: { external_id: profile.id } });
+        const user = await User.findOne({
+          where: { email: profile.emails[0].value },
+        });
         if (user) {
-          delete user.dataValues.password_hash;
-          done(null, user.dataValues);
+          if (user.external_type == 'facebook') {
+            delete user.dataValues.password_hash;
+            done(null, user.dataValues);
+          } else {
+            throw new Error('wrong auth');
+          }
         } else {
           const userPayload = {
             email: profile.emails[0].value,
@@ -71,6 +85,7 @@ passport.use(
           done(null, createdUser.dataValues);
         }
       } catch (err) {
+        logger.error('Error in facebook strategy:', err);
         done(err, null);
       }
     }

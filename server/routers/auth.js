@@ -22,9 +22,18 @@ router.get(
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', {
-    failureRedirect: `${process.env.CLIENT_ADDRESS}`,
-  }),
+  (req, res, next) => {
+    passport.authenticate('google', {}, (err, user, info) => {
+      let query = '?error=';
+      if (err) {
+        if (err.message == 'wrong auth') {
+          query += 'wrong-auth';
+        }
+        return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+      }
+      next();
+    })(req, res, next);
+  },
   (req, res) => {
     return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
   }
@@ -34,9 +43,18 @@ router.get('/facebook', passport.authenticate('facebook'));
 
 router.get(
   '/facebook/callback',
-  passport.authenticate('facebook', {
-    failureRedirect: `${process.env.CLIENT_ADDRESS}`,
-  }),
+  (req, res, next) => {
+    passport.authenticate('facebook', {}, (err, user, info) => {
+      let query = '?error=';
+      if (err) {
+        if (err.message == 'wrong auth') {
+          query += 'wrong-auth';
+        }
+        return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+      }
+      next();
+    })(req, res, next);
+  },
   (req, res) => {
     return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
   }
@@ -92,10 +110,14 @@ router.post('/register', async (req, res) => {
     await registerSchema.validateAsync(req.body, { abortEarly: false });
     const user = await User.findOne({ where: { email: req.body.email } });
     if (user) {
-      return res.status(400).json({
-        success: false,
-        message: 'user already exists',
-      });
+      if (user.email_verified) {
+        return res.status(400).json({
+          success: false,
+          message: 'user already exists',
+        });
+      } else {
+        await User.destroy({ where: { email: req.body.email } });
+      }
     }
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const userPayload = {
