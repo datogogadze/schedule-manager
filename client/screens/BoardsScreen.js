@@ -1,5 +1,5 @@
 import { Button, Card, Icon, Layout, Text } from '@ui-kitten/components';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,28 +12,37 @@ import CreateBoardModal from '../components/CreateBoardModal';
 
 import Header from '../components/Header';
 import JoinBoardModal from '../components/JoinBoardModal';
+import OverlaySpinner from '../components/OverlaySpinner';
+import { getUserBoards } from '../utils/api-calls';
 
 
 
 const BoardsScreen = ({ navigation }) => {
-  const [boards, setBoards] = React.useState([
-    { id: 1, name: 'Board 1' },
-    { id: 2, name: 'Board 2' },
-    { id: 3, name: 'Board 3' },
-    { id: 4, name: 'Board 4' },
-    { id: 5, name: 'Board 5' },
-    { id: 6, name: 'Board 6' },
-    { id: 7, name: 'Board 7' },
-  ]);
-
+  const [boards, setBoards] = React.useState([]);
   const [createBoardModalOpen, setCreateBoardModalOpen] = React.useState(false);
   const [joinBoardModalOpen, setJoinBoardModalOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
+
+  useEffect(() => {
+    getUserBoards().then(res => {
+      setBoards(res.data.boards);
+      setLoading(false);
+    }).catch(e => {
+      setLoading(false);
+      const { message } = e.response.data;
+      Toast.show({
+        type: 'error',
+        text1: 'Whoops',
+        text2: message,
+      });
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
       <Header text="Your Boards" />
       <ScrollView style={styles.boardsWrapper}>
-        { boards.map(board => (
+        {boards.length > 0 &&  boards.map(board => (
           <Card
             style={styles.board}
             key={board.id}
@@ -46,16 +55,41 @@ const BoardsScreen = ({ navigation }) => {
             </Text>
           </Card>
         ))}
+        {boards.length == 0 && <Text>
+          You have no boards. Join or create one.
+        </Text> }
       </ScrollView>
 
       <CreateBoardModal
         visible={createBoardModalOpen} 
         onClose ={() => setCreateBoardModalOpen(false)}
+        onSuccess={(boardId) => {
+          setCreateBoardModalOpen(false);
+          navigation.navigate('SelectedBoard', { boardId });
+        }}
+        onError={(message) => {
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: message,
+          });
+        }}
       />
       
       <JoinBoardModal
-        visible={joinBoardModalOpen} 
+        visible={joinBoardModalOpen}
         onClose ={() => setJoinBoardModalOpen(false)}
+        onSuccess={(boardId) => {
+          setJoinBoardModalOpen(false);
+          navigation.navigate('SelectedBoard', { boardId });
+        }}
+        onError={(message) => {
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: message,
+          });
+        }}
       />
 
       <Layout style={styles.buttonsWrapper} level='1'>
@@ -80,6 +114,7 @@ const BoardsScreen = ({ navigation }) => {
           Join
         </Button>
       </Layout>
+      <OverlaySpinner visible={loading} />
       <Toast/>
     </View>
   );

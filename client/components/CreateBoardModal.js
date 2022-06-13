@@ -3,8 +3,30 @@ import {
   StyleSheet, View,
 } from 'react-native';
 import { Button, Card, Text, Modal, Input } from '@ui-kitten/components';
+import { createBoard } from '../utils/api-calls';
+import OverlaySpinner from './OverlaySpinner';
 
-const CreateBoardModal = ({ visible, onClose }) => {
+const CreateBoardModal = ({ visible, onClose, onSuccess, onError }) => {
+  const [boardName, setBoardName] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const handleCreateBoard = () => {
+    setLoading(true);
+    createBoard(boardName, 'father').then(res => {
+      setLoading(false);
+      const { success } = res.data;
+      if (success) {
+        onSuccess();
+      } else {
+        onError('Error while creating board');
+      }
+    }).catch(e => {
+      setLoading(false);
+      const { message } = e.response.data;
+      onError(message);
+    });
+  };
+
   const CardHeader = (props) => (
     <View {...props}>
       <Text category='h6'>Create Board</Text>
@@ -17,13 +39,15 @@ const CreateBoardModal = ({ visible, onClose }) => {
         style={styles.footerControl}
         size='medium'
         status='basic'
-        onPress={() => onClose(false)}
+        onPress={onClose}
       >
         Cancel
       </Button>
       <Button
         style={styles.footerControl}
-        size='medium'>
+        size='medium'
+        onPress={handleCreateBoard}
+      >
         Create
       </Button>
     </View>
@@ -47,8 +71,11 @@ const CreateBoardModal = ({ visible, onClose }) => {
             style={styles.textInput}
             autoCapitalize="none"
             size="large"
+            value={ boardName }
+            onChangeText={text => setBoardName(text)}
           />
         </Card>
+        <OverlaySpinner visible={loading} />
       </Modal>
     </>
   );

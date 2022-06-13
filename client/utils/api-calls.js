@@ -28,3 +28,15 @@ export const sendResetPasswordMail = (email) => axios.post(`${SERVER_ADDRESS}/au
 export const resendConfirmationMail= (email) => axios.post(`${SERVER_ADDRESS}/auth/confirm/resend`, {
   email
 });
+
+export const getUserBoards = () => axios.get(`${SERVER_ADDRESS}/user/boards`);
+
+export const createBoard = (name, role) => axios.post(`${SERVER_ADDRESS}/board`, {
+  name,
+  role
+});
+
+export const joinBoard = (code, role) => axios.post(`${SERVER_ADDRESS}/board/add-user`, {
+  code,
+  role
+});

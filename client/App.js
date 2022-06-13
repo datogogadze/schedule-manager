@@ -37,7 +37,8 @@ const App = () => (
           initialRouteName="Login"
           screenOptions={{
             headerShown: false,
-            cardStyle: { backgroundColor: '#fff' }
+            cardStyle: { backgroundColor: '#fff' },
+            gestureEnabled: false,
           }}>
           <Stack.Screen name='Login' component={LoginScreen}></Stack.Screen>
           <Stack.Screen name='SignUp' component={SignUpScreen}></Stack.Screen>
@@ -45,7 +46,7 @@ const App = () => (
           <Stack.Screen name='VerifyEmail' component={VerifyEmailScreen}></Stack.Screen>
           <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}></Stack.Screen>
           <Stack.Screen name='Boards' component={BoardsScreen}></Stack.Screen>
-          <Stack.Screen name='SelectedBoard' component={SelectedBoardScreen}></Stack.Screen>
+          <Stack.Screen name='SelectedBoard' component={SelectedBoardScreen }></Stack.Screen>
           
         </Stack.Navigator>
       </NavigationContainer>

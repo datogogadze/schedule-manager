@@ -3,8 +3,30 @@ import {
   StyleSheet, View,
 } from 'react-native';
 import { Button, Card, Text, Modal, Input } from '@ui-kitten/components';
+import OverlaySpinner from './OverlaySpinner';
+import { joinBoard } from '../utils/api-calls';
 
-const JoinBoardModal = ({ visible, onClose }) => {
+const JoinBoardModal = ({ visible, onClose, onSuccess, onError }) => {
+  const [code, setCode] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const handleJoinBoard = () => {
+    setLoading(true);
+    joinBoard(code, 'father').then(res => {
+      setLoading(false);
+      const { success } = res.data;
+      if (success) {
+        onSuccess();
+      } else {
+        onError('Error while creating board');
+      }
+    }).catch(e => {
+      setLoading(false);
+      const { message } = e.response.data;
+      onError(message);
+    });
+  };
+
   const CardHeader = (props) => (
     <View {...props}>
       <Text category='h6'>Join Board</Text>
@@ -17,13 +39,15 @@ const JoinBoardModal = ({ visible, onClose }) => {
         style={styles.footerControl}
         size='medium'
         status='basic'
-        onPress={() => onClose(false)}
+        onPress={onClose}
       >
         Cancel
       </Button>
       <Button
         style={styles.footerControl}
-        size='medium'>
+        size='medium'
+        onPress={handleJoinBoard}
+      >
         Join
       </Button>
     </View>
@@ -35,7 +59,7 @@ const JoinBoardModal = ({ visible, onClose }) => {
         style={styles.modal}
         visible={visible}
         backdropStyle={styles.backdrop}
-        onBackdropPress={() => onClose(false)}
+        onBackdropPress={onClose}
       >
         <Card style={styles.card} header={CardHeader} footer={CardFooter}>
           <Text style={styles.text}>
@@ -47,8 +71,11 @@ const JoinBoardModal = ({ visible, onClose }) => {
             style={styles.textInput}
             autoCapitalize="none"
             size="large"
+            value={code}
+            onChangeText={text => setCode(text)}
           />
         </Card>
+        <OverlaySpinner visible={loading} />
       </Modal>
     </>
   );
