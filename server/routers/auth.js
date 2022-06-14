@@ -20,45 +20,41 @@ router.get(
   })
 );
 
-router.get(
-  '/google/callback',
-  (req, res, next) => {
-    passport.authenticate('google', {}, (err, user, info) => {
-      let query = '?error=';
-      if (err) {
-        if (err.message == 'wrong auth') {
-          query += 'wrong-auth';
-        }
-        return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+router.get('/google/callback', (req, res, next) => {
+  passport.authenticate('google', {}, (err, user, info) => {
+    let query = '?error=';
+    if (err) {
+      if (err.message == 'wrong auth') {
+        query += 'wrong-auth';
       }
-      next();
-    })(req, res, next);
-  },
-  (req, res) => {
-    return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
-  }
-);
+      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+    } else if (user) {
+      return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${user.id}`);
+    } else {
+      query += 'no-user';
+      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+    }
+  })(req, res, next);
+});
 
 router.get('/facebook', passport.authenticate('facebook'));
 
-router.get(
-  '/facebook/callback',
-  (req, res, next) => {
-    passport.authenticate('facebook', {}, (err, user, info) => {
-      let query = '?error=';
-      if (err) {
-        if (err.message == 'wrong auth') {
-          query += 'wrong-auth';
-        }
-        return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+router.get('/facebook/callback', (req, res, next) => {
+  passport.authenticate('facebook', {}, (err, user, info) => {
+    let query = '?error=';
+    if (err) {
+      if (err.message == 'wrong auth') {
+        query += 'wrong-auth';
       }
-      next();
-    })(req, res, next);
-  },
-  (req, res) => {
-    return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${req.user.id}`);
-  }
-);
+      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+    } else if (user) {
+      return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${user.id}`);
+    } else {
+      query += 'no-user';
+      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
+    }
+  })(req, res, next);
+});
 
 router.get('/success', auth, (req, res) => {
   return res.send('success');

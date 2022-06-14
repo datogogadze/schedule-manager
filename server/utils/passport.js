@@ -35,7 +35,7 @@ passport.use(
             image_url: profile.photos[0].value,
             email_verified: true,
             external_type: 'google',
-            external_id: profile.id,
+            // external_id: profile.id,
           };
           const createdUser = await User.create(userPayload);
           delete createdUser.dataValues.password_hash;
