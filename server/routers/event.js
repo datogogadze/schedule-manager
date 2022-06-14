@@ -34,18 +34,25 @@ router.post('/', auth, async (req, res) => {
       interval,
       count,
     } = req.body;
+
+    let recurrence_pattern = null;
+
     if (!end_date) {
-      end_date = new Date(
-        new Date(Date.UTC(9999, 11, 31, 23, 59, 59)).getTime()
-      );
+      if (frequency) {
+        end_date = new Date(Date.UTC(9999, 11, 31, 23, 59, 59)).getTime();
+        const rule = getRule(
+          new Date(start_date),
+          Recurrence.convert(frequency),
+          interval,
+          count,
+          new Date(end_date)
+        );
+        recurrence_pattern = rule.toString();
+      } else {
+        end_date = new Date(start_date).getTime();
+      }
     }
-    const rule = getRule(
-      new Date(start_date),
-      Recurrence.convert(frequency),
-      interval,
-      count,
-      new Date(end_date)
-    );
+
     const event = new EventModel(
       board_id,
       kid_id,
@@ -54,7 +61,7 @@ router.post('/', auth, async (req, res) => {
       start_date,
       end_date,
       duration,
-      rule.toString()
+      recurrence_pattern
     );
 
     const createdEvent = await Event.create(event);

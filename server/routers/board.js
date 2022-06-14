@@ -9,8 +9,11 @@ const {
 const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
 const User = require('../models/index').User;
+const Event = require('../models/index').Event;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
+const { RRule, RRuleSet, rrulestr } = require('rrule');
+const EventModel = require('../utils/classes/EventModel');
 
 const generateCode = async () => {
   const code = crypto.randomBytes(3).toString('hex');
@@ -155,6 +158,48 @@ router.get('/users', auth, async (req, res) => {
     });
     const usersList = users.map((user) => user.dataValues);
     return res.json({ success: true, users: usersList });
+  } catch (err) {
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
+router.get('/events', auth, async (req, res) => {
+  try {
+    const { board_id, start_date, end_date } = req.body;
+    const eventsList = await Event.findAll({
+      where: {
+        board_id,
+        end_date: {
+          [Op.gte]: start_date,
+        },
+        start_date: {
+          [Op.lte]: end_date,
+        },
+      },
+    });
+
+    const events = eventsList.map((event) => event.dataValues);
+    for (let e of [...events]) {
+      if (e.recurrence_pattern) {
+        const rule = RRule.fromString(e.recurrence_pattern);
+        const dates = rule.between(new Date(start_date), new Date(end_date));
+        for (let date of dates) {
+          events.push(
+            new EventModel(
+              e.board_id,
+              e.kid_id,
+              e.name,
+              e.description,
+              new Date(date).getTime(),
+              new Date(date).getTime(),
+              e.duration,
+              e.recurrence_pattern
+            )
+          );
+        }
+      }
+    }
+    return res.json({ success: true, events });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }

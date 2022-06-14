@@ -53,4 +53,4 @@ const getAllEvents = (start, end) => {
 
 // getAllEvents(start, end);
 
-console.log(RRule.YEARLY);
+console.log(new Date('2012-02-03T10:30:00.000Z').getTime());
