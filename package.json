@@ -4,7 +4,7 @@
   "description": "Project for bachelor's degree",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watchAll",
     "server-dev": "npm run dev --prefix ./server",
     "client-dev": "npm run dev --prefix ./client",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
@@ -25,9 +25,12 @@
   "homepage": "https://github.com/datogogadze/schedule-manager#readme",
   "dependencies": {
     "babel-preset-react-native": "^4.0.1",
-    "concurrently": "^7.2.0"
+    "concurrently": "^7.2.0",
+    "dotenv": "^16.0.1"
   },
   "devDependencies": {
-    "prettier": "^2.6.2"
+    "jest": "^28.1.1",
+    "prettier": "^2.6.2",
+    "supertest": "^6.2.3"
   }
 }

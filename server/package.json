@@ -30,6 +30,7 @@
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
     "rrule": "^2.7.0",
+    "save-dev": "^0.0.1-security",
     "sequelize": "^6.19.0",
     "uuid": "^8.3.2",
     "winston": "^3.7.2"
