@@ -7,7 +7,7 @@ const {
   loginSchema,
   passwordSchema,
   emailSchema,
-  oauthSchema,
+  oAuthSchema,
 } = require('../utils/validation');
 const { sendVerificationMail, sendResetPasswrdMail } = require('../utils/mail');
 const jwt = require('jsonwebtoken');
@@ -19,7 +19,7 @@ router.get('/success', auth, (req, res) => {
 
 router.post('/oauth', async (req, res, next) => {
   try {
-    await oauthSchema.validateAsync(req.body, { abortEarly: false });
+    await oAuthSchema.validateAsync(req.body, { abortEarly: false });
     return passport.authenticate('oauth-local', (err, user, info) => {
       if (err) {
         return res.status(400).json({

@@ -15,7 +15,7 @@ import Header from '../components/Header';
 
 import { Formik } from 'formik';
 import { LoginSchema } from '../utils/formik-schemas';
-import { login, getUserData, oauthLogin } from '../utils/api-calls';
+import { basicLogin, getUserData, oAuthLogin } from '../utils/api-calls';
 
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
@@ -34,10 +34,9 @@ const LoginScreen = ({ navigation }) => {
         .then((result) => {
           setLoading(true);
           const profile = { external_type: 'google', ...result.data };
-          oauthLogin(profile)
+          oAuthLogin(profile)
             .then((res) => {
               setLoading(false);
-
               const { success, message, id } = res.data;
               if (success) {
                 navigation.navigate('Boards', {
@@ -47,24 +46,38 @@ const LoginScreen = ({ navigation }) => {
                 Toast.show({
                   type: 'error',
                   text1: 'Whoops',
-                  text2: message,
+                  text2: 'Login error',
                 });
               }
             })
             .catch((e) => {
+              console.log(e);
               setLoading(false);
-              const { message } = e.response.data;
-
-              console.log(e.response);
-
               Toast.show({
                 type: 'error',
                 text1: 'Whoops',
-                text2: message,
+                text2: 'Login error',
               });
             });
         })
-        .catch((err) => console.log(err.response));
+        .catch((e) => {
+          console.log(e);
+          setLoading(false);
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: 'Login error',
+          });
+        });
+    } else {
+      setLoading(false);
+      if (response) {
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: 'Login error',
+        });
+      }
     }
   }, [response]);
 
@@ -95,7 +108,7 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
 
-    login(email, password)
+    basicLogin(email, password)
       .then((res) => {
         setLoading(false);
 

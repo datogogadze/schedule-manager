@@ -26,7 +26,7 @@ const basicAuthenticateUser = async (email, password, done) => {
   }
 };
 
-const oauthAuthenticateUser = async (req, email, password, done) => {
+const oAuthAuthenticateUser = async (req, email, password, done) => {
   try {
     const { profile } = req.body;
     const user = await User.findOne({
@@ -76,7 +76,7 @@ passport.use(
       usernameField: 'email',
       passReqToCallback: true,
     },
-    oauthAuthenticateUser
+    oAuthAuthenticateUser
   )
 );
 

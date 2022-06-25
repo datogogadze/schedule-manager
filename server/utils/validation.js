@@ -14,7 +14,7 @@ const loginSchema = Joi.object({
   password: Joi.string().min(8).max(128).required(),
 });
 
-const oauthSchema = Joi.object({
+const oAuthSchema = Joi.object({
   email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
   password: Joi.string().allow(null),
   profile: Joi.object({
@@ -88,5 +88,5 @@ module.exports = {
   boardAddUserSchema,
   boardRemoveUserSchema,
   boardUsersSchema,
-  oauthSchema,
+  oAuthSchema,
 };

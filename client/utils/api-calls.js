@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-export const login = (email, password) =>
+export const basicLogin = (email, password) =>
   axios.post(`${process.env.SERVER_ADDRESS}/auth/basic`, {
     email,
     password,
   });
 
-export const oauthLogin = (profile) =>
+export const oAuthLogin = (profile) =>
   axios.post(`${process.env.SERVER_ADDRESS}/auth/oauth`, {
     email: profile.email,
     password: 'DUMMY_PASSWORD',
