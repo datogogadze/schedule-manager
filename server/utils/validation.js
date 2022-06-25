@@ -14,6 +14,21 @@ const loginSchema = Joi.object({
   password: Joi.string().min(8).max(128).required(),
 });
 
+const oauthSchema = Joi.object({
+  email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
+  password: Joi.string().allow(null),
+  profile: Joi.object({
+    email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
+    name: Joi.string().min(8).max(128).required(),
+    given_name: Joi.string().min(1).max(128).required(),
+    family_name: Joi.string().min(1).max(128).required(),
+    picture: Joi.string().min(8).max(256).allow(null),
+    verified_email: Joi.boolean(),
+    external_type: Joi.string().min(1).max(128).required(),
+    id: Joi.string().min(8).max(128).required(),
+  }).unknown(),
+});
+
 const passwordSchema = Joi.object({
   password: Joi.string().min(8).max(128).required(),
   passwordConfirmation: Joi.valid(Joi.ref('password')).required(),
@@ -73,4 +88,5 @@ module.exports = {
   boardAddUserSchema,
   boardRemoveUserSchema,
   boardUsersSchema,
+  oauthSchema,
 };

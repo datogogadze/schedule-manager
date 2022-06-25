@@ -7,63 +7,62 @@ const {
   loginSchema,
   passwordSchema,
   emailSchema,
+  oauthSchema,
 } = require('../utils/validation');
 const { sendVerificationMail, sendResetPasswrdMail } = require('../utils/mail');
 const jwt = require('jsonwebtoken');
 const User = require('../models/index').User;
 
-router.get(
-  '/google',
-  passport.authenticate('google', {
-    scope: ['profile', 'email'],
-    prompt: 'select_account',
-  })
-);
-
-router.get('/google/callback', (req, res, next) => {
-  passport.authenticate('google', {}, (err, user, info) => {
-    let query = '?error=';
-    if (err) {
-      if (err.message == 'wrong auth') {
-        query += 'wrong-auth';
-      }
-      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
-    } else if (user) {
-      return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${user.id}`);
-    } else {
-      query += 'no-user';
-      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
-    }
-  })(req, res, next);
-});
-
-router.get('/facebook', passport.authenticate('facebook'));
-
-router.get('/facebook/callback', (req, res, next) => {
-  passport.authenticate('facebook', {}, (err, user, info) => {
-    let query = '?error=';
-    if (err) {
-      if (err.message == 'wrong auth') {
-        query += 'wrong-auth';
-      }
-      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
-    } else if (user) {
-      return res.redirect(`${process.env.CLIENT_ADDRESS}?id=${user.id}`);
-    } else {
-      query += 'no-user';
-      return res.redirect(`${process.env.CLIENT_ADDRESS}${query}`);
-    }
-  })(req, res, next);
-});
-
 router.get('/success', auth, (req, res) => {
   return res.send('success');
 });
 
-router.post('/local', async (req, res, next) => {
+router.post('/oauth', async (req, res, next) => {
   try {
+    await oauthSchema.validateAsync(req.body, { abortEarly: false });
+    return passport.authenticate('oauth-local', (err, user, info) => {
+      if (err) {
+        return res.status(400).json({
+          success: false,
+          message: err.message,
+        });
+      }
+
+      if (!user) {
+        return res.status(400).json({
+          success: false,
+          message: info.message,
+        });
+      }
+
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(502).json({
+            success: false,
+            message: err.message,
+          });
+        }
+      });
+
+      return res.json({
+        success: true,
+        id: user.id,
+        message: 'Login successful',
+      });
+    })(req, res, next);
+  } catch (err) {
+    return res.status(502).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+router.post('/basic', async (req, res, next) => {
+  try {
+    console.log('\n\n\nermgergenrgnergerg\n\n\n\n\n');
     await loginSchema.validateAsync(req.body, { abortEarly: false });
-    return passport.authenticate('local', (err, user, info) => {
+    return passport.authenticate('basic-local', (err, user, info) => {
       if (err) {
         return res.status(400).json({
           success: false,
