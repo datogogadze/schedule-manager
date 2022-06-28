@@ -208,7 +208,10 @@ router.post('/password/reset/:token', async (req, res) => {
 
 router.get('/logout', function (req, res) {
   req.logout();
-  return res.json({ success: true, message: 'logged out' });
+  req.session.destroy(() => {
+    res.clearCookie('connect.sid');
+    return res.json({ success: true, message: 'logged out' });
+  });
 });
 
 module.exports = router;

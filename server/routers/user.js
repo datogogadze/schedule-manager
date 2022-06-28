@@ -6,6 +6,19 @@ const Board = require('../models/index').Board;
 const User = require('../models/index').User;
 const { Op } = require('sequelize');
 
+router.get('/me', auth, async (req, res) => {
+  try {
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'unauthenticated' });
+    }
+    return res.json({ success: true, user: req.user });
+  } catch (err) {
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
 router.get('/boards', auth, async (req, res) => {
   try {
     const userId = req.user.id;

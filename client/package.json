@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@eva-design/eva": "^2.1.1",
-    "@expo/vector-icons": "github:expo/vector-icons",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-navigation/native": "^6.0.10",
     "@react-navigation/stack": "^6.2.1",
@@ -39,7 +38,12 @@
     "react-native-web": "0.17.1",
     "react-navigation": "^4.4.4",
     "ui-kitten-toast": "^0.0.2",
-    "yup": "^0.32.11"
+    "yup": "^0.32.11",
+    "expo-google-app-auth": "~8.3.0",
+    "expo-auth-session": "~3.5.0",
+    "expo-web-browser": "~10.1.0",
+    "expo-random": "~12.1.1",
+    "expo-crypto": "~10.1.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
