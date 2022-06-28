@@ -46,7 +46,7 @@ router.post('/oauth', async (req, res, next) => {
 
       return res.json({
         success: true,
-        id: user.id,
+        user,
         message: 'Login successful',
       });
     })(req, res, next);
@@ -60,7 +60,6 @@ router.post('/oauth', async (req, res, next) => {
 
 router.post('/basic', async (req, res, next) => {
   try {
-    console.log('\n\n\nermgergenrgnergerg\n\n\n\n\n');
     await loginSchema.validateAsync(req.body, { abortEarly: false });
     return passport.authenticate('basic-local', (err, user, info) => {
       if (err) {
@@ -88,7 +87,7 @@ router.post('/basic', async (req, res, next) => {
 
       return res.json({
         success: true,
-        id: user.id,
+        user,
         message: 'Login successful',
       });
     })(req, res, next);
