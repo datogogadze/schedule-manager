@@ -16,15 +16,16 @@ import Header from '../components/Header';
 import { Formik } from 'formik';
 import { LoginSchema } from '../utils/formik-schemas';
 import { basicLogin, getUserData, oAuthLogin } from '../utils/api-calls';
-
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+// eslint-disable-next-line import/no-unresolved
+import { GOOGLE_CLIENT_ID } from '@env';
 
 WebBrowser.maybeCompleteAuthSession();
 
 const LoginScreen = ({ navigation }) => {
   const [request, response, promptAsync] = Google.useAuthRequest({
-    expoClientId: process.env.GOOGLE_CLIENT_ID,
+    expoClientId: GOOGLE_CLIENT_ID,
   });
 
   useEffect(() => {
