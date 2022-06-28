@@ -5,40 +5,88 @@ import {
   View,
   KeyboardAvoidingView,
   Platform,
-  Keyboard
+  Keyboard,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { Icon, Input, Button } from '@ui-kitten/components';
-import * as Linking from 'expo-linking';
 
 import OverlaySpinner from '../components/OverlaySpinner';
 import Header from '../components/Header';
 
 import { Formik } from 'formik';
 import { LoginSchema } from '../utils/formik-schemas';
-import { login } from '../utils/api-calls';
-
+import { basicLogin, getUserData, oAuthLogin } from '../utils/api-calls';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 // eslint-disable-next-line import/no-unresolved
-import { SERVER_ADDRESS } from '@env';
+import { GOOGLE_CLIENT_ID } from '@env';
+
+WebBrowser.maybeCompleteAuthSession();
 
 const LoginScreen = ({ navigation }) => {
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    expoClientId: GOOGLE_CLIENT_ID,
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { authentication } = response;
+      getUserData(authentication.accessToken)
+        .then((result) => {
+          setLoading(true);
+          const profile = { external_type: 'google', ...result.data };
+          oAuthLogin(profile)
+            .then((res) => {
+              setLoading(false);
+              const { success, message, id } = res.data;
+              if (success) {
+                navigation.navigate('Boards', {
+                  id,
+                });
+              } else {
+                Toast.show({
+                  type: 'error',
+                  text1: 'Whoops',
+                  text2: 'Login error',
+                });
+              }
+            })
+            .catch((e) => {
+              console.log(e);
+              setLoading(false);
+              Toast.show({
+                type: 'error',
+                text1: 'Whoops',
+                text2: 'Login error',
+              });
+            });
+        })
+        .catch((e) => {
+          console.log(e);
+          setLoading(false);
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: 'Login error',
+          });
+        });
+    } else {
+      setLoading(false);
+      if (response) {
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: 'Login error',
+        });
+      }
+    }
+  }, [response]);
+
   const [secureTextEntry, setSecureTextEntry] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
 
   const refPasswordInput = useRef();
   const refForm = useRef();
-
-  const handleDeepLink = async (event) => {
-    let data = Linking.parse(event.url);
-    let id = data.queryParams.id;
-    navigation.navigate('Boards', {
-      id,
-    });
-  };
-
-  useEffect(() => {
-    Linking.addEventListener('url', handleDeepLink);
-  }, []);
 
   const toggleSecureEntry = () => {
     setSecureTextEntry(!secureTextEntry);
@@ -57,51 +105,46 @@ const LoginScreen = ({ navigation }) => {
   };
 
   const handleLogin = (values) => {
-    const {
-      email,
-      password
-    } = values;
+    const { email, password } = values;
 
     setLoading(true);
 
-    login(email, password).then((res) => {
-      setLoading(false);
+    basicLogin(email, password)
+      .then((res) => {
+        setLoading(false);
 
-      const { success, message, id } = res.data;
-      if (success) {
-        navigation.navigate('Boards', {
-          id,
-        });
-      } else {
+        const { success, message, id } = res.data;
+        if (success) {
+          navigation.navigate('Boards', {
+            id,
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: message,
+          });
+        }
+      })
+      .catch((e) => {
+        setLoading(false);
+        const { message } = e.response.data;
+
+        console.log(e.response);
+
         Toast.show({
           type: 'error',
           text1: 'Whoops',
           text2: message,
         });
-      }
-    }).catch((e) => {
-      setLoading(false);
-      const { message } = e.response.data;
-
-      console.log(e.response);
-
-      Toast.show({
-        type: 'error',
-        text1: 'Whoops',
-        text2: message,
       });
-    });
-  };
-
-  const handleGoogleLogin = async () => {
-    Linking.openURL(`${SERVER_ADDRESS}/auth/google`);
   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View style={styles.container}>
         <KeyboardAvoidingView
-          behavior='position'
+          behavior="position"
           keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
         >
           <Header text="Log In" />
@@ -114,11 +157,11 @@ const LoginScreen = ({ navigation }) => {
             validationSchema={LoginSchema}
             validateOnChange={false}
             validateOnBlur={false}
-            onSubmit={values => {
+            onSubmit={(values) => {
               handleLogin(values);
             }}
           >
-            {({ handleChange, handleBlur, values, errors}) => (
+            {({ handleChange, handleBlur, values, errors }) => (
               <>
                 <Input
                   value={values.email}
@@ -128,7 +171,7 @@ const LoginScreen = ({ navigation }) => {
                   caption={errors.email || ' '}
                   onChangeText={handleChange('email')}
                   onBlur={handleBlur('email')}
-                  keyboardType='email-address'
+                  keyboardType="email-address"
                   style={styles.textInput}
                   onSubmitEditing={() => refPasswordInput.current.focus()}
                   autoCapitalize="none"
@@ -153,7 +196,7 @@ const LoginScreen = ({ navigation }) => {
             )}
           </Formik>
         </KeyboardAvoidingView>
-        
+
         <Button
           size="small"
           appearance="ghost"
@@ -161,7 +204,7 @@ const LoginScreen = ({ navigation }) => {
           onPress={() => navigation.navigate('ForgotPassword')}
           style={styles.forgotPassowordButton}
         >
-        Forgot Password? Click here.
+          Forgot Password? Click here.
         </Button>
 
         <Button
@@ -177,11 +220,13 @@ const LoginScreen = ({ navigation }) => {
           size="large"
           status="basic"
           style={styles.googleLoginButton}
-          onPress={handleGoogleLogin}
-          disabled={loading}
+          disabled={!request}
           accessoryLeft={
             <Icon style={styles.icon} fill="#8F9BB3" name="google-outline" />
           }
+          onPress={() => {
+            promptAsync();
+          }}
         >
           Log In With Google
         </Button>
@@ -229,15 +274,15 @@ const styles = StyleSheet.create({
   forgotPassowordButton: {
     marginTop: -20,
     textAlign: 'left',
-    alignSelf: 'flex-start'
+    alignSelf: 'flex-start',
   },
   loginButton: {
     marginTop: '35%',
     marginBottom: 10,
   },
   googleLoginButton: {
-    marginBottom: 10
-  }
+    marginBottom: 10,
+  },
 });
 
 export default LoginScreen;

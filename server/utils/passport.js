@@ -6,93 +6,7 @@ const bcrypt = require('bcrypt');
 const { User } = require('../models/index');
 const logger = require('./winston');
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.HOST_ADDRESS}/auth/google/callback`,
-      profileFields: ['id', 'emails', 'name', 'photos', 'displayName'],
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const user = await User.findOne({
-          where: { email: profile.emails[0].value },
-        });
-        if (user) {
-          if (user.external_type == 'google') {
-            delete user.dataValues.password_hash;
-            done(null, user.dataValues);
-          } else {
-            throw new Error('wrong auth');
-          }
-        } else {
-          const userPayload = {
-            email: profile.emails[0].value,
-            display_name: profile.displayName,
-            first_name: profile.name.givenName,
-            last_name: profile.name.familyName,
-            image_url: profile.photos[0].value,
-            email_verified: true,
-            external_type: 'google',
-            // external_id: profile.id,
-          };
-          const createdUser = await User.create(userPayload);
-          delete createdUser.dataValues.password_hash;
-          done(null, createdUser.dataValues);
-        }
-      } catch (err) {
-        logger.error('Error in google strategy:', err);
-        done(err, null);
-      }
-    }
-  )
-);
-
-passport.use(
-  new FacebookStrategy(
-    {
-      clientID: process.env.FB_APP_ID,
-      clientSecret: process.env.FB_APP_SECRET,
-      callbackURL: `${process.env.HOST_ADDRESS}/auth/facebook/callback`,
-      profileFields: ['id', 'emails', 'name', 'photos', 'displayName'],
-    },
-    async (accessToken, refreshToken, profile, done) => {
-      try {
-        const user = await User.findOne({
-          where: { email: profile.emails[0].value },
-        });
-        if (user) {
-          if (user.external_type == 'facebook') {
-            delete user.dataValues.password_hash;
-            done(null, user.dataValues);
-          } else {
-            throw new Error('wrong auth');
-          }
-        } else {
-          const userPayload = {
-            email: profile.emails[0].value,
-            display_name: profile.displayName,
-            first_name: profile.name.givenName,
-            last_name: profile.name.familyName,
-            image_url: profile.photos[0].value,
-            email_verified: true,
-            external_type: 'facebook',
-            external_id: profile.id,
-          };
-          const createdUser = await User.create(userPayload);
-          delete createdUser.dataValues.password_hash;
-          done(null, createdUser.dataValues);
-        }
-      } catch (err) {
-        logger.error('Error in facebook strategy:', err);
-        done(err, null);
-      }
-    }
-  )
-);
-
-const authenticateUser = async (email, password, done) => {
+const basicAuthenticateUser = async (email, password, done) => {
   try {
     const user = await User.findOne({ where: { email } });
     if (!user) {
@@ -112,12 +26,57 @@ const authenticateUser = async (email, password, done) => {
   }
 };
 
+const oAuthAuthenticateUser = async (req, email, password, done) => {
+  try {
+    const { profile } = req.body;
+    const user = await User.findOne({
+      where: { email: profile.email },
+    });
+    if (user) {
+      if (!user.email_verified) {
+        return done(null, null, { message: 'Email not verified' });
+      }
+      delete user.dataValues.password_hash;
+      done(null, user.dataValues);
+    } else {
+      const userPayload = {
+        email: profile.email,
+        display_name: profile.name,
+        first_name: profile.given_name,
+        last_name: profile.family_name,
+        image_url: profile.picture,
+        email_verified: profile.verified_email,
+        external_type: profile.external_type,
+        external_id: profile.id,
+      };
+      const createdUser = await User.create(userPayload);
+      delete createdUser.dataValues.password_hash;
+      done(null, createdUser.dataValues);
+    }
+  } catch (err) {
+    logger.error('Error in oauth local strategy:', err);
+    done(err, null);
+  }
+};
+
 passport.use(
+  'basic-local',
   new LocalStrategy(
     {
       usernameField: 'email',
     },
-    authenticateUser
+    basicAuthenticateUser
+  )
+);
+
+passport.use(
+  'oauth-local',
+  new LocalStrategy(
+    {
+      usernameField: 'email',
+      passReqToCallback: true,
+    },
+    oAuthAuthenticateUser
   )
 );
 
