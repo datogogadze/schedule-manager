@@ -14,7 +14,6 @@ const auth = require('./routers/auth');
 const board = require('./routers/board');
 const user = require('./routers/user');
 const event = require('./routers/event');
-const e = require('express');
 
 const options = {
   host: process.env.DB_HOST,
