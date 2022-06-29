@@ -28,13 +28,15 @@ const options = {
 };
 
 const connection = mysql2.createPool(options);
-const sessionStore = new MySQLStore({}, connection);
-const memoryStore = new MemoryStore();
+const sessionStore =
+  process.env.NODE_ENV == 'test'
+    ? new MemoryStore()
+    : new MySQLStore({}, connection);
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
-    store: process.env.NODE_ENV == 'test' ? memoryStore : sessionStore,
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
