@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx sequelize-cli db:migrate && nodemon index.js",
-    "server": "npx sequelize-cli db:migrate && node index.js",
+    "test": "NODE_ENV=test && npx sequelize-cli db:migrate --env test && jest --watchAll --detectOpenHandles",
+    "dev": "NODE_ENV=development && npx sequelize-cli db:migrate --env development && nodemon server.js",
+    "server": "NODE_ENV=production && npx sequelize-cli db:migrate --env production && node server.js",
     "start": "npm run server"
   },
   "keywords": [],
@@ -23,6 +23,7 @@
     "express-session": "^1.17.2",
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
+    "memorystore": "^1.6.7",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.7.3",
     "passport": "^0.5.2",
@@ -37,6 +38,8 @@
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
-    "nodemon": "^2.0.15"
+    "jest": "^28.1.1",
+    "nodemon": "^2.0.15",
+    "supertest": "^6.2.3"
   }
 }

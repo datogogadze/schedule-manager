@@ -4,7 +4,7 @@
   "description": "Project for bachelor's degree",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll",
+    "test": "npm run test --prefix ./server",
     "server-dev": "npm run dev --prefix ./server",
     "client-dev": "npm run dev --prefix ./client",
     "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\"",
@@ -29,8 +29,6 @@
     "dotenv": "^16.0.1"
   },
   "devDependencies": {
-    "jest": "^28.1.1",
-    "prettier": "^2.6.2",
-    "supertest": "^6.2.3"
+    "prettier": "^2.6.2"
   }
 }
