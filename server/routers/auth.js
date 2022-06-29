@@ -123,10 +123,11 @@ router.post('/register', async (req, res) => {
     };
     const createdUser = await User.create(userPayload);
     sendVerificationMail(req.body.email);
+    delete createdUser.dataValues.password_hash;
     return res.json({
       success: true,
       message: 'created',
-      id: createdUser.id,
+      user: createdUser.dataValues,
     });
   } catch (err) {
     return res.status(502).json({ successs: false, message: err.message });
