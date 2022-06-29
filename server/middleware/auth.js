@@ -3,6 +3,7 @@ module.exports = (req, res, next) => {
     return next();
   }
   return res.status(401).json({
+    success: false,
     message: 'unauthenticated',
   });
 };

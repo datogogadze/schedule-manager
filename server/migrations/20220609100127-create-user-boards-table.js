@@ -6,6 +6,7 @@ module.exports = {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
+        unique: true,
         primaryKey: true,
       },
       user_id: {
@@ -22,10 +23,10 @@ module.exports = {
       },
     });
 
-    queryInterface.addConstraint('user_board', {
+    await queryInterface.addConstraint('user_board', {
       fields: ['user_id'],
       type: 'foreign key',
-      name: 'fk_users_id',
+      name: 'fk_user_board_users_id',
       references: {
         table: 'users',
         field: 'id',
@@ -34,10 +35,10 @@ module.exports = {
       onUpdate: 'cascade',
     });
 
-    queryInterface.addConstraint('user_board', {
+    await queryInterface.addConstraint('user_board', {
       fields: ['board_id'],
       type: 'foreign key',
-      name: 'fk_boards_id',
+      name: 'fk_user_board_boards_id',
       references: {
         table: 'boards',
         field: 'id',

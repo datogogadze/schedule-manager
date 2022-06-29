@@ -14,7 +14,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/index').User;
 
 router.get('/success', auth, (req, res) => {
-  return res.send('success');
+  return res.json({ success: true });
 });
 
 router.post('/oauth', async (req, res, next) => {
