@@ -7,7 +7,11 @@ const db = require('../models/index');
 beforeAll(async () => {});
 
 afterAll(async () => {
-  await db.User.destroy({ where: {} });
+  try {
+    await db.User.destroy({ where: {} });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 describe('Test auth', () => {
@@ -23,7 +27,10 @@ describe('Test auth', () => {
       })
       .expect(200)
       .end((err, res) => {
-        if (err) throw err;
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
         const { user } = res.body;
         expect(res.body.success).toBe(true);
         expect(user.email).toBe('johndoe@mail.com');
@@ -45,7 +52,10 @@ describe('Test auth', () => {
           })
           .expect(200)
           .end((err, res) => {
-            if (err) throw err;
+            if (err) {
+              console.log(res.body);
+              throw err;
+            }
             const { user } = res.body;
             expect(res.body.success).toBe(true);
             expect(user.email).toBe('johndoe@mail.com');
@@ -62,7 +72,10 @@ describe('Test auth', () => {
       .get('/user/me')
       .expect(200)
       .end((err, res) => {
-        if (err) throw err;
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
         const { user } = res.body;
         expect(res.body.success).toBe(true);
         expect(user.email).toBe('johndoe@mail.com');
@@ -75,7 +88,10 @@ describe('Test auth', () => {
       .get('/auth/logout')
       .expect(200)
       .end((err, res) => {
-        if (err) throw err;
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
         expect(res.body.success).toBe(true);
         expect(res.body.message).toBe('logged out');
         done();
@@ -87,7 +103,10 @@ describe('Test auth', () => {
       .get('/user/me')
       .expect(401)
       .end((err, res) => {
-        if (err) throw err;
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
         const { user } = res.body;
         expect(res.body.success).toBe(false);
         expect(res.body.message).toBe('unauthenticated');

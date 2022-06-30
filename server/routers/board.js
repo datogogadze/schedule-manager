@@ -130,7 +130,7 @@ router.post('/remove-user', auth, async (req, res) => {
   }
 });
 
-router.get('/users', auth, async (req, res) => {
+router.post('/users', auth, async (req, res) => {
   try {
     await boardUsersSchema.validateAsync(req.body, { abortEarly: false });
     const { board_id } = req.body;
