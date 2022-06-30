@@ -34,7 +34,7 @@ const App = () => (
     <ApplicationProvider {...eva} theme={eva.light}>
       <NavigationContainer linking={linking} >
         <Stack.Navigator
-          initialRouteName="Login"
+          initialRouteName="Boards"
           screenOptions={{
             headerShown: false,
             cardStyle: { backgroundColor: '#fff' },

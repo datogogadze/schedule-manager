@@ -29,6 +29,8 @@ export const resendConfirmationMail= (email) => axios.post(`${SERVER_ADDRESS}/au
   email
 });
 
+export const logout = () => axios.get(`${SERVER_ADDRESS}/auth/logout`);
+
 export const getUserBoards = () => axios.get(`${SERVER_ADDRESS}/user/boards`);
 
 export const createBoard = (name, role) => axios.post(`${SERVER_ADDRESS}/board`, {

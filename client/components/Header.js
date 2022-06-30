@@ -4,9 +4,10 @@ import {
   View,
   Image
 } from 'react-native';
-import { Button, Icon, List, ListItem,  Text } from '@ui-kitten/components';
+import { Button, Icon, List, ListItem,  MenuItem,  Text } from '@ui-kitten/components';
 
 import Modal from 'react-native-modal';
+import { logout } from '../utils/api-calls';
 
 const logo = require('../assets/logo.png');
 const data =[
@@ -21,32 +22,35 @@ const data =[
   },
 ];
 
-const Header = ({ text, user = {fullName: 'Test Name'} }) => {
+const Header = ({ navigation, text, showMenu, smallHeader }) => {
   const [sideMenuVisible, setSideMenuVisible] = React.useState(false);
 
-  const renderItemIcon = (props) => (
-    <Icon {...props} name='person'/>
-  );
+  const handleLogout = () => {
+    logout().then(() => {
+      navigation.navigate('Login');
+    }).catch(e => {
+      console.log(e);
+    });
+  };
 
-
-  const renderItem = ({ item, index }) => (
-    <ListItem
-      title={`${item.title} ${index + 1}`}
-      accessoryLeft={renderItemIcon}
-    />
-  );
   return (
     <>
       <View style={styles.imageContainer}>
+        { !!smallHeader && <View style={styles.smallHeaderWrapper}>
+          <Text style={styles.smallHeader} category="h5">
+            { text }
+          </Text>
+        </View> }
+       
         <View style={styles.logoWrapper}>
           <Image style={styles.logo} source={logo} />
         </View>
-        <View style={styles.menuIconWrapper} >
+        { showMenu && <View style={styles.menuIconWrapper} >
           <Icon style={styles.menuIcon} name='menu-outline' fill="black" onPress={() => setSideMenuVisible(true)}/>
-        </View>
+        </View> }
       </View>
 
-      <Modal
+      { showMenu && <Modal
         style={styles.sideMenu}
         animationIn="slideInRight"
         isVisible={sideMenuVisible}
@@ -55,21 +59,21 @@ const Header = ({ text, user = {fullName: 'Test Name'} }) => {
         swipeDirection="right"  
       >
         <View style={styles.sideMenuContent}>
-          {/* <List
-            style={styles.container}
-            data={data}
-            renderItem={renderItem}
-          /> */}
-          <Text style={styles.text} category='s1'>{user.fullName}</Text>
+          <Text style={styles.fullName} category='h6'>Test User</Text>
+          <MenuItem
+            title='View boards'
+            accessoryRight={<Icon name='arrow-ios-forward'/>}
+            style={styles.menuItem}
+          />
           <View style={styles.logoutButtonWrapper}>
-            <Button style={styles.logoutButton} status='danger'>Log Out</Button>
+            <Button style={styles.logoutButton} status='danger' onPress={handleLogout}>Log Out</Button>
           </View>
         </View>
-      </Modal>
+      </Modal> }
 
-      <Text style={styles.header} category="h3">
+      { !smallHeader && <Text style={styles.header} category="h3">
         { text }
-      </Text>
+      </Text> }
     </>
   );
 };
@@ -77,6 +81,13 @@ const Header = ({ text, user = {fullName: 'Test Name'} }) => {
 const styles = StyleSheet.create({
   header: {
     marginBottom: 30,
+  },
+  smallHeader: {
+
+  },
+  smallHeaderWrapper: {
+    position: 'absolute',
+    left: 0
   },
   imageContainer: {
     justifyContent: 'center',
@@ -121,6 +132,12 @@ const styles = StyleSheet.create({
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  fullName: {
+    textAlign: 'center'
+  },
+  menuItem: {
+    padding: 30
   }
 });
 
