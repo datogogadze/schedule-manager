@@ -5,6 +5,7 @@ const {
   boardAddUserSchema,
   boardRemoveUserSchema,
   boardUsersSchema,
+  boardEventsSchema,
 } = require('../utils/validation');
 const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
@@ -94,7 +95,7 @@ router.post('/remove-user', auth, async (req, res) => {
         .status(400)
         .json({ success: false, message: 'Incorrect board_id' });
     }
-    if (board.creator_id != req.user.id) {
+    if (board.creator_id != req.user.id && req.user.id) {
       return res.status(403).json({ success: false, message: 'unauthorized' });
     }
     const user = await User.findOne({ where: { id: user_id } });
@@ -163,8 +164,9 @@ router.post('/users', auth, async (req, res) => {
   }
 });
 
-router.get('/events', auth, async (req, res) => {
+router.post('/events', auth, async (req, res) => {
   try {
+    await boardEventsSchema.validateAsync(req.body, { abortEarly: false });
     const { board_id, start_date, end_date } = req.body;
     const eventsList = await Event.findAll({
       where: {
@@ -178,8 +180,9 @@ router.get('/events', auth, async (req, res) => {
       },
     });
 
-    const events = eventsList.map((event) => event.dataValues);
-    for (let e of [...events]) {
+    let events = [];
+    const original_events = eventsList.map((event) => event.dataValues);
+    for (let e of original_events) {
       if (e.recurrence_pattern) {
         const rule = RRule.fromString(e.recurrence_pattern);
         const dates = rule.between(new Date(start_date), new Date(end_date));
@@ -191,7 +194,7 @@ router.get('/events', auth, async (req, res) => {
               e.name,
               e.description,
               new Date(date).getTime(),
-              new Date(date).getTime(),
+              new Date(e.end_date).getTime(),
               e.duration,
               e.recurrence_pattern
             )
@@ -199,7 +202,11 @@ router.get('/events', auth, async (req, res) => {
         }
       }
     }
-    return res.json({ success: true, events });
+    return res.json({
+      success: true,
+      size: Object.keys(events).length,
+      events,
+    });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }

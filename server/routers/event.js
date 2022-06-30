@@ -19,6 +19,51 @@ const getRule = (dtstart, freq, interval, count, until) => {
   });
 };
 
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const event_id = req.params.id;
+    const event = await Event.findOne({ where: { id: event_id } });
+    if (!event) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Event not found' });
+    }
+    const user_board = await UserBoard.findOne({
+      where: { user_id: req.user.id, board_id: event.board_id },
+    });
+    if (!user_board) {
+      return res.status(404).json({ success: false, message: 'unauthorized' });
+    }
+    return res.json({ success: true, event });
+  } catch (err) {
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
+const getMidnight = (d) => {
+  const date = new Date(d);
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  ).getTime();
+};
+
+const generateRRuleString = (
+  start_date,
+  frequency,
+  interval,
+  count,
+  end_date
+) => {
+  const rule = getRule(
+    new Date(start_date),
+    Recurrence.convert(frequency),
+    interval,
+    count,
+    new Date(end_date)
+  );
+  return rule.toString();
+};
+
 router.post('/', auth, async (req, res) => {
   try {
     await eventSchema.validateAsync(req.body, { abortEarly: false });
@@ -36,21 +81,26 @@ router.post('/', auth, async (req, res) => {
     } = req.body;
 
     let recurrence_pattern = null;
-
-    if (!end_date) {
-      if (frequency) {
-        end_date = new Date(Date.UTC(9999, 11, 31, 23, 59, 59)).getTime();
-        const rule = getRule(
-          new Date(start_date),
-          Recurrence.convert(frequency),
-          interval,
-          count,
-          new Date(end_date)
-        );
-        recurrence_pattern = rule.toString();
+    if (!frequency) {
+      const start_midnight = getMidnight(start_date);
+      const ms = start_date - start_midnight + duration * 60000;
+      end_date = new Date(start_midnight + ms).getTime();
+    } else {
+      if (end_date) {
+        const start_midnight = getMidnight(start_date);
+        const end_midnight = getMidnight(end_date);
+        const ms = start_date - start_midnight + duration * 60000;
+        end_date = new Date(end_midnight + ms).getTime();
       } else {
-        end_date = new Date(start_date).getTime();
+        end_date = new Date(Date.UTC(9999, 11, 31, 23, 59, 59)).getTime();
       }
+      recurrence_pattern = generateRRuleString(
+        start_date,
+        frequency,
+        interval,
+        count,
+        end_date
+      );
     }
 
     const event = new EventModel(
@@ -65,7 +115,7 @@ router.post('/', auth, async (req, res) => {
     );
 
     const createdEvent = await Event.create(event);
-    return res.json({ success: true, ...createdEvent.dataValues });
+    return res.json({ success: true, event: { ...createdEvent.dataValues } });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }

@@ -100,6 +100,12 @@ const eventSchema = Joi.object({
   count: Joi.number().allow(null).required(),
 });
 
+const boardEventsSchema = Joi.object({
+  board_id: Joi.string().guid().required(),
+  start_date: Joi.date().timestamp().required(),
+  end_date: Joi.date().timestamp().required(),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -111,4 +117,5 @@ module.exports = {
   boardUsersSchema,
   oAuthSchema,
   eventSchema,
+  boardEventsSchema,
 };
