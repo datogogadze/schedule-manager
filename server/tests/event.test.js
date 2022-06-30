@@ -8,6 +8,10 @@ const user_id = '8a62996b-a001-46a7-8b9c-6fd848b1eaea';
 const board_id = '90fa1eb0-f38d-48de-889f-e7bf87a2eb0e';
 const event1_id = 'a1ea8426-d5cf-43c2-9b3b-9582fd9e2456';
 const kid_id = 'c37b3dac-ce34-4ecc-92f0-d5437568592c';
+const event1_start_date = 1656687900000;
+const event1_end_date = 1657033500000;
+const event2_start_date = 1656687900000;
+const event2_end_date = 1657033500000;
 
 beforeAll(async () => {
   try {
@@ -58,8 +62,8 @@ beforeAll(async () => {
       kid_id: kid_id,
       name: 'Event 1',
       description: 'Event 1 description',
-      start_date: 1656687900000,
-      end_date: 1656687900000,
+      start_date: event1_start_date,
+      end_date: event1_end_date,
       duration: 60,
       frequency: 'daily',
       interval: null,
@@ -110,8 +114,8 @@ describe('Test events', () => {
         kid_id: kid_id,
         name: 'Event 2',
         description: 'Event 2 description',
-        start_date: 1656687900000,
-        end_date: 1656687900000,
+        start_date: event2_start_date,
+        end_date: event2_end_date,
         duration: 60,
         frequency: 'daily',
         interval: null,

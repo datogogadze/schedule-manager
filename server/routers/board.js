@@ -185,7 +185,11 @@ router.post('/events', auth, async (req, res) => {
     for (let e of original_events) {
       if (e.recurrence_pattern) {
         const rule = RRule.fromString(e.recurrence_pattern);
-        const dates = rule.between(new Date(start_date), new Date(end_date));
+        const dates = rule.between(
+          new Date(start_date),
+          new Date(end_date),
+          true
+        );
         for (let date of dates) {
           events.push(
             new EventModel(

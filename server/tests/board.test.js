@@ -8,6 +8,9 @@ const db = require('../models/index');
 const user1_id = '4ae85602-103f-4418-8d65-e06291ded4ca';
 const user2_id = 'ba9aaf08-0077-46ea-9ef1-9f73164a8301';
 const board_id = 'aff55a61-6cae-4e9c-ac83-9fb942d91432';
+const event1_id = '9813906a-6c12-420c-81ae-8fc29f20355c';
+const event1_start_date = 1656687900000;
+const event1_end_date = 1657033500000;
 
 beforeAll(async () => {
   try {
@@ -46,6 +49,20 @@ beforeAll(async () => {
       role: 'aunt',
     });
 
+    const event = await db.Event.create({
+      id: event1_id,
+      board_id: board_id,
+      kid_id: user2_id,
+      name: 'Event 1',
+      description: 'Event 1 description',
+      start_date: event1_start_date,
+      end_date: event1_end_date,
+      duration: 60,
+      recurrence_pattern:
+        'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
+      // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
+    });
+
     await agent1
       .post('/auth/basic')
       .send({
@@ -70,6 +87,7 @@ afterAll(async () => {
   await db.User.destroy({ where: {} });
   await db.Board.destroy({ where: {} });
   await db.UserBoard.destroy({ where: {} });
+  await db.Event.destroy({ where: {} });
 });
 
 describe('Test boards', () => {
@@ -168,6 +186,66 @@ describe('Test boards', () => {
           throw err;
         }
         expect(res.body.success).toBe(true);
+        done();
+      });
+  });
+
+  it('Test getting events from board', (done) => {
+    agent1
+      .post('/board/events')
+      .send({
+        board_id: board_id,
+        start_date: event1_start_date,
+        end_date: event1_end_date,
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        expect(res.body.size).toBe(5);
+        done();
+      });
+  });
+
+  it('Test getting events from board with increased start date', (done) => {
+    agent1
+      .post('/board/events')
+      .send({
+        board_id: board_id,
+        start_date: event1_start_date + 1,
+        end_date: event1_end_date,
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        expect(res.body.size).toBe(4);
+        done();
+      });
+  });
+
+  it('Test getting events from board with increased start date and decreased end date', (done) => {
+    agent1
+      .post('/board/events')
+      .send({
+        board_id: board_id,
+        start_date: event1_start_date + 1,
+        end_date: event1_end_date - 1,
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        expect(res.body.size).toBe(3);
         done();
       });
   });
