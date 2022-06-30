@@ -75,7 +75,7 @@ const SelectedBoardScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Header text={boardName} />
+      <Header text={boardName} smallHeader showMenu/>
 
       <FlatList
         style={styles.eventList}
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     padding: 30,
   },
   eventList: {
-    height: '80%'
+    height: '85%'
   },
   eventCard: {
     marginVertical: 10,

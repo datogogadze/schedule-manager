@@ -40,6 +40,8 @@ export const resendConfirmationMail = (email) =>
     email,
   });
 
+export const logout = () => axios.get(`${SERVER_ADDRESS}/auth/logout`);
+
 export const getUserBoards = () => axios.get(`${SERVER_ADDRESS}/user/boards`);
 
 export const getUserData = (accessToken) =>

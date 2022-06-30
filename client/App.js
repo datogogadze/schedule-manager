@@ -8,7 +8,7 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 
 import LoginScreen from './screens/LoginScreen';
 import SignUpScreen from './screens/SignUpScreen';
-import HomeScreen from './screens/HomeScreen';
+import MainScreen from './screens/MainScreen';
 import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import BoardsScreen from './screens/BoardsScreen';
@@ -34,7 +34,7 @@ const App = () => (
     <ApplicationProvider {...eva} theme={eva.light}>
       <NavigationContainer linking={linking} >
         <Stack.Navigator
-          initialRouteName="Login"
+          initialRouteName="Boards"
           screenOptions={{
             headerShown: false,
             cardStyle: { backgroundColor: '#fff' },
@@ -42,7 +42,7 @@ const App = () => (
           }}>
           <Stack.Screen name='Login' component={LoginScreen}></Stack.Screen>
           <Stack.Screen name='SignUp' component={SignUpScreen}></Stack.Screen>
-          <Stack.Screen name='Home' component={HomeScreen}></Stack.Screen>
+          <Stack.Screen name='Main' component={MainScreen}></Stack.Screen>
           <Stack.Screen name='VerifyEmail' component={VerifyEmailScreen}></Stack.Screen>
           <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}></Stack.Screen>
           <Stack.Screen name='Boards' component={BoardsScreen}></Stack.Screen>

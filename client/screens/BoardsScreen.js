@@ -29,7 +29,11 @@ const BoardsScreen = ({ navigation }) => {
       setLoading(false);
     }).catch(e => {
       setLoading(false);
-      const { message } = e.response.data;
+      const { data, status } = e.response;
+      const { message } = data;
+      if (status === 401) {
+        navigation.navigate('Login');
+      }
       Toast.show({
         type: 'error',
         text1: 'Whoops',
@@ -40,7 +44,7 @@ const BoardsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Header text="Your Boards" />
+      <Header text="Boards" navigation={navigation} smallHeader showMenu/>
       <ScrollView style={styles.boardsWrapper}>
         {boards.length > 0 &&  boards.map(board => (
           <Card
@@ -150,7 +154,7 @@ const styles = StyleSheet.create({
   },
   boardsWrapper: {
     marginTop: 10,
-    height: '68%'
+    height: '77%'
   },
   board: {
     marginTop: 7,
