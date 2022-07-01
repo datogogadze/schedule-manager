@@ -2,6 +2,7 @@ import React from 'react';
 import {
   View,
   StyleSheet,
+  SafeAreaView,
 } from 'react-native';
 
 import {
@@ -45,26 +46,28 @@ const VerifyEmailScreen = ({ navigation, email }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Header text="Verify Email"/>
-      <Text category="h6">
-        We sent you verification mail. Please check your inbox
-      </Text>
+    <SafeAreaView>
+      <View style={styles.container}>
+        <Header text="Verify Email"/>
+        <Text category="h6">
+          We sent you verification mail. Please check your inbox
+        </Text>
 
-      <Button
-        size="large"
-        style={styles.button}
-        onPress={handleSubmit}
-        disabled={loading}
-      >
-        Resend Verification Mail
-      </Button>
+        <Button
+          size="large"
+          style={styles.button}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          Resend Verification Mail
+        </Button>
 
-      <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
-        Go to login page
-      </Button>
-      <Toast/>
-    </View>
+        <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
+          Go to login page
+        </Button>
+        <Toast/>
+      </View>
+    </SafeAreaView>
   );
 };
 
