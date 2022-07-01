@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 110,
     resizeMode: 'contain',
-    backgroundColor: 'pink',
     height: 100,
   },
   menuIcon: {
