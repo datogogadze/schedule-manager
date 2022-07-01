@@ -204,6 +204,19 @@ router.post('/events', auth, async (req, res) => {
             )
           );
         }
+      } else {
+        events.push(
+          new EventModel(
+            e.board_id,
+            e.kid_id,
+            e.name,
+            e.description,
+            new Date(e.start_date).getTime(),
+            new Date(e.end_date).getTime(),
+            e.duration,
+            e.recurrence_pattern
+          )
+        );
       }
     }
     return res.json({
