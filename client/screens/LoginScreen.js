@@ -20,6 +20,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 // eslint-disable-next-line import/no-unresolved
 import { GOOGLE_CLIENT_ID } from '@env';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -142,108 +143,110 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
-        <KeyboardAvoidingView
-          behavior="position"
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
-        >
-          <Header text="Log In" />
-          <Formik
-            innerRef={refForm}
-            initialValues={{
-              email: '',
-              password: '',
-            }}
-            validationSchema={LoginSchema}
-            validateOnChange={false}
-            validateOnBlur={false}
-            onSubmit={(values) => {
-              handleLogin(values);
+      <SafeAreaView>
+        <View style={styles.container}>
+          <KeyboardAvoidingView
+            behavior="position"
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
+          >
+            <Header text="Log In" />
+            <Formik
+              innerRef={refForm}
+              initialValues={{
+                email: '',
+                password: '',
+              }}
+              validationSchema={LoginSchema}
+              validateOnChange={false}
+              validateOnBlur={false}
+              onSubmit={(values) => {
+                handleLogin(values);
+              }}
+            >
+              {({ handleChange, handleBlur, values, errors }) => (
+                <>
+                  <Input
+                    value={values.email}
+                    label="Email"
+                    placeholder="Email"
+                    status={errors.email ? 'danger' : 'basic'}
+                    caption={errors.email || ' '}
+                    onChangeText={handleChange('email')}
+                    onBlur={handleBlur('email')}
+                    keyboardType="email-address"
+                    style={styles.textInput}
+                    onSubmitEditing={() => refPasswordInput.current.focus()}
+                    autoCapitalize="none"
+                    size="large"
+                  />
+
+                  <Input
+                    value={values.password}
+                    label="Password"
+                    placeholder="Password"
+                    status={errors.password ? 'danger' : 'basic'}
+                    caption={errors.password || ' '}
+                    onChangeText={handleChange('password')}
+                    onBlur={handleBlur('password')}
+                    accessoryRight={renderIcon}
+                    style={styles.textInput}
+                    ref={refPasswordInput}
+                    secureTextEntry={secureTextEntry}
+                    size="large"
+                  />
+                </>
+              )}
+            </Formik>
+          </KeyboardAvoidingView>
+
+          <Button
+            size="small"
+            appearance="ghost"
+            status="primary"
+            onPress={() => navigation.navigate('ForgotPassword')}
+            style={styles.forgotPassowordButton}
+          >
+            Forgot Password? Click here.
+          </Button>
+
+          <Button
+            size="large"
+            style={styles.loginButton}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            Log In
+          </Button>
+
+          <Button
+            size="large"
+            status="basic"
+            style={styles.googleLoginButton}
+            disabled={!request}
+            accessoryLeft={
+              <Icon style={styles.icon} fill="#8F9BB3" name="google-outline" />
+            }
+            onPress={() => {
+              promptAsync();
             }}
           >
-            {({ handleChange, handleBlur, values, errors }) => (
-              <>
-                <Input
-                  value={values.email}
-                  label="Email"
-                  placeholder="Email"
-                  status={errors.email ? 'danger' : 'basic'}
-                  caption={errors.email || ' '}
-                  onChangeText={handleChange('email')}
-                  onBlur={handleBlur('email')}
-                  keyboardType="email-address"
-                  style={styles.textInput}
-                  onSubmitEditing={() => refPasswordInput.current.focus()}
-                  autoCapitalize="none"
-                  size="large"
-                />
+            Log In With Google
+          </Button>
 
-                <Input
-                  value={values.password}
-                  label="Password"
-                  placeholder="Password"
-                  status={errors.password ? 'danger' : 'basic'}
-                  caption={errors.password || ' '}
-                  onChangeText={handleChange('password')}
-                  onBlur={handleBlur('password')}
-                  accessoryRight={renderIcon}
-                  style={styles.textInput}
-                  ref={refPasswordInput}
-                  secureTextEntry={secureTextEntry}
-                  size="large"
-                />
-              </>
-            )}
-          </Formik>
-        </KeyboardAvoidingView>
+          <Button
+            size="large"
+            appearance="outline"
+            onPress={() => navigation.navigate('SignUp')}
+            disabled={loading}
+          >
+            Sign Up
+          </Button>
 
-        <Button
-          size="small"
-          appearance="ghost"
-          status="primary"
-          onPress={() => navigation.navigate('ForgotPassword')}
-          style={styles.forgotPassowordButton}
-        >
-          Forgot Password? Click here.
-        </Button>
+          <Toast />
 
-        <Button
-          size="large"
-          style={styles.loginButton}
-          onPress={handleSubmit}
-          disabled={loading}
-        >
-          Log In
-        </Button>
-
-        <Button
-          size="large"
-          status="basic"
-          style={styles.googleLoginButton}
-          disabled={!request}
-          accessoryLeft={
-            <Icon style={styles.icon} fill="#8F9BB3" name="google-outline" />
-          }
-          onPress={() => {
-            promptAsync();
-          }}
-        >
-          Log In With Google
-        </Button>
-
-        <Button
-          size="large"
-          appearance="outline"
-          onPress={() => navigation.navigate('SignUp')}
-          disabled={loading}
-        >
-          Sign Up
-        </Button>
-
-        <Toast />
-
-        <OverlaySpinner visible={loading} />
-      </View>
+          <OverlaySpinner visible={loading} />
+        </View>
+      </SafeAreaView>
     </TouchableWithoutFeedback>
   );
 };

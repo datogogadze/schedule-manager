@@ -2,6 +2,7 @@ import React from 'react';
 import {
   View,
   StyleSheet,
+  SafeAreaView,
 } from 'react-native';
 
 import {
@@ -46,32 +47,34 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Header text="Reset Password" />
-      <Input
-        value={email}
-        label="Email"
-        placeholder="Email"
-        status='basic'
-        onChangeText={setEmail}
-        keyboardType='email-address'
-        style={styles.textInput}
-        size="large"
-      />
-      <Button
-        size="large"
-        style={styles.button}
-        onPress={handleSubmit}
-        disabled={loading}
-      >
-        Send Reset Password Mail
-      </Button>
+    <SafeAreaView>
+      <View style={styles.container}>
+        <Header text="Reset Password" />
+        <Input
+          value={email}
+          label="Email"
+          placeholder="Email"
+          status='basic'
+          onChangeText={setEmail}
+          keyboardType='email-address'
+          style={styles.textInput}
+          size="large"
+        />
+        <Button
+          size="large"
+          style={styles.button}
+          onPress={handleSubmit}
+          disabled={loading}
+        >
+          Send Reset Password Mail
+        </Button>
 
-      <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
-        Go to login page
-      </Button>
-      <Toast/>
-    </View>
+        <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
+          Go to login page
+        </Button>
+        <Toast/>
+      </View>
+    </SafeAreaView>
   );
 };
 

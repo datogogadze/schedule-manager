@@ -4,13 +4,14 @@ import {
   View,
   StyleSheet,
   FlatList,
+  SafeAreaView,
 } from 'react-native';
 
 import Toast from 'react-native-toast-message';
 import Header from '../components/Header';
 
 
-const SelectedBoardScreen = ({ route }) => {
+const SelectedBoardScreen = ({ navigation, route }) => {
   const { boardName } = route.params;
 
   const [events, setEvents] = React.useState([
@@ -74,24 +75,27 @@ const SelectedBoardScreen = ({ route }) => {
 
 
   return (
-    <View style={styles.container}>
-      <Header text={boardName} smallHeader showMenu/>
+    <SafeAreaView>
+      <View style={styles.container}>
+        <Header navigation={navigation} text={boardName} showMenu backButton/>
 
-      <FlatList
-        style={styles.eventList}
-        data={events}
-        renderItem={renderItem}
-        keyExtractor={item => item.id}
-        stickyHeaderIndices={stickyHeaderIndices}
-      />
-      <Toast/>
-    </View>
+        <FlatList
+          style={styles.eventList}
+          data={events}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          stickyHeaderIndices={stickyHeaderIndices}
+        />
+        <Toast/>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 30,
+    paddingTop: 0,
   },
   eventList: {
     height: '85%'

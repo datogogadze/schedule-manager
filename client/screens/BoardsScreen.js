@@ -4,6 +4,8 @@ import {
   View,
   StyleSheet,
   ScrollView,
+  SafeAreaView,
+  RefreshControl,
 } from 'react-native';
 
 
@@ -22,13 +24,24 @@ const BoardsScreen = ({ navigation }) => {
   const [createBoardModalOpen, setCreateBoardModalOpen] = React.useState(false);
   const [joinBoardModalOpen, setJoinBoardModalOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [isInitial, setIsInitial] = React.useState(true);
 
   useEffect(() => {
+    fetchBoards();
+  }, []);
+  
+
+  const fetchBoards = () => {
     getUserBoards().then(res => {
       setBoards(res.data.boards);
       setLoading(false);
+      setIsInitial(false);
+      setRefreshing(false);
     }).catch(e => {
       setLoading(false);
+      setIsInitial(false);
+      setRefreshing(false);
       const { data, status } = e.response;
       const { message } = data;
       if (status === 401) {
@@ -40,93 +53,105 @@ const BoardsScreen = ({ navigation }) => {
         text2: message,
       });
     });
-  }, []);
+  };
 
   return (
-    <View style={styles.container}>
-      <Header text="Boards" navigation={navigation} smallHeader showMenu/>
-      <ScrollView style={styles.boardsWrapper}>
-        {boards.length > 0 &&  boards.map(board => (
-          <Card
-            style={styles.board}
-            key={board.id}
-            onPress={() => navigation.navigate('SelectedBoard', {
-              boardName: board.name,
-            })}
+    <SafeAreaView>
+      <View style={styles.container}>
+        <Header text="Boards" navigation={navigation} smallHeader showMenu/>
+        <ScrollView
+          style={styles.boardsWrapper}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={fetchBoards}
+            />
+          }
+        >
+          {boards.length > 0 &&  boards.map(board => (
+            <Card
+              style={styles.board}
+              key={board.id}
+              onPress={() => navigation.navigate('SelectedBoard', {
+                boardName: board.name,
+              })}
+            >
+              <Text category='h6'>
+                {board.name}
+              </Text>
+            </Card>
+          ))}
+          {!isInitial && boards.length == 0 && <Text>
+            You have no boards. Join or create one.
+          </Text> }
+        </ScrollView>
+
+        <CreateBoardModal
+          visible={createBoardModalOpen} 
+          onClose ={() => setCreateBoardModalOpen(false)}
+          onSuccess={(boardId) => {
+            setCreateBoardModalOpen(false);
+            navigation.navigate('SelectedBoard', { boardId });
+          }}
+          onError={(message) => {
+            Toast.show({
+              type: 'error',
+              text1: 'Whoops',
+              text2: message,
+            });
+          }}
+        />
+        
+        <JoinBoardModal
+          visible={joinBoardModalOpen}
+          onClose ={() => setJoinBoardModalOpen(false)}
+          onSuccess={(boardId) => {
+            setJoinBoardModalOpen(false);
+            navigation.navigate('SelectedBoard', { boardId });
+          }}
+          onError={(message) => {
+            Toast.show({
+              type: 'error',
+              text1: 'Whoops',
+              text2: message,
+            });
+          }}
+        />
+
+        <Layout style={styles.buttonsWrapper} level='1'>
+          <Button
+            style={styles.button}
+            size='medium'
+            status='primary'
+            accessoryLeft={<Icon name='plus-circle-outline'/>}
+            onPress={() => setCreateBoardModalOpen(true)}
           >
-            <Text category='h6'>
-              {board.name}
-            </Text>
-          </Card>
-        ))}
-        {boards.length == 0 && <Text>
-          You have no boards. Join or create one.
-        </Text> }
-      </ScrollView>
+            Create
+          </Button>
 
-      <CreateBoardModal
-        visible={createBoardModalOpen} 
-        onClose ={() => setCreateBoardModalOpen(false)}
-        onSuccess={(boardId) => {
-          setCreateBoardModalOpen(false);
-          navigation.navigate('SelectedBoard', { boardId });
-        }}
-        onError={(message) => {
-          Toast.show({
-            type: 'error',
-            text1: 'Whoops',
-            text2: message,
-          });
-        }}
-      />
-      
-      <JoinBoardModal
-        visible={joinBoardModalOpen}
-        onClose ={() => setJoinBoardModalOpen(false)}
-        onSuccess={(boardId) => {
-          setJoinBoardModalOpen(false);
-          navigation.navigate('SelectedBoard', { boardId });
-        }}
-        onError={(message) => {
-          Toast.show({
-            type: 'error',
-            text1: 'Whoops',
-            text2: message,
-          });
-        }}
-      />
-
-      <Layout style={styles.buttonsWrapper} level='1'>
-        <Button
-          style={styles.button}
-          size='medium'
-          status='primary'
-          accessoryLeft={<Icon name='plus-circle-outline'/>}
-          onPress={() => setCreateBoardModalOpen(true)}
-        >
-          Create
-        </Button>
-
-        <Button
-          style={styles.button}
-          size='medium'
-          status='primary'
-          appearance='outline'
-          accessoryLeft={<Icon name='person-add-outline'/>}
-          onPress={() => setJoinBoardModalOpen(true)}
-        >
-          Join
-        </Button>
-      </Layout>
-      <OverlaySpinner visible={loading} />
-      <Toast/>
-    </View>
+          <Button
+            style={styles.button}
+            size='medium'
+            status='primary'
+            appearance='outline'
+            accessoryLeft={<Icon name='person-add-outline'/>}
+            onPress={() => setJoinBoardModalOpen(true)}
+          >
+            Join
+          </Button>
+        </Layout>
+        <OverlaySpinner visible={loading} />
+        <Toast/>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 30,
+    paddingTop: 0,
   },
   header: {
     marginBottom: 30,
