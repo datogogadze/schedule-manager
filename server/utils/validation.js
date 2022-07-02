@@ -86,7 +86,7 @@ const eventSchema = Joi.object({
   description: Joi.string().min(3).max(254).lowercase().trim().required(),
   start_date: Joi.date().timestamp().required(),
   end_date: Joi.date().timestamp().allow(null).required(),
-  duration: Joi.number().integer().required(),
+  duration: Joi.number().integer().required().strict(),
   frequency: Joi.string()
     .allow(null)
     .required()
@@ -97,7 +97,13 @@ const eventSchema = Joi.object({
       return value;
     }),
   interval: Joi.number().allow(null).required(),
-  count: Joi.number().allow(null).required(),
+  count: Joi.number().allow(null).required().strict(),
+});
+
+const updateEventSchema = Joi.object({
+  event_id: Joi.string().guid().required(),
+  start_date: Joi.date().timestamp().required(),
+  event: eventSchema,
 });
 
 const boardEventsSchema = Joi.object({
@@ -118,4 +124,5 @@ module.exports = {
   oAuthSchema,
   eventSchema,
   boardEventsSchema,
+  updateEventSchema,
 };

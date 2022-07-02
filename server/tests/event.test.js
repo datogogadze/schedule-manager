@@ -4,14 +4,44 @@ const request = require('supertest');
 const agent = request.agent(app);
 const db = require('../models/index');
 
+const UPDATED = 'UPDATED';
+
 const user_id = '8a62996b-a001-46a7-8b9c-6fd848b1eaea';
 const board_id = '90fa1eb0-f38d-48de-889f-e7bf87a2eb0e';
 const event1_id = 'a1ea8426-d5cf-43c2-9b3b-9582fd9e2456';
 const kid_id = 'c37b3dac-ce34-4ecc-92f0-d5437568592c';
 const event1_start_date = 1656687900000;
 const event1_end_date = 1657033500000;
+const event1_third_recurrence = 1656860700000;
 const event2_start_date = 1656687900000;
 const event2_end_date = 1657033500000;
+const event2_third_recurrence = 1656860700000;
+
+let event1_data = {
+  board_id: board_id,
+  kid_id: kid_id,
+  name: 'Event 2',
+  description: 'Event 2 description',
+  start_date: event2_start_date,
+  end_date: event2_end_date,
+  duration: 60,
+  frequency: 'daily',
+  interval: null,
+  count: null,
+};
+
+let event2_data = {
+  board_id: board_id,
+  kid_id: kid_id,
+  name: 'Event 2',
+  description: 'Event 2 description',
+  start_date: event2_start_date,
+  end_date: event2_end_date,
+  duration: 60,
+  frequency: 'daily',
+  interval: null,
+  count: null,
+};
 
 beforeAll(async () => {
   try {
@@ -65,9 +95,9 @@ beforeAll(async () => {
       start_date: event1_start_date,
       end_date: event1_end_date,
       duration: 60,
-      frequency: 'daily',
-      interval: null,
-      count: null,
+      recurrence_pattern:
+        'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
+      // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
     });
 
     await agent
@@ -130,6 +160,61 @@ describe('Test events', () => {
         expect(res.body.success).toBe(true);
         const { event } = res.body;
         expect(event.name).toBe('Event 2');
+        done();
+      });
+  });
+
+  it('Create recurring event and update all recurrences', (done) => {
+    agent
+      .post('/event')
+      .send(event2_data)
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        event2_data.name = UPDATED;
+        event2_data.description = UPDATED;
+        agent
+          .put('/event/all')
+          .send({
+            event_id: res.body.event.id,
+            start_date: event2_third_recurrence,
+            event: event2_data,
+          })
+          .expect(200)
+          .end((err, res) => {
+            if (err) {
+              console.log(res.body);
+              throw err;
+            }
+            expect(res.body.success).toBe(true);
+            const { event } = res.body;
+            expect(event.name).toBe(UPDATED);
+            expect(event.description).toBe(UPDATED);
+            done();
+          });
+      });
+  });
+
+  it('Update all recurrences with wrong date', (done) => {
+    agent
+      .put('/event/all')
+      .send({
+        event_id: event1_id,
+        start_date: event1_third_recurrence + 1,
+        event: event1_data,
+      })
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(false);
+        expect(res.body.message).toBe('wrong "start_date"');
         done();
       });
   });

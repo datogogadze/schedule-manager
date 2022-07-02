@@ -11,6 +11,10 @@ const board_id = 'aff55a61-6cae-4e9c-ac83-9fb942d91432';
 const event1_id = '9813906a-6c12-420c-81ae-8fc29f20355c';
 const event1_start_date = 1656687900000;
 const event1_end_date = 1657033500000;
+// plus 1 hour
+const event2_start_date = event1_start_date + 3600000;
+// plus 1 day
+const event3_start_date = event2_start_date + 86400000;
 
 beforeAll(async () => {
   try {
@@ -247,6 +251,90 @@ describe('Test boards', () => {
         expect(res.body.success).toBe(true);
         expect(res.body.size).toBe(3);
         done();
+      });
+  });
+
+  it('Add non recurring event', (done) => {
+    agent1
+      .post('/event')
+      .send({
+        board_id: board_id,
+        kid_id: user2_id,
+        name: 'Event 2',
+        description: 'Event 2 description',
+        start_date: event2_start_date,
+        end_date: null,
+        duration: 60,
+        frequency: null,
+        interval: null,
+        count: null,
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        agent1
+          .post('/board/events')
+          .send({
+            board_id: board_id,
+            start_date: event1_start_date,
+            end_date: event1_end_date,
+          })
+          .expect(200)
+          .end((err, res) => {
+            if (err) {
+              console.log(res.body);
+              throw err;
+            }
+            expect(res.body.success).toBe(true);
+            expect(res.body.size).toBe(6);
+            done();
+          });
+      });
+  });
+
+  it('Add one more recurring event', (done) => {
+    agent1
+      .post('/event')
+      .send({
+        board_id: board_id,
+        kid_id: user2_id,
+        name: 'Event 3',
+        description: 'Event 3 description',
+        start_date: event3_start_date,
+        end_date: null,
+        duration: 60,
+        frequency: 'daily',
+        interval: null,
+        count: 2,
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        agent1
+          .post('/board/events')
+          .send({
+            board_id: board_id,
+            start_date: event1_start_date,
+            end_date: event1_end_date,
+          })
+          .expect(200)
+          .end((err, res) => {
+            if (err) {
+              console.log(res.body);
+              throw err;
+            }
+            expect(res.body.success).toBe(true);
+            expect(res.body.size).toBe(8);
+            done();
+          });
       });
   });
 });
