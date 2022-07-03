@@ -1,5 +1,5 @@
 const Joi = require('joi');
-const { Role, Recurrence } = require('./classes/enums');
+const { Role, Recurrence } = require('./enums/enums');
 
 const registerSchema = Joi.object({
   email: Joi.string().email().min(8).max(254).lowercase().trim().required(),
@@ -102,8 +102,27 @@ const eventSchema = Joi.object({
 
 const updateEventSchema = Joi.object({
   event_id: Joi.string().guid().required(),
-  start_date: Joi.date().timestamp().required(),
-  event: eventSchema,
+  current_event_timestamp: Joi.date().timestamp().required(),
+  event: Joi.object({
+    board_id: Joi.string().guid().required(),
+    kid_id: Joi.string().guid().required(),
+    name: Joi.string().min(3).max(254).lowercase().trim().required(),
+    description: Joi.string().min(3).max(254).lowercase().trim().required(),
+    start_date: Joi.date().timestamp().required(),
+    end_date: Joi.date().timestamp().allow(null).required(),
+    duration: Joi.number().integer().required().strict(),
+    frequency: Joi.string()
+      .allow(null)
+      .required()
+      .custom((value, helpers) => {
+        if (value && !Recurrence.has(value)) {
+          return helpers.message({ custom: 'Incorrect frequency' });
+        }
+        return value;
+      }),
+    interval: Joi.number().allow(null).required(),
+    count: Joi.number().allow(null).required().strict(),
+  }),
 });
 
 const boardEventsSchema = Joi.object({

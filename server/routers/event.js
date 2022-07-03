@@ -5,9 +5,9 @@ const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
 const User = require('../models/index').User;
 const Event = require('../models/index').Event;
-const EventModel = require('../utils/classes/EventModel');
 const { RRule, RRuleSet, rrulestr } = require('rrule');
-const { Recurrence } = require('../utils/classes/enums');
+const { Recurrence } = require('../utils/enums/enums');
+const { Op } = require('sequelize');
 
 const generateRule = (dtstart, freq, interval, count, until) => {
   if (!interval) {
@@ -69,6 +69,7 @@ const generateRRuleString = (
 
 const generateEventModel = (eventData) => {
   let {
+    parent_id,
     board_id,
     kid_id,
     name,
@@ -124,7 +125,8 @@ const generateEventModel = (eventData) => {
     );
   }
 
-  const event = new EventModel(
+  const event = {
+    parent_id,
     board_id,
     kid_id,
     name,
@@ -132,8 +134,8 @@ const generateEventModel = (eventData) => {
     start_date,
     end_date,
     duration,
-    recurrence_pattern
-  );
+    recurrence_pattern,
+  };
 
   return event;
 };
@@ -141,6 +143,18 @@ const generateEventModel = (eventData) => {
 router.post('/', auth, async (req, res) => {
   try {
     await eventSchema.validateAsync(req.body, { abortEarly: false });
+    const board = await Board.findOne({ where: { id: req.body.board_id } });
+    if (!board) {
+      return res
+        .status(400)
+        .json({ success: false, message: "board_id doesn't exist" });
+    }
+    const kid = await User.findOne({ where: { id: req.body.kid_id } });
+    if (!kid) {
+      return res
+        .status(400)
+        .json({ success: false, message: "kid_id doesn't exist" });
+    }
     const event = generateEventModel(req.body);
     const createdEvent = await Event.create(event);
     return res.json({ success: true, event: { ...createdEvent.dataValues } });
@@ -152,7 +166,7 @@ router.post('/', auth, async (req, res) => {
 router.put('/all', auth, async (req, res) => {
   try {
     await updateEventSchema.validateAsync(req.body, { abortEarly: false });
-    const { event_id, start_date, event } = req.body;
+    const { event_id, current_event_timestamp, event } = req.body;
     const existing_event = await Event.findOne({ where: { id: event_id } });
     if (!existing_event) {
       return res
@@ -163,12 +177,14 @@ router.put('/all', auth, async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          'This is a one time event call update endpoint for single event',
+          'This is a one time event, call update endpoint for single event',
       });
     }
     const rule = RRule.fromString(existing_event.recurrence_pattern);
     const all_events = rule.all();
-    const exists = all_events.find((e) => start_date == e.getTime());
+    const exists = all_events.find(
+      (e) => current_event_timestamp == e.getTime()
+    );
     if (!exists) {
       return res.status(400).json({
         success: false,
@@ -176,9 +192,145 @@ router.put('/all', auth, async (req, res) => {
       });
     }
     const new_event = generateEventModel(event);
-    const updatedEvent = await Event.update(new_event, {
+    await Event.update(new_event, {
       where: { id: event_id },
     });
+    await Event.update(
+      {
+        name: new_event.name,
+        description: new_event.description,
+        duration: new_event.duration,
+      },
+      {
+        where: { parent_id: event_id },
+      }
+    );
+    return res.json({ success: true, event });
+  } catch (err) {
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
+const isRecurrenceChanging = (existing_event, new_event) => {
+  const old_rule = RRule.parseString(existing_event.recurrence_pattern);
+  const new_rule = RRule.parseString(new_event.recurrence_pattern);
+  if (old_rule.freq != new_rule.freq) {
+    return true;
+  }
+  if (old_rule.interval != new_rule.interval) {
+    return true;
+  }
+  if (old_rule.count != new_rule.count) {
+    return true;
+  }
+};
+
+router.put('/future', auth, async (req, res) => {
+  try {
+    await updateEventSchema.validateAsync(req.body, { abortEarly: false });
+    const { event_id, current_event_timestamp, event } = req.body;
+    const existing_event = await Event.findOne({ where: { id: event_id } });
+    if (!existing_event) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'event does not exist' });
+    }
+    if (!existing_event.recurrence_pattern) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'This is a one time event, call update endpoint for single event',
+      });
+    }
+    const rule = RRule.fromString(existing_event.recurrence_pattern);
+    const all_events = rule.all();
+    const exists = all_events.find(
+      (e) => current_event_timestamp == e.getTime()
+    );
+    if (!exists) {
+      return res.status(400).json({
+        success: false,
+        message: 'wrong "start_date"',
+      });
+    }
+    event.board_id = existing_event.board_id;
+    event.kid_id = existing_event.kid_id;
+    const new_event = generateEventModel(event);
+
+    if (
+      !isRecurrenceChanging(existing_event, new_event) &&
+      current_event_timestamp == event.start_date
+    ) {
+      new_event.parent_id = existing_event.id;
+      existing_event.end_date = new_event.start_date - 1;
+      const old_rule = RRule.parseString(existing_event.recurrence_pattern);
+      const changed_recurrence_pattern = new RRule({
+        dtstart: old_rule.dtstart,
+        freq: old_rule.freq,
+        interval: old_rule.interval,
+        count: null,
+        until: existing_event.end_date,
+      });
+      await Event.create(new_event);
+      await Event.update(
+        {
+          end_date: new_event.start_date - 1,
+          recurrence_pattern: changed_recurrence_pattern.toString(),
+        },
+        { where: { id: existing_event.id } }
+      );
+      await Event.update(
+        {
+          name: new_event.name,
+          description: new_event.description,
+          duration: new_event.duration,
+        },
+        {
+          where: {
+            parent_id: existing_event.id,
+            start_date: {
+              [Op.gte]: new_event.start_date,
+            },
+          },
+        }
+      );
+    } else {
+      new_event.parent_id = null;
+      existing_event.end_date = new_event.start_date - 1;
+      const old_rule = RRule.parseString(existing_event.recurrence_pattern);
+      const changed_recurrence_pattern = new RRule({
+        dtstart: old_rule.dtstart,
+        freq: old_rule.freq,
+        interval: old_rule.interval,
+        count: null,
+        until: existing_event.end_date,
+      });
+      await Event.create(new_event);
+      await Event.update(
+        {
+          end_date: new_event.start_date - 1,
+          recurrence_pattern: changed_recurrence_pattern.toString(),
+        },
+        { where: { id: existing_event.id } }
+      );
+      await Event.update(
+        {
+          parent_id: new_event.id,
+          name: new_event.name,
+          description: new_event.description,
+          duration: new_event.duration,
+          recurrence_pattern: new_event.recurrence_pattern,
+        },
+        {
+          where: {
+            parent_id: existing_event.id,
+            start_date: {
+              [Op.gte]: new_event.start_date,
+            },
+          },
+        }
+      );
+    }
     return res.json({ success: true, event });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });

@@ -4,8 +4,6 @@ const request = require('supertest');
 const agent = request.agent(app);
 const db = require('../models/index');
 
-const UPDATED = 'UPDATED';
-
 const user_id = '8a62996b-a001-46a7-8b9c-6fd848b1eaea';
 const board_id = '90fa1eb0-f38d-48de-889f-e7bf87a2eb0e';
 const event1_id = 'a1ea8426-d5cf-43c2-9b3b-9582fd9e2456';
@@ -16,19 +14,6 @@ const event1_third_recurrence = 1656860700000;
 const event2_start_date = 1656687900000;
 const event2_end_date = 1657033500000;
 const event2_third_recurrence = 1656860700000;
-
-let event1_data = {
-  board_id: board_id,
-  kid_id: kid_id,
-  name: 'Event 2',
-  description: 'Event 2 description',
-  start_date: event2_start_date,
-  end_date: event2_end_date,
-  duration: 60,
-  frequency: 'daily',
-  interval: null,
-  count: null,
-};
 
 let event2_data = {
   board_id: board_id,
@@ -139,18 +124,7 @@ describe('Test events', () => {
   it('Test creating an event', (done) => {
     agent
       .post('/event')
-      .send({
-        board_id: board_id,
-        kid_id: kid_id,
-        name: 'Event 2',
-        description: 'Event 2 description',
-        start_date: event2_start_date,
-        end_date: event2_end_date,
-        duration: 60,
-        frequency: 'daily',
-        interval: null,
-        count: null,
-      })
+      .send(event2_data)
       .expect(200)
       .end((err, res) => {
         if (err) {
@@ -175,14 +149,13 @@ describe('Test events', () => {
           throw err;
         }
         expect(res.body.success).toBe(true);
-        event2_data.name = UPDATED;
-        event2_data.description = UPDATED;
+
         agent
           .put('/event/all')
           .send({
             event_id: res.body.event.id,
-            start_date: event2_third_recurrence,
-            event: event2_data,
+            current_event_timestamp: event2_third_recurrence,
+            event: { ...event2_data, name: 'updated', description: 'updated' },
           })
           .expect(200)
           .end((err, res) => {
@@ -192,8 +165,8 @@ describe('Test events', () => {
             }
             expect(res.body.success).toBe(true);
             const { event } = res.body;
-            expect(event.name).toBe(UPDATED);
-            expect(event.description).toBe(UPDATED);
+            expect(event.name).toBe('updated');
+            expect(event.description).toBe('updated');
             done();
           });
       });
@@ -204,8 +177,19 @@ describe('Test events', () => {
       .put('/event/all')
       .send({
         event_id: event1_id,
-        start_date: event1_third_recurrence + 1,
-        event: event1_data,
+        current_event_timestamp: event1_third_recurrence + 1,
+        event: {
+          board_id,
+          kid_id,
+          name: 'updated',
+          description: 'updated',
+          start_date: event1_start_date,
+          end_date: event1_end_date,
+          duration: 60,
+          frequency: 'daily',
+          interval: null,
+          count: null,
+        },
       })
       .expect(400)
       .end((err, res) => {
@@ -216,6 +200,97 @@ describe('Test events', () => {
         expect(res.body.success).toBe(false);
         expect(res.body.message).toBe('wrong "start_date"');
         done();
+      });
+  });
+
+  const event3_start_date = 1656808200000;
+
+  const event3_data = {
+    kid_id: kid_id,
+    name: 'Event 3',
+    description: 'Event 3 description',
+    start_date: event3_start_date,
+    end_date: null,
+    duration: 60,
+    frequency: 'daily',
+    interval: null,
+    count: 10,
+  };
+
+  const test_board_data = {
+    name: 'test_board',
+    role: 'aunt',
+  };
+
+  it('Update all recurrences for future events', (done) => {
+    agent
+      .post('/board')
+      .send({
+        ...test_board_data,
+      })
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          console.log(res.body);
+          throw err;
+        }
+        expect(res.body.success).toBe(true);
+        event3_data.board_id = res.body.board.id;
+        agent
+          .post('/event')
+          .send(event3_data)
+          .expect(200)
+          .end((err, res) => {
+            if (err) {
+              console.log(res.body);
+              throw err;
+            }
+            expect(res.body.success).toBe(true);
+            agent
+              .put('/event/future')
+              .send({
+                event_id: res.body.event.id,
+                current_event_timestamp: event3_start_date + 3 * 86400000,
+                event: {
+                  ...event3_data,
+                  name: 'updated',
+                  start_date: event3_start_date + 3 * 86400000,
+                },
+              })
+              .expect(200)
+              .end((err, res) => {
+                if (err) {
+                  console.log(res.body);
+                  throw err;
+                }
+                expect(res.body.success).toBe(true);
+                agent
+                  .post('/board/events')
+                  .send({
+                    board_id: res.body.event.board_id,
+                    start_date: 1656808200000,
+                    end_date: 1656808200000 + 9 * 86400000,
+                  })
+                  .expect(200)
+                  .end((err, res) => {
+                    if (err) {
+                      console.log(res.body);
+                      throw err;
+                    }
+                    expect(res.body.success).toBe(true);
+                    expect(res.body.size).toBe(10);
+                    const old_names = res.body.events.filter(
+                      (e) => e.name == event3_data.name
+                    );
+                    const new_names = res.body.events.filter(
+                      (e) => e.name == 'updated'
+                    );
+                    expect(Object.keys(old_names).length).toBe(3);
+                    expect(Object.keys(new_names).length).toBe(7);
+                    done();
+                  });
+              });
+          });
       });
   });
 });

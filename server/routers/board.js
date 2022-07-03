@@ -14,7 +14,6 @@ const Event = require('../models/index').Event;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { RRule, RRuleSet, rrulestr } = require('rrule');
-const EventModel = require('../utils/classes/EventModel');
 
 const generateCode = async () => {
   const code = crypto.randomBytes(3).toString('hex');
@@ -43,7 +42,7 @@ router.post('/', auth, async (req, res) => {
       role,
     };
     await UserBoard.create(userBoardPayload);
-    return res.json({ success: true, ...createdBoard.dataValues });
+    return res.json({ success: true, board: { ...createdBoard.dataValues } });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }
@@ -191,32 +190,32 @@ router.post('/events', auth, async (req, res) => {
           true
         );
         for (let date of dates) {
-          events.push(
-            new EventModel(
-              e.board_id,
-              e.kid_id,
-              e.name,
-              e.description,
-              new Date(date).getTime(),
-              new Date(e.end_date).getTime(),
-              e.duration,
-              e.recurrence_pattern
-            )
-          );
+          events.push({
+            event_id: e.id,
+            parent_id: e.parent_id,
+            board_id: e.board_id,
+            kid_id: e.kid_id,
+            name: e.name,
+            description: e.description,
+            start_date: new Date(date).getTime(),
+            end_date: new Date(e.end_date).getTime(),
+            duration: e.duration,
+            recurrence_pattern: e.recurrence_pattern,
+          });
         }
       } else {
-        events.push(
-          new EventModel(
-            e.board_id,
-            e.kid_id,
-            e.name,
-            e.description,
-            new Date(e.start_date).getTime(),
-            new Date(e.end_date).getTime(),
-            e.duration,
-            e.recurrence_pattern
-          )
-        );
+        events.push({
+          event_id: e.id,
+          parent_id: e.parent_id,
+          board_id: e.board_id,
+          kid_id: e.kid_id,
+          name: e.name,
+          description: e.description,
+          start_date: new Date(e.start_date).getTime(),
+          end_date: new Date(e.end_date).getTime(),
+          duration: e.duration,
+          recurrence_pattern: e.recurrence_pattern,
+        });
       }
     }
     return res.json({

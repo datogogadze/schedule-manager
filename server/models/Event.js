@@ -1,5 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
-
 module.exports = function (sequelize, DataTypes) {
   const Event = sequelize.define(
     'Event',
@@ -8,6 +6,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
+      },
+      parent_id: {
+        type: DataTypes.UUID,
+        defaultValue: null,
       },
       board_id: {
         type: DataTypes.UUID,

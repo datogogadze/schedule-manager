@@ -109,7 +109,7 @@ describe('Test boards', () => {
           throw err;
         }
         expect(res.body.success).toBe(true);
-        expect(res.body.name).toBe('board');
+        expect(res.body.board.name).toBe('board');
         done();
       });
   });

@@ -8,6 +8,10 @@ module.exports = {
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
+      parent_id: {
+        type: Sequelize.UUID,
+        defaultValue: null,
+      },
       board_id: {
         type: Sequelize.UUID,
         allowNull: false,
