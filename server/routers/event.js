@@ -225,6 +225,86 @@ const isRecurrenceChanging = (existing_event, new_event) => {
   }
 };
 
+const whenRecurrenceChanging = async (
+  existing_event,
+  new_event,
+  current_event_timestamp
+) => {
+  const real_parent_id = existing_event.parent_id
+    ? existing_event.parent_id
+    : existing_event.id;
+  new_event.parent_id = null;
+  existing_event.end_date = current_event_timestamp - 1;
+  const old_rule = RRule.parseString(existing_event.recurrence_pattern);
+  const changed_recurrence_pattern = new RRule({
+    dtstart: old_rule.dtstart,
+    freq: old_rule.freq,
+    interval: old_rule.interval,
+    count: null,
+    until: existing_event.end_date,
+  });
+  if (existing_event.start_date > existing_event.end_date) {
+    await Event.destroy({ where: { id: existing_event.id } });
+  } else {
+    await Event.update(
+      {
+        end_date: new_event.start_date - 1,
+        recurrence_pattern: changed_recurrence_pattern.toString(),
+      },
+      { where: { id: existing_event.id } }
+    );
+  }
+  await Event.destroy({
+    where: {
+      parent_id: real_parent_id,
+      start_date: {
+        [Op.gte]: new_event.start_date,
+      },
+    },
+  });
+  return Event.create(new_event);
+};
+
+const whenRecurrenceNotChanging = async (
+  existing_event,
+  new_event,
+  current_event_timestamp
+) => {
+  const real_parent_id = existing_event.parent_id
+    ? existing_event.parent_id
+    : existing_event.id;
+  new_event.parent_id = real_parent_id;
+  existing_event.end_date = current_event_timestamp - 1;
+  const old_rule = RRule.parseString(existing_event.recurrence_pattern);
+  const changed_recurrence_pattern = new RRule({
+    dtstart: old_rule.dtstart,
+    freq: old_rule.freq,
+    interval: old_rule.interval,
+    count: null,
+    until: existing_event.end_date,
+  });
+  if (existing_event.start_date > existing_event.end_date) {
+    await Event.destroy({ where: { id: existing_event.id } });
+  } else {
+    await Event.update(
+      {
+        end_date: new_event.start_date - 1,
+        recurrence_pattern: changed_recurrence_pattern.toString(),
+      },
+      { where: { id: existing_event.id } }
+    );
+  }
+  await Event.destroy({
+    where: {
+      parent_id: real_parent_id,
+      start_date: {
+        [Op.gte]: new_event.start_date,
+      },
+    },
+  });
+  return Event.create(new_event);
+};
+
 router.put('/future', auth, async (req, res) => {
   try {
     await updateEventSchema.validateAsync(req.body, { abortEarly: false });
@@ -259,77 +339,51 @@ router.put('/future', auth, async (req, res) => {
       !isRecurrenceChanging(existing_event, new_event) &&
       current_event_timestamp == event.start_date
     ) {
-      console.log('\n\n\n11111111111111111111111111111', event.name);
-      new_event.parent_id = existing_event.id;
-      existing_event.end_date = new_event.start_date - 1;
-      const old_rule = RRule.parseString(existing_event.recurrence_pattern);
-      const changed_recurrence_pattern = new RRule({
-        dtstart: old_rule.dtstart,
-        freq: old_rule.freq,
-        interval: old_rule.interval,
-        count: null,
-        until: existing_event.end_date,
-      });
-      created = await Event.create(new_event);
-      await Event.update(
-        {
-          end_date: new_event.start_date - 1,
-          recurrence_pattern: changed_recurrence_pattern.toString(),
-        },
-        { where: { id: existing_event.id } }
-      );
-      await Event.update(
-        {
-          name: new_event.name,
-          description: new_event.description,
-          duration: new_event.duration,
-        },
-        {
-          where: {
-            parent_id: existing_event.id,
-            start_date: {
-              [Op.gte]: new_event.start_date,
-            },
-          },
-        }
+      created = await whenRecurrenceNotChanging(
+        existing_event,
+        new_event,
+        current_event_timestamp
       );
     } else {
-      console.log('\n\n\n22222222222222222222222', event.name);
-      new_event.parent_id = null;
-      existing_event.end_date = new_event.start_date - 1;
-      const old_rule = RRule.parseString(existing_event.recurrence_pattern);
-      const changed_recurrence_pattern = new RRule({
-        dtstart: old_rule.dtstart,
-        freq: old_rule.freq,
-        interval: old_rule.interval,
-        count: null,
-        until: existing_event.end_date,
+      created = await whenRecurrenceChanging(
+        existing_event,
+        new_event,
+        current_event_timestamp
+      );
+    }
+    return res.json({ success: true, event: { ...created.dataValues } });
+  } catch (err) {
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
+router.put('/single', auth, async (req, res) => {
+  try {
+    await updateEventSchema.validateAsync(req.body, { abortEarly: false });
+    const { event_id, current_event_timestamp, event } = req.body;
+    const existing_event = await Event.findOne({ where: { id: event_id } });
+    if (!existing_event) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'event does not exist' });
+    }
+    if (!existing_event.recurrence_pattern) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'This is a one time event, call update endpoint for single event',
       });
-      created = await Event.create(new_event);
-      await Event.update(
-        {
-          end_date: new_event.start_date - 1,
-          recurrence_pattern: changed_recurrence_pattern.toString(),
-        },
-        { where: { id: existing_event.id } }
-      );
-      await Event.update(
-        {
-          parent_id: new_event.id,
-          name: new_event.name,
-          description: new_event.description,
-          duration: new_event.duration,
-          recurrence_pattern: new_event.recurrence_pattern,
-        },
-        {
-          where: {
-            parent_id: existing_event.id,
-            start_date: {
-              [Op.gte]: new_event.start_date,
-            },
-          },
-        }
-      );
+    }
+    const rule = RRule.fromString(existing_event.recurrence_pattern);
+    const all_events = rule.all();
+    const exists = all_events.find(
+      (e) => current_event_timestamp == e.getTime()
+    );
+    if (!exists) {
+      return res.status(400).json({
+        success: false,
+        message: 'wrong "start_date"',
+      });
     }
 
     return res.json({ success: true, event: { ...created.dataValues } });

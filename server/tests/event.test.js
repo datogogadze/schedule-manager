@@ -229,7 +229,7 @@ describe('Test events', () => {
       .put('/event/future')
       .send({
         event_id: new_event_id,
-        current_event_timestamp: event3_start_date + 3 * 86400000,
+        current_event_timestamp: event3_start_date + 6 * 86400000,
         event: {
           ...event3_data,
           name: 'updated2',
@@ -255,10 +255,113 @@ describe('Test events', () => {
     const names2 = res.body.events.filter((e) => e.name == 'updated1');
     const names3 = res.body.events.filter((e) => e.name == 'updated2');
 
-    console.log({ events: res.body.events });
-
     expect(Object.keys(names1).length).toBe(3);
     expect(Object.keys(names2).length).toBe(3);
     expect(Object.keys(names3).length).toBe(4);
+  });
+
+  it('Update all recurrences for future events', async () => {
+    // create a board
+    let res = await agent
+      .post('/board')
+      .send({
+        ...test_board_data,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const { board } = res.body;
+    event3_data.board_id = board.id;
+
+    // create an event
+    res = await agent.post('/event').send(event3_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    // update all occurances starting from 4th
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: event3_start_date + 3 * 86400000,
+        event: {
+          ...event3_data,
+          name: 'updated1',
+          start_date: event3_start_date + 3 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const new_event_id = res.body.event.id;
+
+    // update one more time
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: new_event_id,
+        current_event_timestamp: event3_start_date + 3 * 86400000,
+        event: {
+          ...event3_data,
+          name: 'updated2',
+          start_date: event3_start_date + 6 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const new_event_id1 = res.body.event.id;
+
+    // check boards
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id: res.body.event.board_id,
+        start_date: 1656808200000,
+        end_date: 1656808200000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(7);
+    const names1 = res.body.events.filter((e) => e.name == event3_data.name);
+    const names2 = res.body.events.filter((e) => e.name == 'updated1');
+    const names3 = res.body.events.filter((e) => e.name == 'updated2');
+
+    expect(Object.keys(names1).length).toBe(3);
+    expect(Object.keys(names2).length).toBe(0);
+    expect(Object.keys(names3).length).toBe(4);
+
+    // update again
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: new_event_id1,
+        current_event_timestamp: event3_start_date + 6 * 86400000,
+        event: {
+          ...event3_data,
+          name: 'updated3',
+          start_date: event3_start_date + 4 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    // check boards
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id: res.body.event.board_id,
+        start_date: 1656808200000,
+        end_date: 1656808200000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(9);
+    const names11 = res.body.events.filter((e) => e.name == event3_data.name);
+    const names21 = res.body.events.filter((e) => e.name == 'updated1');
+    const names31 = res.body.events.filter((e) => e.name == 'updated3');
+
+    expect(Object.keys(names11).length).toBe(3);
+    expect(Object.keys(names21).length).toBe(0);
+    expect(Object.keys(names31).length).toBe(6);
   });
 });
