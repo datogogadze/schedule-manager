@@ -17,74 +17,70 @@ const event2_start_date = event1_start_date + 3600000;
 const event3_start_date = event2_start_date + 86400000;
 
 beforeAll(async () => {
-  try {
-    const user1 = await db.User.create({
-      id: user1_id,
+  const user1 = await db.User.create({
+    id: user1_id,
+    email: 'johndoe1@mail.com',
+    password_hash:
+      '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
+    display_name: 'John Doe',
+    first_name: 'John',
+    last_name: 'Doe',
+    email_verified: true,
+  });
+
+  const user2 = await db.User.create({
+    id: user2_id,
+    email: 'johndoe2@mail.com',
+    password_hash:
+      '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
+    display_name: 'John Doe',
+    first_name: 'John',
+    last_name: 'Doe',
+    email_verified: true,
+  });
+
+  const board = await db.Board.create({
+    id: board_id,
+    creator_id: user1.id,
+    name: 'board1',
+    code: 'board1',
+  });
+
+  await db.UserBoard.create({
+    user_id: user1.id,
+    board_id: board.id,
+    role: 'aunt',
+  });
+
+  const event = await db.Event.create({
+    id: event1_id,
+    board_id: board_id,
+    kid_id: user2_id,
+    name: 'Event 1',
+    description: 'Event 1 description',
+    start_date: event1_start_date,
+    end_date: event1_end_date,
+    duration: 60,
+    recurrence_pattern:
+      'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
+    // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
+  });
+
+  await agent1
+    .post('/auth/basic')
+    .send({
       email: 'johndoe1@mail.com',
-      password_hash:
-        '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
-      display_name: 'John Doe',
-      first_name: 'John',
-      last_name: 'Doe',
-      email_verified: true,
-    });
+      password: '12345678',
+    })
+    .expect(200);
 
-    const user2 = await db.User.create({
-      id: user2_id,
+  await agent2
+    .post('/auth/basic')
+    .send({
       email: 'johndoe2@mail.com',
-      password_hash:
-        '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
-      display_name: 'John Doe',
-      first_name: 'John',
-      last_name: 'Doe',
-      email_verified: true,
-    });
-
-    const board = await db.Board.create({
-      id: board_id,
-      creator_id: user1.id,
-      name: 'board1',
-      code: 'board1',
-    });
-
-    await db.UserBoard.create({
-      user_id: user1.id,
-      board_id: board.id,
-      role: 'aunt',
-    });
-
-    const event = await db.Event.create({
-      id: event1_id,
-      board_id: board_id,
-      kid_id: user2_id,
-      name: 'Event 1',
-      description: 'Event 1 description',
-      start_date: event1_start_date,
-      end_date: event1_end_date,
-      duration: 60,
-      recurrence_pattern:
-        'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
-      // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
-    });
-
-    await agent1
-      .post('/auth/basic')
-      .send({
-        email: 'johndoe1@mail.com',
-        password: '12345678',
-      })
-      .expect(200);
-
-    await agent2
-      .post('/auth/basic')
-      .send({
-        email: 'johndoe2@mail.com',
-        password: '12345678',
-      })
-      .expect(200);
-  } catch (err) {
-    console.log(err);
-  }
+      password: '12345678',
+    })
+    .expect(200);
 });
 
 afterAll(async () => {
@@ -95,167 +91,111 @@ afterAll(async () => {
 });
 
 describe('Test boards', () => {
-  it('Test creating board', (done) => {
-    agent1
+  it('Test creating board', async () => {
+    const res = await agent1
       .post('/board')
       .send({
         name: 'board',
         role: 'aunt',
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        expect(res.body.board.name).toBe('board');
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.board.name).toBe('board');
   });
 
-  it('Test adding user to board', (done) => {
-    agent2
+  it('Test adding user to board', async () => {
+    const res = await agent2
       .post('/board/add-user')
       .send({
         code: 'board1',
         role: 'aunt',
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        expect(res.body.user_id).toBe(user2_id);
-        expect(res.body.board_id).toBe(board_id);
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.user_id).toBe(user2_id);
+    expect(res.body.board_id).toBe(board_id);
   });
 
-  it('Try adding creator to board', (done) => {
-    agent1
+  it('Try adding creator to board', async () => {
+    const res = await agent1
       .post('/board/add-user')
       .send({
         code: 'board1',
         role: 'aunt',
       })
-      .expect(400)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe('User already on this board');
-        done();
-      });
+      .expect(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('User already on this board');
   });
 
-  it('Test getting users from board', (done) => {
-    agent1
+  it('Test getting users from board', async () => {
+    const res = await agent1
       .post('/board/users')
       .send({
         board_id,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        const { users } = res.body;
-        expect(users.length).toBe(2);
-        const u1 = users.find((u) => u.id == user1_id);
-        expect(u1.email).toBe('johndoe1@mail.com');
-        const u2 = users.find((u) => u.id == user2_id);
-        expect(u2.email).toBe('johndoe2@mail.com');
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const { users } = res.body;
+    expect(users.length).toBe(2);
+    const u1 = users.find((u) => u.id == user1_id);
+    expect(u1.email).toBe('johndoe1@mail.com');
+    const u2 = users.find((u) => u.id == user2_id);
+    expect(u2.email).toBe('johndoe2@mail.com');
   });
 
-  it('Test removing user from board', (done) => {
-    agent1
+  it('Test removing user from board', async () => {
+    const res = await agent1
       .post('/board/remove-user')
       .send({
         user_id: user2_id,
         board_id,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
   });
 
-  it('Test getting events from board', (done) => {
-    agent1
+  it('Test getting events from board', async () => {
+    const res = await agent1
       .post('/board/events')
       .send({
         board_id: board_id,
         start_date: event1_start_date,
         end_date: event1_end_date,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        expect(res.body.size).toBe(5);
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(5);
   });
 
-  it('Test getting events from board with increased start date', (done) => {
-    agent1
+  it('Test getting events from board with increased start date', async () => {
+    const res = await agent1
       .post('/board/events')
       .send({
         board_id: board_id,
         start_date: event1_start_date + 1,
         end_date: event1_end_date,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        expect(res.body.size).toBe(4);
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(4);
   });
 
-  it('Test getting events from board with increased start date and decreased end date', (done) => {
-    agent1
+  it('Test getting events from board with increased start date and decreased end date', async () => {
+    const res = await agent1
       .post('/board/events')
       .send({
         board_id: board_id,
         start_date: event1_start_date + 1,
         end_date: event1_end_date - 1,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        expect(res.body.size).toBe(3);
-        done();
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(3);
   });
 
-  it('Add non recurring event', (done) => {
-    agent1
+  it('Add non recurring event', async () => {
+    let res = await agent1
       .post('/event')
       .send({
         board_id: board_id,
@@ -269,35 +209,22 @@ describe('Test boards', () => {
         interval: null,
         count: null,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        agent1
-          .post('/board/events')
-          .send({
-            board_id: board_id,
-            start_date: event1_start_date,
-            end_date: event1_end_date,
-          })
-          .expect(200)
-          .end((err, res) => {
-            if (err) {
-              console.log(res.body);
-              throw err;
-            }
-            expect(res.body.success).toBe(true);
-            expect(res.body.size).toBe(6);
-            done();
-          });
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    res = await agent1
+      .post('/board/events')
+      .send({
+        board_id: board_id,
+        start_date: event1_start_date,
+        end_date: event1_end_date,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(6);
   });
 
-  it('Add one more recurring event', (done) => {
-    agent1
+  it('Add one more recurring event', async () => {
+    let res = await agent1
       .post('/event')
       .send({
         board_id: board_id,
@@ -311,30 +238,18 @@ describe('Test boards', () => {
         interval: null,
         count: 2,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        agent1
-          .post('/board/events')
-          .send({
-            board_id: board_id,
-            start_date: event1_start_date,
-            end_date: event1_end_date,
-          })
-          .expect(200)
-          .end((err, res) => {
-            if (err) {
-              console.log(res.body);
-              throw err;
-            }
-            expect(res.body.success).toBe(true);
-            expect(res.body.size).toBe(8);
-            done();
-          });
-      });
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    res = await agent1
+      .post('/board/events')
+      .send({
+        board_id: board_id,
+        start_date: event1_start_date,
+        end_date: event1_end_date,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(8);
   });
 });

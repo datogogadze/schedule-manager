@@ -28,73 +28,88 @@ let event2_data = {
   count: null,
 };
 
+const event3_start_date = 1656808200000;
+
+const event3_data = {
+  kid_id: kid_id,
+  name: 'Event 3',
+  description: 'Event 3 description',
+  start_date: event3_start_date,
+  end_date: null,
+  duration: 60,
+  frequency: 'daily',
+  interval: null,
+  count: 10,
+};
+
+const test_board_data = {
+  name: 'test_board',
+  role: 'aunt',
+};
+
 beforeAll(async () => {
-  try {
-    const user = await db.User.create({
-      id: user_id,
+  const user = await db.User.create({
+    id: user_id,
+    email: 'johndoe@mail.com',
+    password_hash:
+      '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
+    display_name: 'John Doe',
+    first_name: 'John',
+    last_name: 'Doe',
+    email_verified: true,
+  });
+
+  const kid = await db.User.create({
+    id: kid_id,
+    email: 'kid@mail.com',
+    password_hash:
+      '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
+    display_name: 'Kid Kid',
+    first_name: 'Kid',
+    last_name: 'Kid',
+    email_verified: true,
+  });
+
+  const board = await db.Board.create({
+    id: board_id,
+    creator_id: user_id,
+    name: 'board',
+    code: '123456',
+  });
+
+  await db.UserBoard.create({
+    user_id,
+    board_id,
+    role: 'aunt',
+  });
+
+  await db.UserBoard.create({
+    user_id: kid_id,
+    board_id,
+    role: 'kid',
+  });
+
+  const event = await db.Event.create({
+    id: event1_id,
+    board_id: board_id,
+    kid_id: kid_id,
+    name: 'Event 1',
+    description: 'Event 1 description',
+    start_date: event1_start_date,
+    end_date: event1_end_date,
+    duration: 60,
+    recurrence_pattern:
+      'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
+    // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
+  });
+
+  await agent
+    .post('/auth/basic')
+    .send({
       email: 'johndoe@mail.com',
-      password_hash:
-        '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
-      display_name: 'John Doe',
-      first_name: 'John',
-      last_name: 'Doe',
-      email_verified: true,
-    });
-
-    const kid = await db.User.create({
-      id: kid_id,
-      email: 'kid@mail.com',
-      password_hash:
-        '$2a$10$wYFASriZ8ylXwkyXGBTzmuWrCiz7fdKlg5bviHlM9hlQ7l8.Fu9ti',
-      display_name: 'Kid Kid',
-      first_name: 'Kid',
-      last_name: 'Kid',
-      email_verified: true,
-    });
-
-    const board = await db.Board.create({
-      id: board_id,
-      creator_id: user_id,
-      name: 'board',
-      code: '123456',
-    });
-
-    await db.UserBoard.create({
-      user_id,
-      board_id,
-      role: 'aunt',
-    });
-
-    await db.UserBoard.create({
-      user_id: kid_id,
-      board_id,
-      role: 'kid',
-    });
-
-    const event = await db.Event.create({
-      id: event1_id,
-      board_id: board_id,
-      kid_id: kid_id,
-      name: 'Event 1',
-      description: 'Event 1 description',
-      start_date: event1_start_date,
-      end_date: event1_end_date,
-      duration: 60,
-      recurrence_pattern:
-        'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
-      // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
-    });
-
-    await agent
-      .post('/auth/basic')
-      .send({
-        email: 'johndoe@mail.com',
-        password: '12345678',
-      })
-      .expect(200);
-  } catch (err) {
-    console.log(err);
-  }
+      password: '12345678',
+    })
+    .expect(200);
 });
 
 afterAll(async () => {
@@ -105,75 +120,39 @@ afterAll(async () => {
 });
 
 describe('Test events', () => {
-  it('Test getting event data', (done) => {
-    agent
-      .get(`/event/${event1_id}`)
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        const { event } = res.body;
-        expect(event.id).toBe(event1_id);
-        done();
-      });
+  it('Test getting event data', async () => {
+    const res = await agent.get(`/event/${event1_id}`).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+    expect(event.id).toBe(event1_id);
   });
 
-  it('Test creating an event', (done) => {
-    agent
-      .post('/event')
-      .send(event2_data)
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        const { event } = res.body;
-        expect(event.name).toBe('Event 2');
-        done();
-      });
+  it('Test creating an event', async () => {
+    const res = await agent.post('/event').send(event2_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+    expect(event.name).toBe('Event 2');
   });
 
-  it('Create recurring event and update all recurrences', (done) => {
-    agent
-      .post('/event')
-      .send(event2_data)
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-
-        agent
-          .put('/event/all')
-          .send({
-            event_id: res.body.event.id,
-            current_event_timestamp: event2_third_recurrence,
-            event: { ...event2_data, name: 'updated', description: 'updated' },
-          })
-          .expect(200)
-          .end((err, res) => {
-            if (err) {
-              console.log(res.body);
-              throw err;
-            }
-            expect(res.body.success).toBe(true);
-            const { event } = res.body;
-            expect(event.name).toBe('updated');
-            expect(event.description).toBe('updated');
-            done();
-          });
-      });
+  it('Create recurring event and update all recurrences', async () => {
+    let res = await agent.post('/event').send(event2_data).expect(200);
+    expect(res.body.success).toBe(true);
+    res = await agent
+      .put('/event/all')
+      .send({
+        event_id: res.body.event.id,
+        current_event_timestamp: event2_third_recurrence,
+        event: { ...event2_data, name: 'updated', description: 'updated' },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+    expect(event.name).toBe('updated');
+    expect(event.description).toBe('updated');
   });
 
-  it('Update all recurrences with wrong date', (done) => {
-    agent
+  it('Update all recurrences with wrong date', async () => {
+    const res = await agent
       .put('/event/all')
       .send({
         event_id: event1_id,
@@ -191,106 +170,95 @@ describe('Test events', () => {
           count: null,
         },
       })
-      .expect(400)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe('wrong "start_date"');
-        done();
-      });
+      .expect(400);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('wrong "start_date"');
   });
 
-  const event3_start_date = 1656808200000;
-
-  const event3_data = {
-    kid_id: kid_id,
-    name: 'Event 3',
-    description: 'Event 3 description',
-    start_date: event3_start_date,
-    end_date: null,
-    duration: 60,
-    frequency: 'daily',
-    interval: null,
-    count: 10,
-  };
-
-  const test_board_data = {
-    name: 'test_board',
-    role: 'aunt',
-  };
-
-  it('Update all recurrences for future events', (done) => {
-    agent
+  it('Update all recurrences for future events', async () => {
+    // create a board
+    let res = await agent
       .post('/board')
       .send({
         ...test_board_data,
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        event3_data.board_id = res.body.board.id;
-        agent
-          .post('/event')
-          .send(event3_data)
-          .expect(200)
-          .end((err, res) => {
-            if (err) {
-              console.log(res.body);
-              throw err;
-            }
-            expect(res.body.success).toBe(true);
-            agent
-              .put('/event/future')
-              .send({
-                event_id: res.body.event.id,
-                current_event_timestamp: event3_start_date + 3 * 86400000,
-                event: {
-                  ...event3_data,
-                  name: 'updated',
-                  start_date: event3_start_date + 3 * 86400000,
-                },
-              })
-              .expect(200)
-              .end((err, res) => {
-                if (err) {
-                  console.log(res.body);
-                  throw err;
-                }
-                expect(res.body.success).toBe(true);
-                agent
-                  .post('/board/events')
-                  .send({
-                    board_id: res.body.event.board_id,
-                    start_date: 1656808200000,
-                    end_date: 1656808200000 + 9 * 86400000,
-                  })
-                  .expect(200)
-                  .end((err, res) => {
-                    if (err) {
-                      console.log(res.body);
-                      throw err;
-                    }
-                    expect(res.body.success).toBe(true);
-                    expect(res.body.size).toBe(10);
-                    const old_names = res.body.events.filter(
-                      (e) => e.name == event3_data.name
-                    );
-                    const new_names = res.body.events.filter(
-                      (e) => e.name == 'updated'
-                    );
-                    expect(Object.keys(old_names).length).toBe(3);
-                    expect(Object.keys(new_names).length).toBe(7);
-                    done();
-                  });
-              });
-          });
-      });
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const { board } = res.body;
+    event3_data.board_id = board.id;
+
+    // create an event
+    res = await agent.post('/event').send(event3_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    // update all occurances starting from 4th
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: event3_start_date + 3 * 86400000,
+        event: {
+          ...event3_data,
+          name: 'updated1',
+          start_date: event3_start_date + 3 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const new_event_id = res.body.event.id;
+
+    // check board events
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id: res.body.event.board_id,
+        start_date: 1656808200000,
+        end_date: 1656808200000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(10);
+    const old_names = res.body.events.filter((e) => e.name == event3_data.name);
+    const new_names = res.body.events.filter((e) => e.name == 'updated1');
+    expect(Object.keys(old_names).length).toBe(3);
+    expect(Object.keys(new_names).length).toBe(7);
+
+    // update one more time
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: new_event_id,
+        current_event_timestamp: event3_start_date + 3 * 86400000,
+        event: {
+          ...event3_data,
+          name: 'updated2',
+          start_date: event3_start_date + 6 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    // check boards one more time
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id: res.body.event.board_id,
+        start_date: 1656808200000,
+        end_date: 1656808200000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(10);
+    const names1 = res.body.events.filter((e) => e.name == event3_data.name);
+    const names2 = res.body.events.filter((e) => e.name == 'updated1');
+    const names3 = res.body.events.filter((e) => e.name == 'updated2');
+
+    console.log({ events: res.body.events });
+
+    expect(Object.keys(names1).length).toBe(3);
+    expect(Object.keys(names2).length).toBe(3);
+    expect(Object.keys(names3).length).toBe(4);
   });
 });

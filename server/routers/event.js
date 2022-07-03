@@ -253,14 +253,13 @@ router.put('/future', auth, async (req, res) => {
         message: 'wrong "start_date"',
       });
     }
-    event.board_id = existing_event.board_id;
-    event.kid_id = existing_event.kid_id;
     const new_event = generateEventModel(event);
-
+    let created;
     if (
       !isRecurrenceChanging(existing_event, new_event) &&
       current_event_timestamp == event.start_date
     ) {
+      console.log('\n\n\n11111111111111111111111111111', event.name);
       new_event.parent_id = existing_event.id;
       existing_event.end_date = new_event.start_date - 1;
       const old_rule = RRule.parseString(existing_event.recurrence_pattern);
@@ -271,7 +270,7 @@ router.put('/future', auth, async (req, res) => {
         count: null,
         until: existing_event.end_date,
       });
-      await Event.create(new_event);
+      created = await Event.create(new_event);
       await Event.update(
         {
           end_date: new_event.start_date - 1,
@@ -295,6 +294,7 @@ router.put('/future', auth, async (req, res) => {
         }
       );
     } else {
+      console.log('\n\n\n22222222222222222222222', event.name);
       new_event.parent_id = null;
       existing_event.end_date = new_event.start_date - 1;
       const old_rule = RRule.parseString(existing_event.recurrence_pattern);
@@ -305,7 +305,7 @@ router.put('/future', auth, async (req, res) => {
         count: null,
         until: existing_event.end_date,
       });
-      await Event.create(new_event);
+      created = await Event.create(new_event);
       await Event.update(
         {
           end_date: new_event.start_date - 1,
@@ -331,7 +331,8 @@ router.put('/future', auth, async (req, res) => {
         }
       );
     }
-    return res.json({ success: true, event });
+
+    return res.json({ success: true, event: { ...created.dataValues } });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }

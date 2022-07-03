@@ -7,16 +7,12 @@ const db = require('../models/index');
 beforeAll(async () => {});
 
 afterAll(async () => {
-  try {
-    await db.User.destroy({ where: {} });
-  } catch (err) {
-    console.log(err);
-  }
+  await db.User.destroy({ where: {} });
 });
 
 describe('Test auth', () => {
-  it('Test register', (done) => {
-    agent
+  it('Test register', async () => {
+    const res = await agent
       .post('/auth/register')
       .send({
         email: 'johndoe@mail.com',
@@ -25,92 +21,46 @@ describe('Test auth', () => {
         password: '12345678',
         passwordConfirmation: '12345678',
       })
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        const { user } = res.body;
-        expect(res.body.success).toBe(true);
-        expect(user.email).toBe('johndoe@mail.com');
-        done();
-      });
+      .expect(200);
+    const { user } = res.body;
+    expect(res.body.success).toBe(true);
+    expect(user.email).toBe('johndoe@mail.com');
   });
 
-  it('Test login', (done) => {
-    db.User.update(
+  it('Test login', async () => {
+    await db.User.update(
       { email_verified: true },
       { where: { email: 'johndoe@mail.com' } }
-    )
-      .then(() => {
-        agent
-          .post('/auth/basic')
-          .send({
-            email: 'johndoe@mail.com',
-            password: '12345678',
-          })
-          .expect(200)
-          .end((err, res) => {
-            if (err) {
-              console.log(res.body);
-              throw err;
-            }
-            const { user } = res.body;
-            expect(res.body.success).toBe(true);
-            expect(user.email).toBe('johndoe@mail.com');
-            done();
-          });
+    );
+    const res = await agent
+      .post('/auth/basic')
+      .send({
+        email: 'johndoe@mail.com',
+        password: '12345678',
       })
-      .catch((err) => {
-        throw err;
-      });
+      .expect(200);
+    const { user } = res.body;
+    expect(res.body.success).toBe(true);
+    expect(user.email).toBe('johndoe@mail.com');
   });
 
-  it('Test me', (done) => {
-    agent
-      .get('/user/me')
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        const { user } = res.body;
-        expect(res.body.success).toBe(true);
-        expect(user.email).toBe('johndoe@mail.com');
-        done();
-      });
+  it('Test me', async () => {
+    const res = await agent.get('/user/me').expect(200);
+    const { user } = res.body;
+    expect(res.body.success).toBe(true);
+    expect(user.email).toBe('johndoe@mail.com');
   });
 
-  it('Test logout', (done) => {
-    agent
-      .get('/auth/logout')
-      .expect(200)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        expect(res.body.success).toBe(true);
-        expect(res.body.message).toBe('logged out');
-        done();
-      });
+  it('Test logout', async () => {
+    const res = await agent.get('/auth/logout').expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.message).toBe('logged out');
   });
 
-  it('Test me after logout', (done) => {
-    agent
-      .get('/user/me')
-      .expect(401)
-      .end((err, res) => {
-        if (err) {
-          console.log(res.body);
-          throw err;
-        }
-        const { user } = res.body;
-        expect(res.body.success).toBe(false);
-        expect(res.body.message).toBe('unauthenticated');
-        done();
-      });
+  it('Test me after logout', async () => {
+    const res = await agent.get('/user/me').expect(401);
+    const { user } = res.body;
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('unauthenticated');
   });
 });
