@@ -5,9 +5,10 @@ const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
 const User = require('../models/index').User;
 const Event = require('../models/index').Event;
+const Exclusion = require('../models/index').Exclusion;
 const { RRule, RRuleSet, rrulestr } = require('rrule');
 const { Recurrence } = require('../utils/enums/enums');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 const generateRule = (dtstart, freq, interval, count, until) => {
   if (!interval) {
@@ -85,11 +86,11 @@ const generateEventModel = (eventData) => {
   let recurrence_pattern = null;
   if (!frequency) {
     if (count != null || end_date != null) {
-      return res.status(400).json({
-        success: false,
+      return {
+        error: true,
         message:
           'if there is no frequency, "count" and "end_date" are not supported',
-      });
+      };
     }
     const start_midnight = getMidnight(start_date);
     const ms = start_date - start_midnight + duration * 60000;
@@ -156,6 +157,12 @@ router.post('/', auth, async (req, res) => {
         .json({ success: false, message: "kid_id doesn't exist" });
     }
     const event = generateEventModel(req.body);
+    if (event.error) {
+      return res.status(400).json({
+        success: false,
+        message: event.message,
+      });
+    }
     const createdEvent = await Event.create(event);
     return res.json({ success: true, event: { ...createdEvent.dataValues } });
   } catch (err) {
@@ -181,30 +188,36 @@ router.put('/all', auth, async (req, res) => {
       });
     }
     const rule = RRule.fromString(existing_event.recurrence_pattern);
-    const all_events = rule.all();
-    const exists = all_events.find(
-      (e) => current_event_timestamp == e.getTime()
-    );
+    const before = rule.before(new Date(current_event_timestamp), true);
+    const exists = before.getTime() == current_event_timestamp;
     if (!exists) {
       return res.status(400).json({
         success: false,
-        message: 'wrong "start_date"',
+        message: 'wrong "current_event_timestamp"',
+      });
+    }
+    if (getMidnight(current_event_timestamp) != getMidnight(event.start_date)) {
+      return res.status(400).json({
+        success: false,
+        message: 'When changing day, use update single or future events',
       });
     }
     const new_event = generateEventModel(event);
+    if (event.error) {
+      return res.status(400).json({
+        success: false,
+        message: event.message,
+      });
+    }
     await Event.update(new_event, {
       where: { id: event_id },
     });
-    await Event.update(
-      {
-        name: new_event.name,
-        description: new_event.description,
-        duration: new_event.duration,
-      },
-      {
-        where: { parent_id: event_id },
-      }
-    );
+    await Event.destroy({
+      where: { parent_id: event_id },
+    });
+    await Exclusion.destroy({
+      where: { event_id },
+    });
     return res.json({ success: true, event });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
@@ -262,6 +275,14 @@ const whenRecurrenceChanging = async (
       },
     },
   });
+  await Exclusion.destroy({
+    where: {
+      event_id: existing_event.id,
+      start_date: {
+        [Op.gte]: new_event.start_date,
+      },
+    },
+  });
   return Event.create(new_event);
 };
 
@@ -302,6 +323,23 @@ const whenRecurrenceNotChanging = async (
       },
     },
   });
+
+  const exclusion_data = {
+    ...new_event,
+    exclusion_timestamp: current_event_timestamp,
+    event_id: real_parent_id,
+    end_date: new_event.start_date + new_event.duration * 60000,
+  };
+  delete exclusion_data.parent_id;
+  delete exclusion_data.recurrence_pattern;
+  await Exclusion.update(exclusion_data, {
+    where: {
+      event_id: real_parent_id,
+      start_date: {
+        [Op.gte]: new_event.start_date,
+      },
+    },
+  });
   return Event.create(new_event);
 };
 
@@ -323,17 +361,21 @@ router.put('/future', auth, async (req, res) => {
       });
     }
     const rule = RRule.fromString(existing_event.recurrence_pattern);
-    const all_events = rule.all();
-    const exists = all_events.find(
-      (e) => current_event_timestamp == e.getTime()
-    );
+    const before = rule.before(new Date(current_event_timestamp), true);
+    const exists = before.getTime() == current_event_timestamp;
     if (!exists) {
       return res.status(400).json({
         success: false,
-        message: 'wrong "start_date"',
+        message: 'wrong "current_event_timestamp"',
       });
     }
     const new_event = generateEventModel(event);
+    if (event.error) {
+      return res.status(400).json({
+        success: false,
+        message: event.message,
+      });
+    }
     let created;
     if (
       !isRecurrenceChanging(existing_event, new_event) &&
@@ -362,31 +404,69 @@ router.put('/single', auth, async (req, res) => {
     await updateEventSchema.validateAsync(req.body, { abortEarly: false });
     const { event_id, current_event_timestamp, event } = req.body;
     const existing_event = await Event.findOne({ where: { id: event_id } });
+
     if (!existing_event) {
       return res
         .status(400)
         .json({ success: false, message: 'event does not exist' });
     }
-    if (!existing_event.recurrence_pattern) {
+    const new_event = generateEventModel(event);
+    if (event.error) {
       return res.status(400).json({
         success: false,
-        message:
-          'This is a one time event, call update endpoint for single event',
-      });
-    }
-    const rule = RRule.fromString(existing_event.recurrence_pattern);
-    const all_events = rule.all();
-    const exists = all_events.find(
-      (e) => current_event_timestamp == e.getTime()
-    );
-    if (!exists) {
-      return res.status(400).json({
-        success: false,
-        message: 'wrong "start_date"',
+        message: event.message,
       });
     }
 
-    return res.json({ success: true, event: { ...created.dataValues } });
+    if (!existing_event.recurrence_pattern) {
+      await Event.update(new_event, { where: { id: event_id } });
+      return res.json({ success: true, event: { ...new_event } });
+    } else {
+      if (isRecurrenceChanging(existing_event, new_event)) {
+        const rule = RRule.fromString(existing_event.recurrence_pattern);
+        const before = rule.before(new Date(current_event_timestamp), true);
+        const exists = before.getTime() == current_event_timestamp;
+        if (!exists) {
+          return res.status(400).json({
+            success: false,
+            message: 'wrong "current_event_timestamp"',
+          });
+        }
+        return res.status(400).json({
+          success: false,
+          message:
+            'you can only change recurrence only for all or future events',
+        });
+      } else {
+        const exclusion_data = {
+          ...new_event,
+          exclusion_timestamp: current_event_timestamp,
+          event_id,
+          end_date: new_event.start_date + new_event.duration * 60000,
+        };
+        delete exclusion_data.parent_id;
+        delete exclusion_data.recurrence_pattern;
+        const existing_exclusion = await Exclusion.findOne({
+          where: { event_id, exclusion_timestamp: current_event_timestamp },
+        });
+        if (existing_exclusion) {
+          await Exclusion.update(exclusion_data, {
+            where: { event_id, exclusion_timestamp: current_event_timestamp },
+          });
+        } else {
+          await Exclusion.create(exclusion_data);
+        }
+        return res.json({
+          success: true,
+          event: {
+            ...new_event,
+            recurrence_pattern: null,
+            parent_id: null,
+            id: event_id,
+          },
+        });
+      }
+    }
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }

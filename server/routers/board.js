@@ -11,6 +11,7 @@ const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
 const User = require('../models/index').User;
 const Event = require('../models/index').Event;
+const Exclusion = require('../models/index').Exclusion;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { RRule, RRuleSet, rrulestr } = require('rrule');
@@ -182,6 +183,10 @@ router.post('/events', auth, async (req, res) => {
     let events = [];
     const original_events = eventsList.map((event) => event.dataValues);
     for (let e of original_events) {
+      const exclusions = await Exclusion.findAll({
+        where: { event_id: e.id },
+      });
+      const exclusion_list = exclusions.map((e) => e.dataValues);
       if (e.recurrence_pattern) {
         const rule = RRule.fromString(e.recurrence_pattern);
         const dates = rule.between(
@@ -190,18 +195,38 @@ router.post('/events', auth, async (req, res) => {
           true
         );
         for (let date of dates) {
-          events.push({
-            event_id: e.id,
-            parent_id: e.parent_id,
-            board_id: e.board_id,
-            kid_id: e.kid_id,
-            name: e.name,
-            description: e.description,
-            start_date: new Date(date).getTime(),
-            end_date: new Date(e.end_date).getTime(),
-            duration: e.duration,
-            recurrence_pattern: e.recurrence_pattern,
-          });
+          const exclusion = exclusion_list.find(
+            (e) => e.exclusion_timestamp.getTime() == date.getTime()
+          );
+          if (exclusion) {
+            events.push({
+              event_id: e.id,
+              parent_id: e.parent_id,
+              board_id: e.board_id,
+              kid_id: exclusion.kid_id,
+              name: exclusion.name,
+              description: exclusion.description,
+              current_event_timestamp: new Date(date).getTime(),
+              start_date: new Date(exclusion.start_date).getTime(),
+              end_date: new Date(exclusion.end_date).getTime(),
+              duration: exclusion.duration,
+              recurrence_pattern: e.recurrence_pattern,
+            });
+          } else {
+            events.push({
+              event_id: e.id,
+              parent_id: e.parent_id,
+              board_id: e.board_id,
+              kid_id: e.kid_id,
+              name: e.name,
+              description: e.description,
+              current_event_timestamp: new Date(date).getTime(),
+              start_date: new Date(date).getTime(),
+              end_date: new Date(e.end_date).getTime(),
+              duration: e.duration,
+              recurrence_pattern: e.recurrence_pattern,
+            });
+          }
         }
       } else {
         events.push({

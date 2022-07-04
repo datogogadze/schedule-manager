@@ -142,7 +142,12 @@ describe('Test events', () => {
       .send({
         event_id: res.body.event.id,
         current_event_timestamp: event2_third_recurrence,
-        event: { ...event2_data, name: 'updated', description: 'updated' },
+        event: {
+          ...event2_data,
+          start_date: event2_third_recurrence,
+          name: 'updated',
+          description: 'updated',
+        },
       })
       .expect(200);
     expect(res.body.success).toBe(true);
@@ -172,7 +177,7 @@ describe('Test events', () => {
       })
       .expect(400);
     expect(res.body.success).toBe(false);
-    expect(res.body.message).toBe('wrong "start_date"');
+    expect(res.body.message).toBe('wrong "current_event_timestamp"');
   });
 
   it('Update all recurrences for future events', async () => {
@@ -363,5 +368,142 @@ describe('Test events', () => {
     expect(Object.keys(names11).length).toBe(3);
     expect(Object.keys(names21).length).toBe(0);
     expect(Object.keys(names31).length).toBe(6);
+  });
+
+  it('Test update single', async () => {
+    let res = await agent
+      .post('/board')
+      .send({ name: 'single', role: ' aunt' })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const board_id = res.body.board.id;
+    const event_data = {
+      board_id,
+      kid_id,
+      name: 'STARTING VALUE',
+      description: 'STARTING VALUE',
+      start_date: 1656902700000,
+      end_date: null,
+      duration: 60,
+      frequency: 'daily',
+      interval: null,
+      count: 10,
+    };
+
+    res = await agent.post('/event').send(event_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    res = await agent
+      .put('/event/single')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1656902700000 + 3 * 86400000,
+        event: {
+          ...event_data,
+          name: 'FIRST UPDATE',
+          start_date: 1656902700000 + 3 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .put('/event/single')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1656902700000 + 5 * 86400000,
+        event: {
+          ...event_data,
+          name: 'SECOND UPDATE',
+          start_date: 1656902700000 + 5 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .put('/event/single')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1656902700000 + 7 * 86400000,
+        event: {
+          ...event_data,
+          name: 'THIRD UPDATE',
+          start_date: 1656902700000 + 7 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1656902700000,
+        end_date: 1656902700000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(10);
+
+    const names1 = res.body.events.filter((e) => e.name == 'STARTING VALUE');
+    const names2 = res.body.events.filter((e) => e.name == 'FIRST UPDATE');
+    const names3 = res.body.events.filter((e) => e.name == 'SECOND UPDATE');
+    const names4 = res.body.events.filter((e) => e.name == 'THIRD UPDATE');
+
+    expect(Object.keys(names1).length).toBe(7);
+    expect(Object.keys(names2).length).toBe(1);
+    expect(Object.keys(names3).length).toBe(1);
+    expect(Object.keys(names4).length).toBe(1);
+
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1656902700000 + 5 * 86400000,
+        event: {
+          ...event_data,
+          name: 'FOURTH UPDATE',
+          start_date: 1656902700000 + 5 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1656902700000,
+        end_date: 1656902700000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(10);
+
+    const names11 = res.body.events.filter((e) => e.name == 'STARTING VALUE');
+    const names21 = res.body.events.filter((e) => e.name == 'FIRST UPDATE');
+    const names31 = res.body.events.filter((e) => e.name == 'FOURTH UPDATE');
+
+    expect(Object.keys(names11).length).toBe(4);
+    expect(Object.keys(names21).length).toBe(1);
+    expect(Object.keys(names31).length).toBe(5);
+
+    res = await agent
+      .put('/event/all')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1656902700000 + 4 * 86400000,
+        event: {
+          ...event_data,
+          name: 'LAST UPDATE',
+          start_date: 1656902700000 + 4 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
   });
 });
