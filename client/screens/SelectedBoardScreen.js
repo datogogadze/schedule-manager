@@ -1,43 +1,33 @@
-import { Card, ListItem, Text } from '@ui-kitten/components';
+import { Card, ListItem, Text, Calendar, Icon, Button, Modal } from '@ui-kitten/components';
+import { MomentDateService } from '@ui-kitten/moment';
 import React, { useEffect } from 'react';
+import moment from 'moment';
+import 'react-native-get-random-values';
+import { v4 } from 'uuid';
 import {
   View,
   StyleSheet,
   FlatList,
-  SafeAreaView,
+  SafeAreaView
 } from 'react-native';
 
 import Toast from 'react-native-toast-message';
 import Header from '../components/Header';
+import { getEvents } from '../utils/api-calls';
 
+const dateService = new MomentDateService();
 
 const SelectedBoardScreen = ({ navigation, route }) => {
-  const { boardName } = route.params;
+  const { boardId } = route.params;
 
-  const [events, setEvents] = React.useState([
-    { id: 0, name: 'June 10', header: true },
-    { id: 1, name: 'Go to school', hourFrom: '9:00 AM', hourTo: '2:00 PM', header: false },
-    { id: 2, name: 'Go to basketball', hourFrom: '4:00 PM', hourTo: '5:00 PM', header: false },
-    { id: 3, name: 'Go out with friends', hourFrom: '7:00 PM', hourTo: '8:00 PM', header: false },
-    { id: 4, name: 'June 11', header: true },
-    { id: 5, name: 'Go to school', hourFrom: '9:00 AM', hourTo: '2:00 PM', header: false },
-    { id: 6, name: 'Go to football', hourFrom: '4:00 PM', hourTo: '5:00 PM', header: false },
-    { id: 7, name: 'Go to music lessons', hourFrom: '7:00 PM', hourTo: '8:00 PM', header: false },
-    { id: 8, name: 'June 12', header: true },
-    { id: 9, name: 'Go to school', hourFrom: '9:00 AM', hourTo: '2:00 PM', header: false },
-    { id: 10, name: 'Go to football', hourFrom: '4:00 PM', hourTo: '5:00 PM', header: false },
-    { id: 11, name: 'Go to music lessons', hourFrom: '7:00 PM', hourTo: '8:00 PM', header: false },
-    { id: 12, name: 'June 13', header: true },
-    { id: 13, name: 'Go to school', hourFrom: '9:00 AM', hourTo: '2:00 PM', header: false },
-    { id: 14, name: 'Go to football', hourFrom: '4:00 PM', hourTo: '5:00 PM', header: false },
-    { id: 15, name: 'Go to music lessons', hourFrom: '7:00 PM', hourTo: '8:00 PM', header: false },
-    { id: 16, name: 'June 14', header: true },
-    { id: 17, name: 'Go to school', hourFrom: '9:00 AM', hourTo: '2:00 PM', header: false },
-    { id: 18, name: 'Go to football', hourFrom: '4:00 PM', hourTo: '5:00 PM', header: false },
-    { id: 19, name: 'Go to music lessons', hourFrom: '7:00 PM', hourTo: '8:00 PM', header: false },
-  ]);
+  const [eventsCalendar, setEventsCalendar] = React.useState([]);
 
   const [stickyHeaderIndices, setStickyHeaderIndices] = React.useState([]);
+
+  const [startDate, setStartDate] = React.useState(moment().valueOf());
+  const [endDate, setEndDate] = React.useState(moment().add(3, 'weeks').valueOf());
+
+  const [calendarVisible, setCalendarVisible] = React.useState(false);
 
   const renderItem = ({ item }) => {
     if (item.header) {
@@ -65,27 +55,107 @@ const SelectedBoardScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     const arr = [];
-    events.map(obj => {
+    eventsCalendar.map(obj => {
       if (obj.header) {
-        arr.push(events.indexOf(obj));
+        arr.push(eventsCalendar.indexOf(obj));
       }
     });
     setStickyHeaderIndices(arr);
-  }, []);
+  }, [eventsCalendar]);
+
+  useEffect(() => {
+    getEvents(boardId, startDate, endDate).then((res) => {
+      const { events } = res.data;
+      const eventsGroup = {};
+
+      const a = moment(startDate);
+      const b = moment(endDate);
+
+
+      for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
+        eventsGroup[m.format('MMMM DD')] = [];
+      }
+
+      console.log(eventsGroup);
+
+      events.forEach(event => {
+        const day = moment(event.startDate).format('MMMM DD');
+        if (day in eventsGroup) {
+          eventsGroup[day] = [...eventsGroup[day], event];
+        } else {
+          eventsGroup[day] = [];
+        }
+      });
+      
+      let newEventsCalendar = [];
+      console.log(eventsGroup);
+
+      for(const key in eventsGroup) {
+        console.log('yay');
+        const calendarHeader = {
+          id: v4(),
+          name: key,
+          header: true
+        };
+        console.log('yay');
+
+        const eventsForDay = eventsGroup[key];
+        const calendarItems = eventsForDay.map(event => ({
+          id: event.id,
+          name: event.name,
+          hourFrom: moment(event.startDate).format('hh:mm A'),
+          hourTo: moment(event.startDate).add(event.duration, 'milliseconds').format('hh:mm A'),
+          header: false,
+        }));
+        console.log(calendarHeader);
+        newEventsCalendar = [...newEventsCalendar, calendarHeader, ...calendarItems];
+      }
+
+      console.log(newEventsCalendar);
+
+      setEventsCalendar(newEventsCalendar);
+
+
+    }).catch(e => {
+      console.log(e);
+    });
+  }, [startDate, endDate]);
 
 
   return (
     <SafeAreaView>
       <View style={styles.container}>
-        <Header navigation={navigation} text={boardName} showMenu backButton/>
+        <Header navigation={navigation} text={'TEST'} showMenu backButton/>
 
         <FlatList
           style={styles.eventList}
-          data={events}
+          data={eventsCalendar}
           renderItem={renderItem}
           keyExtractor={item => item.id}
           stickyHeaderIndices={stickyHeaderIndices}
         />
+        {/* <View> */}
+        <Button  size='large' style={styles.calendarButton} accessoryLeft={<Icon style={styles.calendarIconStyle} name='calendar-outline' fill="white" />} onPress={() => setCalendarVisible(!calendarVisible)}>
+          Calendar
+        </Button>
+        {/* </View> */}
+        <Modal
+          visible={calendarVisible}
+          backdropStyle={styles.backdrop}
+        >
+          <Calendar
+            style={{
+              backgroundColor: 'white'
+            }}
+            dateService={dateService}
+            date={moment(startDate)}
+            onSelect={nextDate => {
+              setStartDate(nextDate.valueOf());
+              setEndDate(nextDate.add(3, 'weeks').valueOf());
+              setCalendarVisible(false);
+            }}
+          />
+        </Modal>
         <Toast/>
       </View>
     </SafeAreaView>
@@ -106,6 +176,12 @@ const styles = StyleSheet.create({
   eventCardFooter: {
     fontSize: 10,
     padding: 7
+  },
+  backdrop: {
+    backgroundColor: '#F5FCFF88',
+  },
+  calendarButton: {
+    width: 200,
   }
 });
 

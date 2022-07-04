@@ -74,7 +74,7 @@ const BoardsScreen = ({ navigation }) => {
               style={styles.board}
               key={board.id}
               onPress={() => navigation.navigate('SelectedBoard', {
-                boardName: board.name,
+                boardId: board.id,
               })}
             >
               <Text category='h6'>
