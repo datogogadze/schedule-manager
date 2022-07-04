@@ -2,13 +2,13 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('events', {
+    await queryInterface.createTable('exclusions', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      parent_id: {
+      event_id: {
         type: Sequelize.UUID,
         defaultValue: null,
       },
@@ -28,6 +28,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      exclusion_timestamp: {
+        type: Sequelize.DATE,
+        allowNull: false,
+      },
       start_date: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -40,8 +44,10 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
-      recurrence_pattern: {
-        type: Sequelize.STRING,
+      deleted: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
       },
       created_at: {
         type: Sequelize.DATE,
@@ -51,10 +57,10 @@ module.exports = {
       },
     });
 
-    await queryInterface.addConstraint('events', {
+    await queryInterface.addConstraint('exclusions', {
       fields: ['kid_id'],
       type: 'foreign key',
-      name: 'fk_events_users_id',
+      name: 'fk_exclusions_users_id',
       references: {
         table: 'users',
         field: 'id',
@@ -63,10 +69,10 @@ module.exports = {
       onUpdate: 'cascade',
     });
 
-    await queryInterface.addConstraint('events', {
+    await queryInterface.addConstraint('exclusions', {
       fields: ['board_id'],
       type: 'foreign key',
-      name: 'fk_events_boards_id',
+      name: 'fk_exclusions_boards_id',
       references: {
         table: 'boards',
         field: 'id',
@@ -77,6 +83,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('events');
+    await queryInterface.dropTable('exclusions');
   },
 };

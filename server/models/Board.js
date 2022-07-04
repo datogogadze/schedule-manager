@@ -1,12 +1,10 @@
-const { v4: uuidv4 } = require('uuid');
-
 module.exports = function (sequelize, DataTypes) {
   const Board = sequelize.define(
     'Board',
     {
       id: {
         type: DataTypes.UUID,
-        defaultValue: () => uuidv4(),
+        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
         primaryKey: true,
       },

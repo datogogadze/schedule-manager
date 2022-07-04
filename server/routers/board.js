@@ -5,15 +5,16 @@ const {
   boardAddUserSchema,
   boardRemoveUserSchema,
   boardUsersSchema,
+  boardEventsSchema,
 } = require('../utils/validation');
 const UserBoard = require('../models/index').UserBoard;
 const Board = require('../models/index').Board;
 const User = require('../models/index').User;
 const Event = require('../models/index').Event;
+const Exclusion = require('../models/index').Exclusion;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { RRule, RRuleSet, rrulestr } = require('rrule');
-const EventModel = require('../utils/classes/EventModel');
 
 const generateCode = async () => {
   const code = crypto.randomBytes(3).toString('hex');
@@ -42,7 +43,7 @@ router.post('/', auth, async (req, res) => {
       role,
     };
     await UserBoard.create(userBoardPayload);
-    return res.json({ success: true, ...createdBoard.dataValues });
+    return res.json({ success: true, board: { ...createdBoard.dataValues } });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }
@@ -94,7 +95,7 @@ router.post('/remove-user', auth, async (req, res) => {
         .status(400)
         .json({ success: false, message: 'Incorrect board_id' });
     }
-    if (board.creator_id != req.user.id) {
+    if (board.creator_id != req.user.id && req.user.id) {
       return res.status(403).json({ success: false, message: 'unauthorized' });
     }
     const user = await User.findOne({ where: { id: user_id } });
@@ -163,8 +164,9 @@ router.post('/users', auth, async (req, res) => {
   }
 });
 
-router.get('/events', auth, async (req, res) => {
+router.post('/events', auth, async (req, res) => {
   try {
+    await boardEventsSchema.validateAsync(req.body, { abortEarly: false });
     const { board_id, start_date, end_date } = req.body;
     const eventsList = await Event.findAll({
       where: {
@@ -178,28 +180,74 @@ router.get('/events', auth, async (req, res) => {
       },
     });
 
-    const events = eventsList.map((event) => event.dataValues);
-    for (let e of [...events]) {
+    let events = [];
+    const original_events = eventsList.map((event) => event.dataValues);
+    for (let e of original_events) {
+      const exclusions = await Exclusion.findAll({
+        where: { event_id: e.id },
+      });
+      const exclusion_list = exclusions.map((e) => e.dataValues);
       if (e.recurrence_pattern) {
         const rule = RRule.fromString(e.recurrence_pattern);
-        const dates = rule.between(new Date(start_date), new Date(end_date));
+        const dates = rule.between(
+          new Date(start_date),
+          new Date(end_date),
+          true
+        );
         for (let date of dates) {
-          events.push(
-            new EventModel(
-              e.board_id,
-              e.kid_id,
-              e.name,
-              e.description,
-              new Date(date).getTime(),
-              new Date(date).getTime(),
-              e.duration,
-              e.recurrence_pattern
-            )
+          const exclusion = exclusion_list.find(
+            (e) => e.exclusion_timestamp.getTime() == date.getTime()
           );
+          if (exclusion) {
+            events.push({
+              event_id: e.id,
+              parent_id: e.parent_id,
+              board_id: e.board_id,
+              kid_id: exclusion.kid_id,
+              name: exclusion.name,
+              description: exclusion.description,
+              current_event_timestamp: new Date(date).getTime(),
+              start_date: new Date(exclusion.start_date).getTime(),
+              end_date: new Date(exclusion.end_date).getTime(),
+              duration: exclusion.duration,
+              recurrence_pattern: e.recurrence_pattern,
+            });
+          } else {
+            events.push({
+              event_id: e.id,
+              parent_id: e.parent_id,
+              board_id: e.board_id,
+              kid_id: e.kid_id,
+              name: e.name,
+              description: e.description,
+              current_event_timestamp: new Date(date).getTime(),
+              start_date: new Date(date).getTime(),
+              end_date: new Date(e.end_date).getTime(),
+              duration: e.duration,
+              recurrence_pattern: e.recurrence_pattern,
+            });
+          }
         }
+      } else {
+        events.push({
+          event_id: e.id,
+          parent_id: e.parent_id,
+          board_id: e.board_id,
+          kid_id: e.kid_id,
+          name: e.name,
+          description: e.description,
+          start_date: new Date(e.start_date).getTime(),
+          end_date: new Date(e.end_date).getTime(),
+          duration: e.duration,
+          recurrence_pattern: e.recurrence_pattern,
+        });
       }
     }
-    return res.json({ success: true, events });
+    return res.json({
+      success: true,
+      size: Object.keys(events).length,
+      events,
+    });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
   }

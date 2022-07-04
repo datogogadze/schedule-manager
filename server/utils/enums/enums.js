@@ -10,7 +10,7 @@ const Role = Object.freeze({
   Uncle: 'uncle',
   Sister: 'sister',
   Brother: 'brother',
-
+  Kid: 'kid',
   has: (role) => Object.values(Role).includes(role),
 });
 
