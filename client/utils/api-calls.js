@@ -65,3 +65,10 @@ export const joinBoard = (code, role) =>
     code,
     role,
   });
+
+export const getEvents = (boardId, startDate, endDate) =>
+  axios.get(`${SERVER_ADDRESS}/board/events`, { params: {
+    board_id: boardId,
+    start_date: startDate,
+    end_date: endDate
+  }});

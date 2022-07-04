@@ -166,16 +166,16 @@ router.post('/users', auth, async (req, res) => {
 
 router.post('/events', auth, async (req, res) => {
   try {
-    await boardEventsSchema.validateAsync(req.body, { abortEarly: false });
-    const { board_id, start_date, end_date } = req.body;
+    const { board_id, start_date, end_date } = req.query;
+
     const eventsList = await Event.findAll({
       where: {
         board_id,
         end_date: {
-          [Op.gte]: start_date,
+          [Op.gte]: Number(start_date),
         },
         start_date: {
-          [Op.lte]: end_date,
+          [Op.lte]: Number(end_date),
         },
       },
     });
