@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
 const User = require('../models/index').User;
 const logger = require('../utils/winston');
+const fs = require('fs');
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -39,8 +40,8 @@ const sendVerificationMail = async (email) => {
             from: process.env.GMAIL_USER,
             to: email,
             subject: 'Schedule manager confirmation',
-            text: `იმეილის ვერიფიკაციისთვის გადადით შემდეგ ლინკზე: <a href="${url}">${url}</a>`,
-            html: `იმეილის ვერიფიკაციისთვის გადადით შემდეგ ლინკზე: <a href="${url}">${url}</a>`,
+            text: `მადლობას გიხდით რეგისტრაციისთვის <a href="${url}">დადასტურება</a>`,
+            html: `მადლობას გიხდით რეგისტრაციისთვის <a href="${url}">დადასტურება</a>`,
             list: {
               help: `${process.env.GMAIL_USER}?subject=help`,
               unsubscribe: {
@@ -87,8 +88,8 @@ const sendResetPasswrdMail = async (email) => {
             from: process.env.GMAIL_USER,
             to: email,
             subject: 'Schedule manager reset password',
-            text: `პაროლოს შესაცვლელად შემდეგი 15 წუთის განმავლობაში გადადით ლინკზე: <a href="${url}">${url}</a>`,
-            html: `პაროლს შესაცვლელად შემდეგი 15 წუთის განმავლობაში გადადით ლინკზე: <a href="${url}">${url}</a>`,
+            text: `პაროლს შესაცვლელად შემდეგი 15 წუთის განმავლობაში გადადით ლინკზე: <a href="${url}">გადასვლა</a>`,
+            html: `პაროლს შესაცვლელად შემდეგი 15 წუთის განმავლობაში გადადით ლინკზე: <a href="${url}">გადასვლა</a>`,
             list: {
               help: `${process.env.GMAIL_USER}?subject=help`,
               unsubscribe: {
