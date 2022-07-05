@@ -1,11 +1,13 @@
 import React, { useRef } from 'react';
 import {
-  StyleSheet, View, Keyboard, TouchableWithoutFeedback, SafeAreaView
+  StyleSheet,
+  View,
+  Keyboard,
+  TouchableWithoutFeedback,
+  SafeAreaView,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
-import {
-  Input, Button,
-} from '@ui-kitten/components';
+import { Input, Button } from '@ui-kitten/components';
 import { Formik } from 'formik';
 import Toast from 'react-native-toast-message';
 
@@ -23,7 +25,7 @@ const SignUpScreen = ({ navigation }) => {
     lastName: useRef(),
     password: useRef(),
     confirmPassword: useRef(),
-    submitButton: useRef()
+    submitButton: useRef(),
   };
 
   const refForm = useRef();
@@ -35,48 +37,38 @@ const SignUpScreen = ({ navigation }) => {
   };
 
   const handleSignUp = (values) => {
-    const {
-      email,
-      firstName,
-      lastName,
-      password,
-      confirmPassword
-    } = values;
+    const { email, firstName, lastName, password, confirmPassword } = values;
 
     setLoading(true);
 
-    signUp(
-      email,
-      firstName,
-      lastName,
-      password,
-      confirmPassword 
-    ).then((res) => {
-      setLoading(false);
+    signUp(email, firstName, lastName, password, confirmPassword)
+      .then((res) => {
+        setLoading(false);
 
-      const { success, message, id } = res.data;
+        const { success, message, id } = res.data;
 
-      if (success) {
-        navigation.navigate('VerifyEmail', {
-          id,
-        });
-      } else {
+        if (success) {
+          navigation.navigate('VerifyEmail', {
+            email,
+          });
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: message,
+          });
+        }
+      })
+      .catch((e) => {
+        setLoading(false);
+        const { message } = e.response.data;
+
         Toast.show({
           type: 'error',
           text1: 'Whoops',
           text2: message,
         });
-      }
-    }).catch((e) => {
-      setLoading(false);
-      const { message } = e.response.data;
-
-      Toast.show({
-        type: 'error',
-        text1: 'Whoops',
-        text2: message,
       });
-    });
   };
 
   return (
@@ -84,7 +76,10 @@ const SignUpScreen = ({ navigation }) => {
       <SafeAreaView>
         <View style={styles.container}>
           <Header text="Sign Up" />
-          <KeyboardAwareScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <KeyboardAwareScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+          >
             <Formik
               innerRef={refForm}
               initialValues={{
@@ -97,11 +92,11 @@ const SignUpScreen = ({ navigation }) => {
               validationSchema={SignupSchema}
               validateOnChange={false}
               validateOnBlur={false}
-              onSubmit={values => {
+              onSubmit={(values) => {
                 handleSignUp(values);
               }}
             >
-              {({ handleChange, handleBlur, values, errors}) => (
+              {({ handleChange, handleBlur, values, errors }) => (
                 <>
                   <Input
                     value={values.email}
@@ -176,27 +171,32 @@ const SignUpScreen = ({ navigation }) => {
                   />
                 </>
               )}
-            
             </Formik>
-          
           </KeyboardAwareScrollView>
 
-          <Button size="large" style={styles.signUpButton} onPress={handleSubmit}>
-          Sign Up
+          <Button
+            size="large"
+            style={styles.signUpButton}
+            onPress={handleSubmit}
+          >
+            Sign Up
           </Button>
 
-          <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
-          Already have an account? Log In here.
+          <Button
+            size="small"
+            appearance="ghost"
+            status="primary"
+            onPress={() => navigation.navigate('Login')}
+          >
+            Already have an account? Log In here.
           </Button>
 
           <Toast />
 
           <OverlaySpinner visible={loading} />
-
         </View>
       </SafeAreaView>
     </TouchableWithoutFeedback>
-
   );
 };
 
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   scrollView: {
-    height: '60%'
+    height: '60%',
     // marginBottom: 140,
   },
 });

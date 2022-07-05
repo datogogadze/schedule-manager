@@ -40,8 +40,7 @@ export const resendConfirmationMail = (email) =>
     email,
   });
 
-export const checkLogin = () =>
-  axios.get(`${SERVER_ADDRESS}/auth/success`);
+export const checkLogin = () => axios.get(`${SERVER_ADDRESS}/auth/success`);
 
 export const logout = () => axios.get(`${SERVER_ADDRESS}/auth/logout`);
 
@@ -67,8 +66,8 @@ export const joinBoard = (code, role) =>
   });
 
 export const getEvents = (boardId, startDate, endDate) =>
-  axios.get(`${SERVER_ADDRESS}/board/events`, { params: {
+  axios.post(`${SERVER_ADDRESS}/board/events`, {
     board_id: boardId,
     start_date: startDate,
-    end_date: endDate
-  }});
+    end_date: endDate,
+  });

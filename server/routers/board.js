@@ -166,16 +166,16 @@ router.post('/users', auth, async (req, res) => {
 
 router.post('/events', auth, async (req, res) => {
   try {
-    const { board_id, start_date, end_date } = req.query;
-
+    await boardEventsSchema.validateAsync(req.body, { abortEarly: false });
+    const { board_id, start_date, end_date } = req.body;
     const eventsList = await Event.findAll({
       where: {
         board_id,
         end_date: {
-          [Op.gte]: Number(start_date),
+          [Op.gte]: start_date,
         },
         start_date: {
-          [Op.lte]: Number(end_date),
+          [Op.lte]: end_date,
         },
       },
     });
@@ -208,7 +208,9 @@ router.post('/events', auth, async (req, res) => {
               description: exclusion.description,
               current_event_timestamp: new Date(date).getTime(),
               start_date: new Date(exclusion.start_date).getTime(),
-              end_date: new Date(exclusion.end_date).getTime(),
+              end_date: new Date(
+                exclusion.start_date + exclusion.duration * 60000
+              ).getTime(),
               duration: exclusion.duration,
               recurrence_pattern: e.recurrence_pattern,
             });
@@ -222,7 +224,7 @@ router.post('/events', auth, async (req, res) => {
               description: e.description,
               current_event_timestamp: new Date(date).getTime(),
               start_date: new Date(date).getTime(),
-              end_date: new Date(e.end_date).getTime(),
+              end_date: new Date(date + e.duration * 60000).getTime(),
               duration: e.duration,
               recurrence_pattern: e.recurrence_pattern,
             });
@@ -237,7 +239,7 @@ router.post('/events', auth, async (req, res) => {
           name: e.name,
           description: e.description,
           start_date: new Date(e.start_date).getTime(),
-          end_date: new Date(e.end_date).getTime(),
+          end_date: new Date(e.start_date + e.duration * 60000).getTime(),
           duration: e.duration,
           recurrence_pattern: e.recurrence_pattern,
         });
@@ -249,6 +251,7 @@ router.post('/events', auth, async (req, res) => {
       events,
     });
   } catch (err) {
+    console.log({ err });
     return res.status(502).json({ success: false, message: err.message });
   }
 });
