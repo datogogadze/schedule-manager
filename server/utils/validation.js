@@ -84,8 +84,8 @@ const eventSchema = Joi.object({
   kid_id: Joi.string().guid().required(),
   name: Joi.string().min(3).max(254).lowercase().trim().required(),
   description: Joi.string().min(3).max(254).lowercase().trim().required(),
-  start_date: Joi.date().timestamp().required(),
-  end_date: Joi.date().timestamp().allow(null).required(),
+  start_date: Joi.number().required().strict(),
+  end_date: Joi.number().allow(null).required().strict(),
   duration: Joi.number().integer().required().strict(),
   frequency: Joi.string()
     .allow(null)
@@ -108,8 +108,8 @@ const updateEventSchema = Joi.object({
     kid_id: Joi.string().guid().required(),
     name: Joi.string().min(3).max(254).lowercase().trim().required(),
     description: Joi.string().min(3).max(254).lowercase().trim().required(),
-    start_date: Joi.date().timestamp().required(),
-    end_date: Joi.date().timestamp().allow(null).required(),
+    start_date: Joi.number().required().strict(),
+    end_date: Joi.number().allow(null).required().strict(),
     duration: Joi.number().integer().required().strict(),
     frequency: Joi.string()
       .allow(null)
@@ -127,8 +127,8 @@ const updateEventSchema = Joi.object({
 
 const boardEventsSchema = Joi.object({
   board_id: Joi.string().guid().required(),
-  start_date: Joi.date().timestamp().required(),
-  end_date: Joi.date().timestamp().required(),
+  start_date: Joi.number().required().strict(),
+  end_date: Joi.number().allow(null).required().strict(),
 });
 
 module.exports = {
