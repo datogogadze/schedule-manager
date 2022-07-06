@@ -21,6 +21,7 @@ import * as Google from 'expo-auth-session/providers/google';
 // eslint-disable-next-line import/no-unresolved
 import { GOOGLE_CLIENT_ID } from '@env';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { setUser } from '../utils/auth';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -111,10 +112,11 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
 
     basicLogin(email, password)
-      .then((res) => {
+      .then(async (res) => {
         setLoading(false);
 
         const { success, message, id } = res.data;
+        await setUser({ id });
         if (success) {
           navigation.navigate('Boards', {
             id,

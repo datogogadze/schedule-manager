@@ -1,4 +1,4 @@
-import React, { useEffect, useState , useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as eva from '@eva-design/eva';
 import * as Linking from 'expo-linking';
 import * as SplashScreen from 'expo-splash-screen';
@@ -14,8 +14,8 @@ import VerifyEmailScreen from './screens/VerifyEmailScreen';
 import ForgotPasswordScreen from './screens/ForgotPasswordScreen';
 import BoardsScreen from './screens/BoardsScreen';
 import SelectedBoardScreen from './screens/SelectedBoardScreen';
-import { View } from 'react-native';
 import { checkLogin } from './utils/api-calls';
+import { setUser } from './utils/auth';
 
 const prefix = Linking.createURL('/');
 
@@ -42,8 +42,10 @@ const App = () => {
         await SplashScreen.preventAutoHideAsync();
         // Artificially delay for two seconds to simulate a slow loading
         // experience. Please remove this if you copy and paste the code!
-        checkLogin().then(() => {
+        checkLogin().then(async (res) => {
+          const { user } = res.data;
           console.log('User is logged in!');
+          await setUser(user);
         }).catch(e => {
           const { status } = e.response;
 
