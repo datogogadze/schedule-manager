@@ -115,11 +115,12 @@ const LoginScreen = ({ navigation }) => {
       .then(async (res) => {
         setLoading(false);
 
-        const { success, message, id } = res.data;
-        await setUser({ id });
+        const { success, message, user } = res.data;
+
+        await setUser(user);
         if (success) {
           navigation.navigate('Boards', {
-            id,
+            id: user.id,
           });
         } else {
           Toast.show({

@@ -9,6 +9,7 @@ import { Button, Icon, MenuItem,  Text } from '@ui-kitten/components';
 
 import Modal from 'react-native-modal';
 import { logout } from '../utils/api-calls';
+import { removeUser } from '../utils/auth';
 
 const logo = require('../assets/logo.png');
 
@@ -16,7 +17,8 @@ const Header = ({ navigation, text, showMenu, backButton }) => {
   const [sideMenuVisible, setSideMenuVisible] = React.useState(false);
 
   const handleLogout = () => {
-    logout().then(() => {
+    logout().then(async () => {
+      await removeUser();
       navigation.reset({
         index: 0,
         routes: [{name: 'Login'}],
