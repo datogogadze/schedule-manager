@@ -1,4 +1,4 @@
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const setUser = async (user) => {
   const currentUser = await AsyncStorage.setItem('user', JSON.stringify(user));
