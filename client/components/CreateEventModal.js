@@ -4,11 +4,28 @@ import {
   StyleSheet, View,
 } from 'react-native';
 import moment from 'moment';
-import { Button, Card, Text, Modal, Input } from '@ui-kitten/components';
+import { Button, Card, Text, Modal, Input, Select, SelectItem, IndexPath, CheckBox, Layout } from '@ui-kitten/components';
 import { createEvent } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { getUser } from '../utils/auth';
+
+const intervals = [
+  'daily',
+  'weekly',
+  'monthly'
+];
+
+const intervalUnitOptions = [
+  'Day(s)',
+  'Week(s)',
+  'Month(s)',
+];
+
+const endingOptions = [
+  'On date',
+  'After occurrences'
+];
 
 const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => {
   const [loading, setLoading] = React.useState(false);
@@ -19,6 +36,20 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
   const [day, setDay] = React.useState(new Date());
   const [hourFrom, setHourFrom] = React.useState(new Date());
   const [hourTo, setHourTo] = React.useState(new Date());
+  const [recurrenceEnding, setRecurrenceEnding] = React.useState(new Date());
+
+  const [intervalUnitIndex, setIntervalUnitIndex] = React.useState(new IndexPath(0));
+
+  const [isRecurring, setIsRecurring] = React.useState(false);
+
+  const [interval, setInterval] = React.useState('1');
+
+  const [endingIndex, setEndingIndex] = React.useState(new IndexPath(0));
+
+  const intervalUnitDisplayValue = intervalUnitOptions[intervalUnitIndex.row];
+  const endingDisplayValue = endingOptions[endingIndex.row];
+
+  const [recurrenceCount, setRecurrenceCount] = React.useState('1');
 
   const [startTime, duration] = useMemo(() => {
     const startDayMilliseconds = moment(day).startOf('day').valueOf();
@@ -38,14 +69,52 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
     setLoading(true);
     const user = await getUser();
 
+
+    // console.log(isRecurring);
+    // console.log(interval);
+    // console.log(endingIndex.row);
+    // console.log(recurrenceCount);
+    // console.log(recurrenceEnding);
+
+    let rEndDate = null;
+    let rFrequency = null;
+    let rInterval = null;
+    let rCount = null;
+
+    if (isRecurring) {
+      rFrequency = intervals[intervalUnitIndex.row];
+      rInterval = Number(interval);
+      if (endingIndex.row == 0) {
+        rEndDate = moment(recurrenceEnding).startOf('day').valueOf();
+      } else {
+        rCount = Number(recurrenceCount);
+      }
+    }
+
+    console.log(boardId,
+      user.id,
+      name,
+      description,
+      startTime,
+      rEndDate,
+      duration,
+      rFrequency,
+      rInterval,
+      rCount);
+
+    // return;
+
     createEvent(
       boardId,
       user.id,
       name,
       description,
       startTime,
-      null,
-      duration
+      rEndDate,
+      duration,
+      rFrequency,
+      rInterval,
+      rCount
     ).then(res => {
       setLoading(false);
       const { success } = res.data;
@@ -57,6 +126,7 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
     }).catch(e => {
       setLoading(false);
       const { message } = e.response.data;
+      console.log(message);
       onError(message);
     });
   };
@@ -144,7 +214,63 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
                 onChange={(event, value) => setHourTo(value)}
                 value={hourTo}
               />
-            </View>   
+            </View>
+            <CheckBox
+              checked={isRecurring}
+              onChange={nextChecked => setIsRecurring(nextChecked)}>
+              Recurring
+            </CheckBox>
+            
+            { isRecurring && <>
+            
+              <Text>Repeat Every</Text>
+              <Layout style={styles.inputRow} level='1'>
+                <Input 
+                  style={styles.textInput}
+                  keyboardType = 'numeric'
+                  onChangeText = {(val)=> setInterval(val)}
+                  value = {interval}
+                /> 
+
+                <Select
+                  selectedIndex={intervalUnitIndex}
+                  value={intervalUnitDisplayValue}
+                  onSelect={index => setIntervalUnitIndex(index)}>
+                  { intervalUnitOptions.map((option, i) => <SelectItem key={i} title={option}/>) }
+                </Select>
+              </Layout>
+
+              <Text>Ends</Text>
+              <View style={styles.frequency}>
+                <Select
+                  selectedIndex={endingIndex}
+                  value={endingDisplayValue}
+                  onSelect={index => setEndingIndex(index)}>
+                  { endingOptions.map((option, i) => <SelectItem key={i} title={option}/>) }
+                </Select>
+              </View>
+
+              { endingIndex.row == 0 && <>
+                <Text>Recurrence end date</Text>
+                <DateTimePicker
+                  mode="date"
+                  minimumDate={day}
+                  onChange={(event, value) => setRecurrenceEnding(value)}
+                  value={recurrenceEnding}
+                />
+              </> }
+
+              { endingIndex.row == 1 && <>
+                <Text>Recurrence count</Text>
+                <Input 
+                  style={styles.textInput}
+                  keyboardType = 'numeric'
+                  onChangeText = {(val)=> setRecurrenceCount(val)}
+                  value = {recurrenceCount}
+                /> 
+              </> }
+            </>}
+
           </ScrollView> 
         </Card>
         <OverlaySpinner visible={loading} />
@@ -177,6 +303,9 @@ const styles = StyleSheet.create({
   dates: {
     marginTop: 20
   },
+  frequency: {
+    marginTop: 20
+  },
   scrollView: {
     height: '75%'
   },
@@ -186,6 +315,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center'
+  },
+  inputRow: {
+    flexDirection: 'row'
   }
 });
 
