@@ -61,6 +61,7 @@ beforeAll(async () => {
     start_date: event1_start_date,
     end_date: event1_end_date,
     duration: 60,
+    notification_time: 10,
     recurrence_pattern:
       'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;UNTIL=20220705T160500Z',
     // 'DTSTART:20220701T150500Z\nRRULE:FREQ=DAILY;COUNT=2;UNTIL=20220705T160500Z',
@@ -205,6 +206,7 @@ describe('Test boards', () => {
         start_date: event2_start_date,
         end_date: null,
         duration: 60,
+        notification_time: 10,
         frequency: null,
         interval: null,
         count: null,
@@ -234,6 +236,7 @@ describe('Test boards', () => {
         start_date: event3_start_date,
         end_date: null,
         duration: 60,
+        notification_time: 10,
         frequency: 'daily',
         interval: null,
         count: 2,

@@ -212,6 +212,7 @@ router.post('/events', auth, async (req, res) => {
                 exclusion.start_date + exclusion.duration * 60000
               ).getTime(),
               duration: exclusion.duration,
+              notification_time: exclusion.notification_time,
               recurrence_pattern: e.recurrence_pattern,
             });
           } else {
@@ -226,6 +227,7 @@ router.post('/events', auth, async (req, res) => {
               start_date: new Date(date).getTime(),
               end_date: new Date(date + e.duration * 60000).getTime(),
               duration: e.duration,
+              notification_time: e.notification_time,
               recurrence_pattern: e.recurrence_pattern,
             });
           }
@@ -241,6 +243,7 @@ router.post('/events', auth, async (req, res) => {
           start_date: new Date(e.start_date).getTime(),
           end_date: new Date(e.start_date + e.duration * 60000).getTime(),
           duration: e.duration,
+          notification_time: e.notification_time,
           recurrence_pattern: e.recurrence_pattern,
         });
       }
