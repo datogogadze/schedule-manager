@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "NODE_ENV=test && npx sequelize-cli db:migrate --env test && jest --watchAll --detectOpenHandles",
     "dev": "NODE_ENV=development && npx sequelize-cli db:migrate --env development && nodemon server.js",

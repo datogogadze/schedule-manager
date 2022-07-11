@@ -46,7 +46,10 @@ router.post('/oauth', async (req, res, next) => {
 
       return res.json({
         success: true,
-        user,
+        user: {
+          ...user,
+          session_expires: req.session.cookie._expires.getTime(),
+        },
         message: 'Login successful',
       });
     })(req, res, next);
@@ -87,7 +90,10 @@ router.post('/basic', async (req, res, next) => {
 
       return res.json({
         success: true,
-        user,
+        user: {
+          ...user,
+          session_expires: req.session.cookie._expires.getTime(),
+        },
         message: 'Login successful',
       });
     })(req, res, next);
@@ -127,7 +133,10 @@ router.post('/register', async (req, res) => {
     return res.json({
       success: true,
       message: 'created',
-      user: createdUser.dataValues,
+      user: {
+        ...createdUser.dataValues,
+        session_expires: req.session.cookie._expires.getTime(),
+      },
     });
   } catch (err) {
     return res.status(502).json({ successs: false, message: err.message });

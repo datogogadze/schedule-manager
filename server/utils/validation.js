@@ -87,6 +87,7 @@ const eventSchema = Joi.object({
   start_date: Joi.number().required().strict(),
   end_date: Joi.number().allow(null).required().strict(),
   duration: Joi.number().integer().required().strict(),
+  notification_time: Joi.number().integer().allow(null).required(),
   frequency: Joi.string()
     .allow(null)
     .required()
@@ -111,6 +112,7 @@ const updateEventSchema = Joi.object({
     start_date: Joi.number().required().strict(),
     end_date: Joi.number().allow(null).required().strict(),
     duration: Joi.number().integer().required().strict(),
+    notification_time: Joi.number().integer().allow(null).required(),
     frequency: Joi.string()
       .allow(null)
       .required()

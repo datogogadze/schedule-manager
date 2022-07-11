@@ -39,9 +39,6 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      notification_time: {
-        type: DataTypes.INTEGER,
-      },
       recurrence_pattern: {
         type: DataTypes.STRING,
       },

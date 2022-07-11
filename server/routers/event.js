@@ -78,6 +78,7 @@ const generateEventModel = (eventData) => {
     start_date,
     end_date,
     duration,
+    notification_time,
     frequency,
     interval,
     count,
@@ -135,6 +136,7 @@ const generateEventModel = (eventData) => {
     start_date,
     end_date,
     duration,
+    notification_time,
     recurrence_pattern,
   };
 
