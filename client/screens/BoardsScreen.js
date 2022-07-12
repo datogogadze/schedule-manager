@@ -27,6 +27,14 @@ const BoardsScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = React.useState(false);
   const [isInitial, setIsInitial] = React.useState(true);
 
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+
   const registerForPushNotificationsAsync = async () => {
     try {
       if (Device.isDevice) {

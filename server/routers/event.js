@@ -8,7 +8,8 @@ const Event = require('../models/index').Event;
 const Exclusion = require('../models/index').Exclusion;
 const { RRule, RRuleSet, rrulestr } = require('rrule');
 const { Recurrence } = require('../utils/enums/enums');
-const { Op, where } = require('sequelize');
+const { Op } = require('sequelize');
+const axios = require('axios');
 
 const generateRule = (dtstart, freq, interval, count, until) => {
   if (!interval) {
@@ -166,6 +167,12 @@ router.post('/', auth, async (req, res) => {
       });
     }
     const createdEvent = await Event.create(event);
+    if (process.env.NODE_ENV != 'test') {
+      // reschedule board notifications
+      await axios.get(
+        `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+      );
+    }
     return res.json({ success: true, event: { ...createdEvent.dataValues } });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
@@ -220,6 +227,12 @@ router.put('/all', auth, async (req, res) => {
     await Exclusion.destroy({
       where: { event_id },
     });
+    if (process.env.NODE_ENV != 'test') {
+      // reschedule board notifications
+      await axios.get(
+        `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+      );
+    }
     return res.json({ success: true, event });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
@@ -395,6 +408,12 @@ router.put('/future', auth, async (req, res) => {
         current_event_timestamp
       );
     }
+    if (process.env.NODE_ENV != 'test') {
+      // reschedule board notifications
+      await axios.get(
+        `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+      );
+    }
     return res.json({ success: true, event: { ...created.dataValues } });
   } catch (err) {
     return res.status(502).json({ success: false, message: err.message });
@@ -457,6 +476,12 @@ router.put('/single', auth, async (req, res) => {
           });
         } else {
           await Exclusion.create(exclusion_data);
+        }
+        if (process.env.NODE_ENV != 'test') {
+          // reschedule board notifications
+          await axios.get(
+            `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+          );
         }
         return res.json({
           success: true,
