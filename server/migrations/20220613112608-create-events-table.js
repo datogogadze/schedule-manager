@@ -40,6 +40,9 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      notification_time: {
+        type: Sequelize.INTEGER,
+      },
       recurrence_pattern: {
         type: Sequelize.STRING,
       },

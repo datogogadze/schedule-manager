@@ -38,12 +38,13 @@ const LoginScreen = ({ navigation }) => {
           setLoading(true);
           const profile = { external_type: 'google', ...result.data };
           oAuthLogin(profile)
-            .then((res) => {
+            .then(async (res) => {
               setLoading(false);
-              const { success, message, id } = res.data;
+              const { success, message, user } = res.data;
               if (success) {
+                await setUser(user);
                 navigation.navigate('Boards', {
-                  id,
+                  id: user.id,
                 });
               } else {
                 Toast.show({
@@ -117,8 +118,8 @@ const LoginScreen = ({ navigation }) => {
 
         const { success, message, user } = res.data;
 
-        await setUser(user);
         if (success) {
+          await setUser(user);
           navigation.navigate('Boards', {
             id: user.id,
           });

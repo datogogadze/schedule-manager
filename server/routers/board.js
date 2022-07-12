@@ -15,6 +15,7 @@ const Exclusion = require('../models/index').Exclusion;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { RRule, RRuleSet, rrulestr } = require('rrule');
+const logger = require('../utils/winston');
 
 const generateCode = async () => {
   const code = crypto.randomBytes(3).toString('hex');
@@ -45,6 +46,7 @@ router.post('/', auth, async (req, res) => {
     await UserBoard.create(userBoardPayload);
     return res.json({ success: true, board: { ...createdBoard.dataValues } });
   } catch (err) {
+    logger.error('Error in creating board: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -81,6 +83,7 @@ router.post('/add-user', auth, async (req, res) => {
     const result = await UserBoard.create(addUserPayload);
     return res.json({ success: true, ...result.dataValues });
   } catch (err) {
+    logger.error('Error in board add user: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -127,6 +130,7 @@ router.post('/remove-user', auth, async (req, res) => {
 
     return res.json({ success: true, ...result.dataValues });
   } catch (err) {
+    logger.error('Error in board remove user: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -160,6 +164,7 @@ router.post('/users', auth, async (req, res) => {
     const usersList = users.map((user) => user.dataValues);
     return res.json({ success: true, users: usersList });
   } catch (err) {
+    logger.error('Error in board users: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -212,6 +217,7 @@ router.post('/events', auth, async (req, res) => {
                 exclusion.start_date + exclusion.duration * 60000
               ).getTime(),
               duration: exclusion.duration,
+              notification_time: exclusion.notification_time,
               recurrence_pattern: e.recurrence_pattern,
             });
           } else {
@@ -226,6 +232,7 @@ router.post('/events', auth, async (req, res) => {
               start_date: new Date(date).getTime(),
               end_date: new Date(date + e.duration * 60000).getTime(),
               duration: e.duration,
+              notification_time: e.notification_time,
               recurrence_pattern: e.recurrence_pattern,
             });
           }
@@ -241,6 +248,7 @@ router.post('/events', auth, async (req, res) => {
           start_date: new Date(e.start_date).getTime(),
           end_date: new Date(e.start_date + e.duration * 60000).getTime(),
           duration: e.duration,
+          notification_time: e.notification_time,
           recurrence_pattern: e.recurrence_pattern,
         });
       }
@@ -251,7 +259,7 @@ router.post('/events', auth, async (req, res) => {
       events,
     });
   } catch (err) {
-    console.log({ err });
+    logger.error('Error in board events: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });

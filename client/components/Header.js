@@ -1,15 +1,10 @@
 import React from 'react';
-import {
-  StyleSheet,
-  View,
-  Image,
-  SafeAreaView
-} from 'react-native';
-import { Button, Icon, MenuItem,  Text } from '@ui-kitten/components';
+import { StyleSheet, View, Image, SafeAreaView } from 'react-native';
+import { Button, Icon, MenuItem, Text } from '@ui-kitten/components';
 
 import Modal from 'react-native-modal';
-import { logout } from '../utils/api-calls';
-import { removeUser } from '../utils/auth';
+import { logout, logoutDevice } from '../utils/api-calls';
+import { getUser, removeUser } from '../utils/auth';
 
 const logo = require('../assets/logo.png');
 
@@ -17,17 +12,25 @@ const Header = ({ navigation, text, showMenu, backButton }) => {
   const [sideMenuVisible, setSideMenuVisible] = React.useState(false);
 
   const handleLogout = () => {
-    logout().then(async () => {
-      await removeUser();
-      navigation.reset({
-        index: 0,
-        routes: [{name: 'Login'}],
+    logout()
+      .then(async () => {
+        const user = await getUser();
+        await logoutDevice(user.id, user.device_token);
+        await removeUser();
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+        setSideMenuVisible(false);
+      })
+      .catch((e) => {
+        console.log(e);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+        setSideMenuVisible(false);
       });
-      setSideMenuVisible(false);
-    }).catch(e => {
-      console.log(e);
-      setSideMenuVisible(false);
-    });
   };
 
   const renderHeaderWithLogo = () => (
@@ -37,71 +40,95 @@ const Header = ({ navigation, text, showMenu, backButton }) => {
       </View>
     </View>
   );
-  
+
   const renderHeaderWithMenu = () => (
     <View style={styles.headerContainer}>
-      { backButton && <View style={styles.backIconWrapper} >
-        <Icon style={styles.backIcon} name='arrow-ios-back-outline' fill="black" onPress={() => navigation.goBack()}/>
-      </View> }
-    
+      {backButton && (
+        <View style={styles.backIconWrapper}>
+          <Icon
+            style={styles.backIcon}
+            name="arrow-ios-back-outline"
+            fill="black"
+            onPress={() => navigation.goBack()}
+          />
+        </View>
+      )}
+
       <View style={styles.logoWrapper}>
         <Text style={styles.smallHeader} category="h4">
-          { text }
+          {text}
         </Text>
       </View>
 
-      <View style={styles.menuIconWrapper} >
-        <Icon style={styles.menuIcon} name='menu-outline' fill="black" onPress={() => setSideMenuVisible(true)}/>
+      <View style={styles.menuIconWrapper}>
+        <Icon
+          style={styles.menuIcon}
+          name="menu-outline"
+          fill="black"
+          onPress={() => setSideMenuVisible(true)}
+        />
       </View>
     </View>
   );
 
   return (
     <>
-      { showMenu ? renderHeaderWithMenu() : renderHeaderWithLogo()}
+      {showMenu ? renderHeaderWithMenu() : renderHeaderWithLogo()}
 
-      { showMenu && <Modal
-        style={styles.sideMenu}
-        animationIn="slideInRight"
-        isVisible={sideMenuVisible}
-        animationOut="slideOutRight"
-        onSwipeComplete={() => setSideMenuVisible(false)}
-        swipeDirection="right"  
-      >
-        <SafeAreaView>
-          <View style={styles.sideMenuContent}>
-            <Text style={styles.fullName} category='h6'>Test User</Text>
-            <Button
-              style={styles.logoutButton}
-              status='basic'
-              accessoryLeft={<Icon name='star'/>}
-              appearance='ghost'
-            >
-              View Boards
-            </Button>
-            <Button
-              style={styles.logoutButton}
-              status='basic'
-              accessoryLeft={<Icon name='star'/>}
-              appearance='ghost'
-            >
-              Profile
-            </Button>
-            <MenuItem
-              title='View boards'
-              accessoryRight={<Icon name='arrow-ios-forward'/>}
-              style={styles.menuItem}
-            />
-            <View style={styles.logoutButtonWrapper}>
-              <Button style={styles.logoutButton} status='danger' onPress={handleLogout}>Log Out</Button>
+      {showMenu && (
+        <Modal
+          style={styles.sideMenu}
+          animationIn="slideInRight"
+          isVisible={sideMenuVisible}
+          animationOut="slideOutRight"
+          onSwipeComplete={() => setSideMenuVisible(false)}
+          swipeDirection="right"
+        >
+          <SafeAreaView>
+            <View style={styles.sideMenuContent}>
+              <Text style={styles.fullName} category="h6">
+                Test User
+              </Text>
+              <Button
+                style={styles.logoutButton}
+                status="basic"
+                accessoryLeft={<Icon name="star" />}
+                appearance="ghost"
+              >
+                View Boards
+              </Button>
+              <Button
+                style={styles.logoutButton}
+                status="basic"
+                accessoryLeft={<Icon name="star" />}
+                appearance="ghost"
+              >
+                Profile
+              </Button>
+              <MenuItem
+                title="View boards"
+                accessoryRight={<Icon name="arrow-ios-forward" />}
+                style={styles.menuItem}
+              />
+              <View style={styles.logoutButtonWrapper}>
+                <Button
+                  style={styles.logoutButton}
+                  status="danger"
+                  onPress={handleLogout}
+                >
+                  Log Out
+                </Button>
+              </View>
             </View>
-          </View>
-        </SafeAreaView>
-      </Modal> }
+          </SafeAreaView>
+        </Modal>
+      )}
 
-      { !showMenu && <Text style={styles.header} category="h3">
-        { text }
-      </Text> }
+      {!showMenu && (
+        <Text style={styles.header} category="h3">
+          {text}
+        </Text>
+      )}
     </>
   );
 };
@@ -110,12 +137,10 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 30,
   },
-  smallHeader: {
-
-  },
+  smallHeader: {},
   smallHeaderWrapper: {
     position: 'absolute',
-    left: 0
+    left: 0,
   },
   headerContainer: {
     justifyContent: 'center',
@@ -133,7 +158,7 @@ const styles = StyleSheet.create({
   },
   menuIconWrapper: {
     position: 'absolute',
-    right: 0
+    right: 0,
   },
   backIcon: {
     width: 30,
@@ -141,7 +166,7 @@ const styles = StyleSheet.create({
   },
   backIconWrapper: {
     position: 'absolute',
-    left: 0
+    left: 0,
   },
   sideMenu: {
     backgroundColor: 'white',
@@ -157,9 +182,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  sideMenuLogoWrapper: {
-
-  },
+  sideMenuLogoWrapper: {},
   backdrop: {
     backgroundColor: '#F5FCFF88',
   },
@@ -174,10 +197,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   fullName: {
-    textAlign: 'center'
+    textAlign: 'center',
   },
   menuItem: {
-    padding: 30
+    padding: 30,
   },
 });
 

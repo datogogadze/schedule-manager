@@ -1,13 +1,13 @@
 module.exports = function (sequelize, DataTypes) {
-  const Event = sequelize.define(
-    'Event',
+  const Exclusion = sequelize.define(
+    'Exclusion',
     {
       id: {
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
-      parent_id: {
+      event_id: {
         type: DataTypes.UUID,
         defaultValue: null,
       },
@@ -27,6 +27,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      exclusion_timestamp: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
       start_date: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -39,11 +43,10 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      notification_time: {
-        type: DataTypes.INTEGER,
-      },
-      recurrence_pattern: {
-        type: DataTypes.STRING,
+      deleted: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
       },
       created_at: {
         type: DataTypes.DATE,
@@ -55,24 +58,24 @@ module.exports = function (sequelize, DataTypes) {
       },
     },
     {
-      tableName: 'events',
+      tableName: 'exclusions',
       createdAt: 'created_at',
       updatedAt: 'updated_at',
       underscored: true,
     }
   );
 
-  Event.associate = function (models) {
-    Event.belongsTo(models.Board, {
+  Exclusion.associate = function (models) {
+    Exclusion.belongsTo(models.Board, {
       foreignKey: 'board_id',
     });
   };
 
-  Event.associate = function (models) {
-    Event.belongsTo(models.User, {
+  Exclusion.associate = function (models) {
+    Exclusion.belongsTo(models.User, {
       foreignKey: 'kid_id',
     });
   };
 
-  return Event;
+  return Exclusion;
 };

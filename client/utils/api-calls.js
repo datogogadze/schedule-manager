@@ -1,6 +1,6 @@
 import axios from 'axios';
 // eslint-disable-next-line import/no-unresolved
-import { SERVER_ADDRESS, GOOGLE_API } from '@env';
+import { SERVER_ADDRESS, GOOGLE_API, NOTIFICATION_SERVICE_ADDRESS } from '@env';
 
 export const basicLogin = (email, password) =>
   axios.post(`${SERVER_ADDRESS}/auth/basic`, {
@@ -83,15 +83,29 @@ export const createEvent = (
   frequency = null,
   interval = null,
   count = null
-) => axios.post(`${SERVER_ADDRESS}/event`, {
-  board_id: boardId,
-  kid_id: kidId,
-  name,
-  description,
-  start_date: startDate,
-  end_date: endDate,
-  duration,
-  frequency,
-  interval,
-  count
-});
+) =>
+  axios.post(`${SERVER_ADDRESS}/event`, {
+    board_id: boardId,
+    kid_id: kidId,
+    name,
+    description,
+    start_date: startDate,
+    end_date: endDate,
+    duration,
+    frequency,
+    interval,
+    count,
+  });
+
+export const loginDevice = (userId, deviceToken, sesseionExpires) =>
+  axios.post(`${NOTIFICATION_SERVICE_ADDRESS}/auth/login`, {
+    user_id: userId,
+    device_token: deviceToken,
+    session_expires: sesseionExpires,
+  });
+
+export const logoutDevice = (userId, deviceToken) =>
+  axios.post(`${NOTIFICATION_SERVICE_ADDRESS}/auth/logout`, {
+    user_id: userId,
+    device_token: deviceToken,
+  });

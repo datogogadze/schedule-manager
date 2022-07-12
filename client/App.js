@@ -42,22 +42,25 @@ const App = () => {
         await SplashScreen.preventAutoHideAsync();
         // Artificially delay for two seconds to simulate a slow loading
         // experience. Please remove this if you copy and paste the code!
-        checkLogin().then(async (res) => {
-          const { user } = res.data;
-          console.log('User is logged in!');
-          await setUser(user);
-        }).catch(e => {
-          const { status } = e.response;
+        checkLogin()
+          .then(async (res) => {
+            const { user } = res.data;
+            console.log('User is logged in!');
+            await setUser(user);
+          })
+          .catch((e) => {
+            const { status } = e.response;
 
-          if (status === 401) {
-            setInitialRouteName('Login');
-          }
-        }).finally(() => {
-          setAppIsReady(true);
-        });
+            if (status === 401) {
+              setInitialRouteName('Login');
+            }
+          })
+          .finally(() => {
+            setAppIsReady(true);
+          });
       } catch (e) {
         console.warn(e);
-      } 
+      }
     }
 
     prepare();
@@ -77,37 +80,45 @@ const App = () => {
   if (!appIsReady) {
     return null;
   }
-  
 
-
-  
-  return <>
-    {/* <View
+  return (
+    <>
+      {/* <View
       style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
       onLayout={onLayoutRootView}> */}
-    <IconRegistry icons={EvaIconsPack} />
-    <ApplicationProvider {...eva} theme={eva.light}>
-      <NavigationContainer linking={linking} >
-        <Stack.Navigator
-          initialRouteName={initialRouteName}
-          screenOptions={{
-            headerShown: false,
-            cardStyle: { backgroundColor: '#fff' },
-            gestureEnabled: false,
-          }}>
-          <Stack.Screen name='Login' component={LoginScreen}></Stack.Screen>
-          <Stack.Screen name='SignUp' component={SignUpScreen}></Stack.Screen>
-          <Stack.Screen name='Main' component={MainScreen}></Stack.Screen>
-          <Stack.Screen name='VerifyEmail' component={VerifyEmailScreen}></Stack.Screen>
-          <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen}></Stack.Screen>
-          <Stack.Screen name='Boards' component={BoardsScreen}></Stack.Screen>
-          <Stack.Screen name='SelectedBoard' component={SelectedBoardScreen }></Stack.Screen>
-            
-        </Stack.Navigator>
-      </NavigationContainer>
-    </ApplicationProvider>
-    {/* </View> */}
-  </>;
+      <IconRegistry icons={EvaIconsPack} />
+      <ApplicationProvider {...eva} theme={eva.light}>
+        <NavigationContainer linking={linking}>
+          <Stack.Navigator
+            initialRouteName={initialRouteName}
+            screenOptions={{
+              headerShown: false,
+              cardStyle: { backgroundColor: '#fff' },
+              gestureEnabled: false,
+            }}
+          >
+            <Stack.Screen name="Login" component={LoginScreen}></Stack.Screen>
+            <Stack.Screen name="SignUp" component={SignUpScreen}></Stack.Screen>
+            <Stack.Screen name="Main" component={MainScreen}></Stack.Screen>
+            <Stack.Screen
+              name="VerifyEmail"
+              component={VerifyEmailScreen}
+            ></Stack.Screen>
+            <Stack.Screen
+              name="ForgotPassword"
+              component={ForgotPasswordScreen}
+            ></Stack.Screen>
+            <Stack.Screen name="Boards" component={BoardsScreen}></Stack.Screen>
+            <Stack.Screen
+              name="SelectedBoard"
+              component={SelectedBoardScreen}
+            ></Stack.Screen>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </ApplicationProvider>
+      {/* </View> */}
+    </>
+  );
 };
 
 export default App;

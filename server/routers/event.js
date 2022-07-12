@@ -8,7 +8,9 @@ const Event = require('../models/index').Event;
 const Exclusion = require('../models/index').Exclusion;
 const { RRule, RRuleSet, rrulestr } = require('rrule');
 const { Recurrence } = require('../utils/enums/enums');
-const { Op, where } = require('sequelize');
+const { Op } = require('sequelize');
+const axios = require('axios');
+const logger = require('../utils/winston');
 
 const generateRule = (dtstart, freq, interval, count, until) => {
   if (!interval) {
@@ -40,6 +42,7 @@ router.get('/:id', auth, async (req, res) => {
     }
     return res.json({ success: true, event });
   } catch (err) {
+    logger.error('Error in getting event with id: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -78,6 +81,7 @@ const generateEventModel = (eventData) => {
     start_date,
     end_date,
     duration,
+    notification_time,
     frequency,
     interval,
     count,
@@ -135,6 +139,7 @@ const generateEventModel = (eventData) => {
     start_date,
     end_date,
     duration,
+    notification_time,
     recurrence_pattern,
   };
 
@@ -164,8 +169,15 @@ router.post('/', auth, async (req, res) => {
       });
     }
     const createdEvent = await Event.create(event);
+    if (process.env.NODE_ENV != 'test') {
+      // reschedule board notifications
+      axios.get(
+        `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+      );
+    }
     return res.json({ success: true, event: { ...createdEvent.dataValues } });
   } catch (err) {
+    logger.error('Error in creating event: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -218,8 +230,15 @@ router.put('/all', auth, async (req, res) => {
     await Exclusion.destroy({
       where: { event_id },
     });
+    if (process.env.NODE_ENV != 'test') {
+      // reschedule board notifications
+      axios.get(
+        `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+      );
+    }
     return res.json({ success: true, event });
   } catch (err) {
+    logger.error('Error in update all: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -393,8 +412,15 @@ router.put('/future', auth, async (req, res) => {
         current_event_timestamp
       );
     }
+    if (process.env.NODE_ENV != 'test') {
+      // reschedule board notifications
+      axios.get(
+        `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+      );
+    }
     return res.json({ success: true, event: { ...created.dataValues } });
   } catch (err) {
+    logger.error('Error in update future: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -456,6 +482,12 @@ router.put('/single', auth, async (req, res) => {
         } else {
           await Exclusion.create(exclusion_data);
         }
+        if (process.env.NODE_ENV != 'test') {
+          // reschedule board notifications
+          axios.get(
+            `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+          );
+        }
         return res.json({
           success: true,
           event: {
@@ -468,6 +500,7 @@ router.put('/single', auth, async (req, res) => {
       }
     }
   } catch (err) {
+    logger.error('Error in update single: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });

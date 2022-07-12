@@ -11,6 +11,7 @@ const {
 } = require('../utils/validation');
 const { sendVerificationMail, sendResetPasswrdMail } = require('../utils/mail');
 const jwt = require('jsonwebtoken');
+const logger = require('../utils/winston');
 const User = require('../models/index').User;
 
 router.get('/success', auth, (req, res) => {
@@ -22,6 +23,7 @@ router.post('/oauth', async (req, res, next) => {
     await oAuthSchema.validateAsync(req.body, { abortEarly: false });
     return passport.authenticate('oauth-local', (err, user, info) => {
       if (err) {
+        logger.error('Error in oauth-local: ', err);
         return res.status(400).json({
           success: false,
           message: err.message,
@@ -37,6 +39,7 @@ router.post('/oauth', async (req, res, next) => {
 
       req.login(user, (err) => {
         if (err) {
+          logger.error('Error in oauth req login: ', err);
           return res.status(502).json({
             success: false,
             message: err.message,
@@ -46,11 +49,15 @@ router.post('/oauth', async (req, res, next) => {
 
       return res.json({
         success: true,
-        user,
+        user: {
+          ...user,
+          session_expires: req.session.cookie._expires.getTime(),
+        },
         message: 'Login successful',
       });
     })(req, res, next);
   } catch (err) {
+    logger.error('Error in oauth: ', err);
     return res.status(502).json({
       success: false,
       message: err.message,
@@ -63,6 +70,7 @@ router.post('/basic', async (req, res, next) => {
     await loginSchema.validateAsync(req.body, { abortEarly: false });
     return passport.authenticate('basic-local', (err, user, info) => {
       if (err) {
+        logger.error('Error in basic-local: ', err);
         return res.status(400).json({
           success: false,
           message: err.message,
@@ -78,6 +86,7 @@ router.post('/basic', async (req, res, next) => {
 
       req.login(user, (err) => {
         if (err) {
+          logger.error('Error in req login basic: ', err);
           return res.status(502).json({
             success: false,
             message: err.message,
@@ -87,11 +96,15 @@ router.post('/basic', async (req, res, next) => {
 
       return res.json({
         success: true,
-        user,
+        user: {
+          ...user,
+          session_expires: req.session.cookie._expires.getTime(),
+        },
         message: 'Login successful',
       });
     })(req, res, next);
   } catch (err) {
+    logger.error('Error in basic: ', err);
     return res.status(502).json({
       success: false,
       message: err.message,
@@ -127,9 +140,13 @@ router.post('/register', async (req, res) => {
     return res.json({
       success: true,
       message: 'created',
-      user: createdUser.dataValues,
+      user: {
+        ...createdUser.dataValues,
+        session_expires: req.session.cookie._expires.getTime(),
+      },
     });
   } catch (err) {
+    logger.error('Error in register: ', err);
     return res.status(502).json({ successs: false, message: err.message });
   }
 });
@@ -141,6 +158,7 @@ router.get('/confirm/:token', async (req, res) => {
       process.env.JWT_SECRET,
       async (err, decoded) => {
         if (err) {
+          logger.error('Error cinfirm token verify: ', err);
           return res.json(400).json({ success: false, message: err.message });
         }
         const id = decoded.id;
@@ -149,6 +167,7 @@ router.get('/confirm/:token', async (req, res) => {
       }
     );
   } catch (err) {
+    logger.error('Error in confirm token: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -163,6 +182,7 @@ router.post('/confirm/resend', async (req, res) => {
     }
     return res.status(400).json({ success: false, message: 'User not found' });
   } catch (err) {
+    logger.error('Error in confirm resend: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -180,6 +200,7 @@ router.post('/password/reset/send', async (req, res) => {
     sendResetPasswrdMail(email);
     return res.json({ success: true, message: 'Password reset mail sent' });
   } catch (err) {
+    logger.error('Error in reset resend: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -192,6 +213,7 @@ router.post('/password/reset/:token', async (req, res) => {
       process.env.JWT_SECRET,
       async (err, decoded) => {
         if (err) {
+          logger.error('Error in password reset token verify: ', err);
           return res.json(400).json({ success: false, message: err.message });
         }
         const id = decoded.id;
@@ -201,6 +223,7 @@ router.post('/password/reset/:token', async (req, res) => {
       }
     );
   } catch (err) {
+    logger.error('Error in password reset token: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
