@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const { loginSchema, logoutSchema } = require('../utils/validation');
+const logger = require('../utils/winston');
 const UserDevice = require('../models/index').UserDevice;
 const User = require('../models/index').User;
 
@@ -19,8 +20,6 @@ router.post('/login', async (req, res) => {
 
     await UserDevice.update({ logged_in: false }, { where: { device_token } });
 
-    console.log({ session_expires });
-
     if (user_device) {
       await UserDevice.update(
         { user_id, device_token, logged_in: true, session_expires },
@@ -37,7 +36,7 @@ router.post('/login', async (req, res) => {
 
     return res.json({ succes: true });
   } catch (err) {
-    console.log({ err });
+    logger.error('Error in device login: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -58,6 +57,7 @@ router.post('/logout', async (req, res) => {
     );
     return res.json({ succes: true });
   } catch (err) {
+    logger.error('Error in device logout: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });

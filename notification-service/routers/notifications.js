@@ -7,6 +7,7 @@ const UserBoard = require('../models/index').UserBoard;
 const UserDevice = require('../models/index').UserDevice;
 const Board = require('../models/index').Board;
 const { Expo } = require('expo-server-sdk');
+const logger = require('../utils/winston');
 const expo = new Expo({ accessToken: process.env.EXPO_ACCESS_TOKEN });
 
 const eventNotifications = new Map();
@@ -53,13 +54,15 @@ const sendPushNotification = async (event) => {
             data: event,
           };
           const ticket = await expo.sendPushNotificationsAsync([message]);
-          console.log({ ticket });
+          logger.info(
+            `Push notification to user: ${user}, status: ${ticket[0].status}`
+          );
         }
       }
     }
     return true;
   } catch (err) {
-    console.log({ err });
+    logger.error('Error in sendPushNotification: ', err);
     return false;
   }
 };
@@ -99,7 +102,7 @@ const scheduleNotificationsForBoard = async (board_id) => {
     eventNotifications[board_id] = notifications;
     return true;
   } catch (err) {
-    console.log('Error while scheduling board events', board_id, err.message);
+    logger.error('Error in scheduleNotificationsForBoard: ', err);
     return false;
   }
 };
@@ -113,16 +116,23 @@ const scheduleNotificationsForAllEventsFromAllBoards = async () => {
     }
     return true;
   } catch (err) {
-    console.log({ err });
+    logger.error(
+      'Error in scheduleNotificationsForAllEventsFromAllBoards: ',
+      err
+    );
     return false;
   }
 };
 
 const scheduleNotifications = async () => {
-  await scheduleNotificationsForAllEventsFromAllBoards();
-  const job = schedule.scheduleJob(rule, async () => {
+  try {
     await scheduleNotificationsForAllEventsFromAllBoards();
-  });
+    const job = schedule.scheduleJob(rule, async () => {
+      await scheduleNotificationsForAllEventsFromAllBoards();
+    });
+  } catch (err) {
+    logger.error('Error in scheduleNotifications: ', err);
+  }
 };
 scheduleNotifications();
 
@@ -138,7 +148,7 @@ router.get('/board/:id', async (req, res) => {
     await scheduleNotificationsForBoard(id);
     return res.json({ success: true });
   } catch (err) {
-    console.log({ err });
+    logger.error('Error in rescheduling board notifications: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -148,7 +158,7 @@ router.get('/today', async (req, res) => {
     await scheduleNotificationsForAllEventsFromAllBoards();
     return res.json({ success: true });
   } catch (err) {
-    console.log({ err });
+    logger.error('Error in today: ', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
