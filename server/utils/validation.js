@@ -127,6 +127,12 @@ const updateEventSchema = Joi.object({
   }),
 });
 
+const deleteEventSchema = Joi.object({
+  event_id: Joi.string().guid().required(),
+  current_event_timestamp: Joi.date().timestamp().required(),
+  type: Joi.string().required(),
+});
+
 const boardEventsSchema = Joi.object({
   board_id: Joi.string().guid().required(),
   start_date: Joi.number().required().strict(),
@@ -146,4 +152,5 @@ module.exports = {
   eventSchema,
   boardEventsSchema,
   updateEventSchema,
+  deleteEventSchema,
 };

@@ -203,7 +203,7 @@ router.post('/events', auth, async (req, res) => {
           const exclusion = exclusion_list.find(
             (e) => e.exclusion_timestamp.getTime() == date.getTime()
           );
-          if (exclusion) {
+          if (exclusion && !exclusion.deleted) {
             events.push({
               event_id: e.id,
               parent_id: e.parent_id,
