@@ -142,3 +142,15 @@ export const updateEventAll = (
   current_event_timestamp: currentEventTimestamp,
   event
 });
+
+export const deleteEvent = (
+  eventId,
+  currentEventTimestamp,
+  type,
+) => axios.delete(`${SERVER_ADDRESS}/event`, {
+  data: {
+    event_id: eventId,
+    current_event_timestamp: currentEventTimestamp,
+    type
+  }
+});

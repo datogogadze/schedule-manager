@@ -6,7 +6,7 @@ import {
 import moment from 'moment';
 import { RRule } from 'rrule';
 import { Button, Card, Text, Modal, OverflowMenu, MenuItem } from '@ui-kitten/components';
-import { updateEventAll, updateEventFuture, updateEventSingle } from '../utils/api-calls';
+import { deleteEvent, updateEventAll, updateEventFuture, updateEventSingle } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
 import { frequencies } from '../utils/select-options';
@@ -185,7 +185,22 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
   };
 
   const handleDelete = (type) => {
-    console.log(type);
+    setLoading(true);
+    console.log(selectedEvent.event_id, selectedEvent.start_date, type);
+    deleteEvent(selectedEvent.event_id, selectedEvent.start_date, type).then(res => {
+      setLoading(false);
+      const { success } = res.data;
+      if (success) {
+        onSuccess();
+      } else {
+        onError('Error while updating board');
+      }
+    }).catch(e => {
+      setLoading(false);
+      const { message } = e.response.data;
+      console.log(message);
+      onError(message);
+    });
   };
 
   const handleUpdate = (type) => {
