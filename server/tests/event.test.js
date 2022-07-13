@@ -719,4 +719,60 @@ describe('Test events', () => {
     expect(res.body.success).toBe(true);
     expect(res.body.size).toBe(9);
   });
+
+  it('Test cancel recurrence', async () => {
+    let res = await agent
+      .post('/board')
+      .send({ name: 'cancel recurrence', role: 'aunt' })
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+    const board_id = res.body.board.id;
+
+    const event_data = {
+      board_id,
+      kid_id,
+      name: 'CANCEL RECURRENCE',
+      description: 'CANCEL RECURRENCE DESCRIPTION',
+      start_date: 1657693800000,
+      end_date: null,
+      duration: 60,
+      notification_time: 10,
+      frequency: 'daily',
+      interval: null,
+      count: 10,
+    };
+
+    res = await agent.post('/event').send(event_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    res = await agent
+      .put('/event/all')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1657693800000 + 5 * 86400000,
+        event: {
+          ...event_data,
+          frequency: null,
+          interval: null,
+          count: null,
+          name: 'UPDATE',
+          start_date: 1657693800000 + 5 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1657693800000,
+        end_date: 1657693800000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(1);
+  });
 });

@@ -209,6 +209,7 @@ router.put('/all', auth, async (req, res) => {
         message: 'When changing day, use update single or future events',
       });
     }
+
     const new_event = generateEventModel(event);
     if (event.error) {
       return res.status(400).json({
@@ -224,12 +225,27 @@ router.put('/all', auth, async (req, res) => {
 
     const { max_date } = await getMaxEndDate(existing_event.id);
 
-    await Event.update(
-      { ...new_event, end_date: new Date(max_date).getTime() },
-      {
-        where: { id: existing_event.id },
-      }
-    );
+    if (!event.frequency) {
+      await Event.update(
+        {
+          ...new_event,
+          end_date:
+            new Date(new_event.start_date).getTime() +
+            new_event.duration * 60000,
+          recurrence_pattern: null,
+        },
+        {
+          where: { id: existing_event.id },
+        }
+      );
+    } else {
+      await Event.update(
+        { ...new_event, end_date: new Date(max_date).getTime() },
+        {
+          where: { id: existing_event.id },
+        }
+      );
+    }
 
     await Event.destroy({
       where: { parent_id: existing_event.id },
