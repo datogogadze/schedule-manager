@@ -18,6 +18,7 @@ import { getEvents } from '../utils/api-calls';
 import CreateEventModal from '../components/CreateEventModal';
 import OverlaySpinner from '../components/OverlaySpinner';
 import CalendarModal from '../components/CalendarModal';
+import SelectedEventModal from '../components/SelectedEventModal';
 
 
 const ModalOptions = {
@@ -25,12 +26,15 @@ const ModalOptions = {
   CALENDAR: 'CALENDAR',
   CREATE: 'CREATE',
   FILTER: 'FILTER',
+  SELECT: 'SELECT'
 };
 
 const SelectedBoardScreen = ({ navigation, route }) => {
   const { boardId } = route.params;
 
   const [selectedModal, setSelectedModal] = React.useState(ModalOptions.NONE);
+
+  const [selectedEvent, setSelectedEvent] = React.useState(null);
 
   const [eventsCalendar, setEventsCalendar] = React.useState([]);
 
@@ -93,13 +97,14 @@ const SelectedBoardScreen = ({ navigation, route }) => {
 
           const eventsForDay = eventsGroup[key];
           const calendarItems = eventsForDay.map((event) => ({
-            id: event.id,
+            id: v4(),
             name: event.name,
             hourFrom: moment(event.start_date).format('hh:mm A'),
             hourTo: moment(event.start_date)
               .add(event.duration, 'milliseconds')
               .format('hh:mm A'),
             header: false,
+            event
           }));
           newEventsCalendar = [
             ...newEventsCalendar,
@@ -118,10 +123,11 @@ const SelectedBoardScreen = ({ navigation, route }) => {
 
   const renderItem = ({ item }) => {
     if (item.header) {
-      return <ListItem title={() => <Text category="h6">{item.name}</Text>} />;
+      return <ListItem key={item.id} title={() => <Text category="h6">{item.name}</Text>} />;
     } else {
       return (
         <Card
+          key={item.id}
           style={styles.eventCard}
           status="primary"
           footer={() => (
@@ -129,6 +135,10 @@ const SelectedBoardScreen = ({ navigation, route }) => {
               {`${item.hourFrom} - ${item.hourTo}`}
             </Text>
           )}
+          onPress={() => {
+            setSelectedEvent(item.event);
+            setSelectedModal(ModalOptions.SELECT);
+          }}
         >
           <Text category="s1">{item.name}</Text>
         </Card>
@@ -164,7 +174,26 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           });
         }}
       />;
-    } 
+    } else if(modal == ModalOptions.SELECT) {
+      return <SelectedEventModal
+        boardId={boardId}
+        selectedEvent={selectedEvent}
+        visible={modal == ModalOptions.SELECT}
+        onSuccess={() => {
+          setSelectedModal(ModalOptions.NONE);
+          fetchEvents();
+        }}
+        onClose={() => setSelectedModal(ModalOptions.NONE)}
+        onError={(message) => {
+          Toast.show({
+            type: 'error',
+            text1: 'Whoops',
+            text2: message,
+          });
+        }}
+      />;
+    }
+
     return null;
   };
 

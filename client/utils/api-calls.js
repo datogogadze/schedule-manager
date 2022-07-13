@@ -95,3 +95,33 @@ export const createEvent = (
   interval,
   count
 });
+
+export const updateEventSingle = (
+  eventId,
+  currentEventTimestamp,
+  event,
+) => axios.put(`${SERVER_ADDRESS}/event/single`, {
+  event_id: eventId,
+  current_event_timestamp: currentEventTimestamp,
+  event
+});
+
+export const updateEventFuture = (
+  eventId,
+  currentEventTimestamp,
+  event,
+) => axios.put(`${SERVER_ADDRESS}/event/future`, {
+  event_id: eventId,
+  current_event_timestamp: currentEventTimestamp,
+  event
+});
+
+export const updateEventAll = (
+  eventId,
+  currentEventTimestamp,
+  event,
+) => axios.put(`${SERVER_ADDRESS}/event/all`, {
+  event_id: eventId,
+  current_event_timestamp: currentEventTimestamp,
+  event
+});
