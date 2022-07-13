@@ -201,6 +201,8 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       recurrenceCount,
       recurrenceEndDate,
       recurrenceEndingIndex,
+      enableNotification,
+      notificationTime
     } = formValues;
   
     const startDayMilliseconds = moment(eventDay).startOf('day').valueOf();
@@ -208,7 +210,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
     const endTimeMilliseconds = hourTo.getHours() * 60 * 60 * 1000 + hourTo.getMinutes() * 60 * 1000;
       
     const startTime = startDayMilliseconds + startTimeMilliseconds;
-    const duration = endTimeMilliseconds - startTimeMilliseconds;
+    const duration = Math.floor((endTimeMilliseconds - startTimeMilliseconds) / 60000);
   
     let rEndDate = null;
     let rFrequency = null;
@@ -224,6 +226,12 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
         rCount = Number(recurrenceCount);
       }
     }
+
+    let eventNotificationTime = null;
+
+    if (enableNotification) {
+      eventNotificationTime = notificationTime;
+    } 
   
     const updatedEvent = {
       board_id: boardId,
@@ -236,7 +244,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       frequency: rFrequency,
       interval: rInterval,
       end_date: rEndDate,
-      notification_time: null
+      notification_time: eventNotificationTime
     };
 
 

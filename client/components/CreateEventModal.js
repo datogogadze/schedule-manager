@@ -34,6 +34,8 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       recurrenceCount,
       recurrenceEndDate,
       recurrenceEndingIndex,
+      enableNotification,
+      notificationTime
     } = values;
 
     const startDayMilliseconds = moment(eventDay).startOf('day').valueOf();
@@ -41,7 +43,7 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
     const endTimeMilliseconds = hourTo.getHours() * 60 * 60 * 1000 + hourTo.getMinutes() * 60 * 1000;
     
     const startTime = startDayMilliseconds + startTimeMilliseconds;
-    const duration = endTimeMilliseconds - startTimeMilliseconds;
+    const duration = Math.floor((endTimeMilliseconds - startTimeMilliseconds) / 60000);
 
     let rEndDate = null;
     let rFrequency = null;
@@ -58,6 +60,12 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       }
     }
 
+    let eventNotificationTime = null;
+
+    if (enableNotification) {
+      eventNotificationTime = notificationTime;
+    } 
+
     createEvent(
       boardId,
       user.id,
@@ -68,7 +76,8 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       duration,
       rFrequency,
       rInterval,
-      rCount
+      rCount,
+      eventNotificationTime
     ).then(res => {
       setLoading(false);
       const { success } = res.data;
