@@ -80,7 +80,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       description: description,
       eventDay: new Date(start_date),
       hourFrom: new Date(start_date),
-      hourTo: new Date(start_date + duration),
+      hourTo: new Date(start_date + duration * 60000),
       isRecurring,
       interval: interval.toString(),
       frequencyIndex,
@@ -347,7 +347,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
               <Text style={styles.text} category='p1'>{ moment(selectedEvent.start_date).format('MMMM Do YYYY, h:mm:ss A') }</Text>
 
               <Text style={styles.text} category='s1'>Duration</Text>
-              <Text style={styles.text} category='p1'>{ moment.utc(selectedEvent.duration).format('h:mm:ss') }</Text>
+              <Text style={styles.text} category='p1'>{ moment.utc(selectedEvent.duration * 60000).format('h:mm:ss') }</Text>
             </> }
 
             { isEditing && <EditEventForm refForm={refForm} handleFormChange={handleFormChange} initialValues={initialValues} /> }
