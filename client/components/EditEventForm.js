@@ -23,7 +23,9 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
   frequencyIndex: 0,
   recurrenceEndingIndex: 0,
   recurrenceEndDate: new Date(),
-  recurrenceCount: '1'
+  recurrenceCount: '1',
+  enableNotification: false,
+  notificationTime: null
 } }) => {
   const refDescription = useRef();
 
@@ -118,6 +120,31 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                 )}
               </Field>
             </View>
+
+            <Field name="enableNotification">
+              {({ field, form }) => (
+                <CheckBox
+                  {...field}
+                  style={styles.checkbox}
+                  checked={values.enableNotification}
+                  onChange={(v) => {
+                    form.setFieldValue(field.name, v);
+                    form.setFieldTouched(field.name, true);
+                  }}
+                >
+                  Enable Notification
+                </CheckBox> 
+              )}
+            </Field>
+
+            { values.enableNotification && <Input 
+              style={styles.textInput}
+              keyboardType = 'numeric'
+              label="Minutes before notification"
+              placeholder='Minutes'
+              onChangeText = { handleChange('notificationTime')}
+              value = {values.notificationTime}
+            />}
 
             <Field name="isRecurring">
               {({ field, form }) => (

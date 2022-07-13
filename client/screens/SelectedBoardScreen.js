@@ -101,7 +101,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
             name: event.name,
             hourFrom: moment(event.start_date).format('hh:mm A'),
             hourTo: moment(event.start_date)
-              .add(event.duration, 'milliseconds')
+              .add(event.duration, 'minutes')
               .format('hh:mm A'),
             header: false,
             event
