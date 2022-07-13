@@ -146,7 +146,7 @@ router.post('/users', auth, async (req, res) => {
         .json({ success: false, message: 'Incorrect board_id' });
     }
     const userBoards = await UserBoard.findAll({ where: { board_id } });
-    const userIds = userBoards.map((user) => user.user_id);
+    const userIds = userBoards.map((user) => user.dataValues.user_id);
     if (!userIds.includes(req.user.id)) {
       return res.status(403).json({ success: false, message: 'unauthorized' });
     }
@@ -163,6 +163,44 @@ router.post('/users', auth, async (req, res) => {
     });
     const usersList = users.map((user) => user.dataValues);
     return res.json({ success: true, users: usersList });
+  } catch (err) {
+    logger.error('Error in board users: ', err);
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
+router.post('/kids', auth, async (req, res) => {
+  try {
+    await boardUsersSchema.validateAsync(req.body, { abortEarly: false });
+    const { board_id } = req.body;
+    const board = await Board.findOne({ where: { id: board_id } });
+    if (!board) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'Incorrect board_id' });
+    }
+    const userBoards = await UserBoard.findAll({ where: { board_id } });
+    let userIds = userBoards.map((user) => user.dataValues.user_id);
+    if (!userIds.includes(req.user.id)) {
+      return res.status(403).json({ success: false, message: 'unauthorized' });
+    }
+
+    userIds = userBoards.map((user) => {
+      if (user.dataValues.role == 'kid') return user.dataValues.id;
+    });
+    const users = await User.findAll({
+      attributes: [
+        'id',
+        'email',
+        'display_name',
+        'first_name',
+        'last_name',
+        'image_url',
+      ],
+      where: { id: { [Op.in]: userIds } },
+    });
+    const usersList = users.map((user) => user.dataValues);
+    return res.json({ success: true, kids: usersList });
   } catch (err) {
     logger.error('Error in board users: ', err);
     return res.status(502).json({ success: false, message: err.message });
