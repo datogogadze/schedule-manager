@@ -14,7 +14,13 @@ router.get('/me', auth, async (req, res) => {
         .status(401)
         .json({ success: false, message: 'unauthenticated' });
     }
-    return res.json({ success: true, user: req.user });
+    return res.json({
+      success: true,
+      user: {
+        ...req.user,
+        session_expires: req.session.cookie._expires.getTime(),
+      },
+    });
   } catch (err) {
     logger.error('Error in me: ', err);
     return res.status(502).json({ success: false, message: err.message });

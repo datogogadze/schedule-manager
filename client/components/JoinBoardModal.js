@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-  StyleSheet, View,
-} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button, Card, Text, Modal, Input } from '@ui-kitten/components';
 import OverlaySpinner from './OverlaySpinner';
 import { joinBoard } from '../utils/api-calls';
@@ -12,40 +10,42 @@ const JoinBoardModal = ({ visible, onClose, onSuccess, onError }) => {
 
   const handleJoinBoard = () => {
     setLoading(true);
-    joinBoard(code, 'father').then(res => {
-      setLoading(false);
-      const { success } = res.data;
-      if (success) {
-        onSuccess();
-      } else {
-        onError('Error while creating board');
-      }
-    }).catch(e => {
-      setLoading(false);
-      const { message } = e.response.data;
-      onError(message);
-    });
+    joinBoard(code, 'father')
+      .then((res) => {
+        setLoading(false);
+        const { success, board_id } = res.data;
+        if (success) {
+          onSuccess(board_id);
+        } else {
+          onError('Error while creating board');
+        }
+      })
+      .catch((e) => {
+        setLoading(false);
+        const { message } = e.response.data;
+        onError(message);
+      });
   };
 
   const CardHeader = (props) => (
     <View {...props}>
-      <Text category='h6'>Join Board</Text>
+      <Text category="h6">Join Board</Text>
     </View>
   );
-  
+
   const CardFooter = (props) => (
     <View {...props} style={[props.style, styles.footerContainer]}>
       <Button
         style={styles.footerControl}
-        size='medium'
-        status='basic'
+        size="medium"
+        status="basic"
         onPress={onClose}
       >
         Cancel
       </Button>
       <Button
         style={styles.footerControl}
-        size='medium'
+        size="medium"
         onPress={handleJoinBoard}
       >
         Join
@@ -62,9 +62,7 @@ const JoinBoardModal = ({ visible, onClose, onSuccess, onError }) => {
         onBackdropPress={onClose}
       >
         <Card style={styles.card} header={CardHeader} footer={CardFooter}>
-          <Text style={styles.text}>
-            Enter the code of the board.
-          </Text>
+          <Text style={styles.text}>Enter the code of the board.</Text>
           <Input
             placeholder="Name"
             status="basic"
@@ -72,7 +70,7 @@ const JoinBoardModal = ({ visible, onClose, onSuccess, onError }) => {
             autoCapitalize="none"
             size="large"
             value={code}
-            onChangeText={text => setCode(text)}
+            onChangeText={(text) => setCode(text)}
           />
         </Card>
         <OverlaySpinner visible={loading} />
