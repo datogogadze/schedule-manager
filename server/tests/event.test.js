@@ -377,7 +377,7 @@ describe('Test events', () => {
   it('Test update single', async () => {
     let res = await agent
       .post('/board')
-      .send({ name: 'single', role: ' aunt' })
+      .send({ name: 'single', role: 'aunt' })
       .expect(200);
     expect(res.body.success).toBe(true);
     const board_id = res.body.board.id;
@@ -510,5 +510,213 @@ describe('Test events', () => {
       })
       .expect(200);
     expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1656902700000,
+        end_date: 1656902700000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(6);
+
+    const names111 = res.body.events.filter((e) => e.name == 'STARTING VALUE');
+    const names211 = res.body.events.filter((e) => e.name == 'FIRST UPDATE');
+    const names311 = res.body.events.filter((e) => e.name == 'FOURTH UPDATE');
+    const names411 = res.body.events.filter((e) => e.name == 'LAST UPDATE');
+
+    expect(Object.keys(names111).length).toBe(0);
+    expect(Object.keys(names211).length).toBe(0);
+    expect(Object.keys(names311).length).toBe(0);
+    expect(Object.keys(names411).length).toBe(6);
+  });
+
+  it('Test delete all', async () => {
+    let res = await agent
+      .post('/board')
+      .send({ name: 'delete all', role: 'aunt' })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const board_id = res.body.board.id;
+    const event_data = {
+      board_id,
+      kid_id,
+      name: 'DELETE EVENT',
+      description: 'DELETE EVENT DESCRIPTION',
+      start_date: 1657693800000,
+      end_date: null,
+      duration: 60,
+      notification_time: 10,
+      frequency: 'daily',
+      interval: null,
+      count: 10,
+    };
+
+    res = await agent.post('/event').send(event_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1657693800000 + 5 * 86400000,
+        event: {
+          ...event_data,
+          name: 'UPDATE',
+          start_date: 1657693800000 + 5 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .delete('/event')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1657693800000 + 3 * 86400000,
+        type: 'all',
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1657693800000,
+        end_date: 1657693800000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(0);
+  });
+
+  it('Test delete future', async () => {
+    let res = await agent
+      .post('/board')
+      .send({ name: 'delete all', role: 'aunt' })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const board_id = res.body.board.id;
+    const event_data = {
+      board_id,
+      kid_id,
+      name: 'DELETE EVENT',
+      description: 'DELETE EVENT DESCRIPTION',
+      start_date: 1657693800000,
+      end_date: null,
+      duration: 60,
+      notification_time: 10,
+      frequency: 'daily',
+      interval: null,
+      count: 10,
+    };
+
+    res = await agent.post('/event').send(event_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1657693800000 + 5 * 86400000,
+        event: {
+          ...event_data,
+          name: 'UPDATE',
+          start_date: 1657693800000 + 5 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .delete('/event')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1657693800000 + 3 * 86400000,
+        type: 'future',
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1657693800000,
+        end_date: 1657693800000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    expect(res.body.size).toBe(3);
+  });
+
+  it('Test delete single', async () => {
+    let res = await agent
+      .post('/board')
+      .send({ name: 'delete single', role: 'aunt' })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const board_id = res.body.board.id;
+    const event_data = {
+      board_id,
+      kid_id,
+      name: 'DELETE EVENT',
+      description: 'DELETE EVENT DESCRIPTION',
+      start_date: 1657693800000,
+      end_date: null,
+      duration: 60,
+      notification_time: 10,
+      frequency: 'daily',
+      interval: null,
+      count: 10,
+    };
+
+    res = await agent.post('/event').send(event_data).expect(200);
+    expect(res.body.success).toBe(true);
+    const { event } = res.body;
+
+    res = await agent
+      .put('/event/future')
+      .send({
+        event_id: event.id,
+        current_event_timestamp: 1657693800000 + 5 * 86400000,
+        event: {
+          ...event_data,
+          name: 'UPDATE',
+          start_date: 1657693800000 + 5 * 86400000,
+        },
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .delete('/event')
+      .send({
+        event_id: res.body.event.id,
+        current_event_timestamp: 1657693800000 + 7 * 86400000,
+        type: 'single',
+      })
+      .expect(200);
+
+    expect(res.body.success).toBe(true);
+
+    res = await agent
+      .post('/board/events')
+      .send({
+        board_id,
+        start_date: 1657693800000,
+        end_date: 1657693800000 + 9 * 86400000,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.size).toBe(9);
   });
 });
