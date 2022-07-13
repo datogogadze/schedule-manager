@@ -24,3 +24,17 @@ export const SignupSchema = Yup.object().shape({
     .required('Required')
     .oneOf([Yup.ref('password'), null], 'Passwords must match')
 });
+
+export const EditEventSchema = Yup.object().shape({
+  name: Yup.string(),
+  description: Yup.string(),
+  eventDay: Yup.date(),
+  hourFrom: Yup.date(),
+  hourTo: Yup.date(),
+  isRecurring: Yup.boolean(),
+  interval: Yup.number(),
+  frequencyIndex: Yup.number(),
+  recurrenceEndingIndex: Yup.number(),
+  recurrenceEndDate: Yup.date(),
+  recurrenceCount: Yup.number()
+});

@@ -44,6 +44,20 @@ export const checkLogin = () => axios.get(`${SERVER_ADDRESS}/user/me`);
 
 export const logout = () => axios.get(`${SERVER_ADDRESS}/auth/logout`);
 
+export const loginDevice = (userId, deviceToken, sesseionExpires) =>
+  axios.post(`${NOTIFICATION_SERVICE_ADDRESS}/auth/login`, {
+    user_id: userId,
+    device_token: deviceToken,
+    session_expires: sesseionExpires,
+  });
+
+export const logoutDevice = (userId, deviceToken) =>
+  axios.post(`${NOTIFICATION_SERVICE_ADDRESS}/auth/logout`, {
+    user_id: userId,
+    device_token: deviceToken,
+  });
+
+
 export const getUserBoards = () => axios.get(`${SERVER_ADDRESS}/user/boards`);
 
 export const getUserData = (accessToken) =>
@@ -82,7 +96,8 @@ export const createEvent = (
   duration,
   frequency = null,
   interval = null,
-  count = null
+  count = null,
+  notificationTime = null
 ) =>
   axios.post(`${SERVER_ADDRESS}/event`, {
     board_id: boardId,
@@ -95,17 +110,35 @@ export const createEvent = (
     frequency,
     interval,
     count,
+    notification_time: notificationTime
   });
 
-export const loginDevice = (userId, deviceToken, sesseionExpires) =>
-  axios.post(`${NOTIFICATION_SERVICE_ADDRESS}/auth/login`, {
-    user_id: userId,
-    device_token: deviceToken,
-    session_expires: sesseionExpires,
-  });
+export const updateEventSingle = (
+  eventId,
+  currentEventTimestamp,
+  event,
+) => axios.put(`${SERVER_ADDRESS}/event/single`, {
+  event_id: eventId,
+  current_event_timestamp: currentEventTimestamp,
+  event
+});
 
-export const logoutDevice = (userId, deviceToken) =>
-  axios.post(`${NOTIFICATION_SERVICE_ADDRESS}/auth/logout`, {
-    user_id: userId,
-    device_token: deviceToken,
-  });
+export const updateEventFuture = (
+  eventId,
+  currentEventTimestamp,
+  event,
+) => axios.put(`${SERVER_ADDRESS}/event/future`, {
+  event_id: eventId,
+  current_event_timestamp: currentEventTimestamp,
+  event
+});
+
+export const updateEventAll = (
+  eventId,
+  currentEventTimestamp,
+  event,
+) => axios.put(`${SERVER_ADDRESS}/event/all`, {
+  event_id: eventId,
+  current_event_timestamp: currentEventTimestamp,
+  event
+});
