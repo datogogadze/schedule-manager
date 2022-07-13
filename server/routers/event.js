@@ -12,7 +12,7 @@ const Event = require('../models/index').Event;
 const Exclusion = require('../models/index').Exclusion;
 const { RRule, RRuleSet, rrulestr } = require('rrule');
 const { Recurrence } = require('../utils/enums/enums');
-const { Op } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 const axios = require('axios');
 const logger = require('../utils/winston');
 
@@ -56,23 +56,6 @@ const getMidnight = (d) => {
   return new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   ).getTime();
-};
-
-const generateRRuleString = (
-  start_date,
-  frequency,
-  interval,
-  count,
-  end_date
-) => {
-  const rule = generateRule(
-    new Date(start_date),
-    Recurrence.convert(frequency),
-    interval,
-    count,
-    new Date(end_date)
-  );
-  return rule.toString();
 };
 
 const generateEventModel = (eventData) => {
@@ -125,13 +108,14 @@ const generateEventModel = (eventData) => {
     } else {
       end_date = new Date(Date.UTC(9999, 11, 31, 23, 59, 59)).getTime();
     }
-    recurrence_pattern = generateRRuleString(
-      start_date,
-      frequency,
+    recurrence_rule = generateRule(
+      new Date(start_date),
+      Recurrence.convert(frequency),
       interval,
       count,
-      end_date
+      new Date(end_date)
     );
+    recurrence_pattern = recurrence_rule.toString();
   }
 
   const event = {
@@ -186,11 +170,18 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+const getMaxEndDate = (parent_id) =>
+  Event.findOne({
+    attributes: [[fn('max', col('end_date')), 'max_date']],
+    raw: true,
+    where: { parent_id },
+  });
+
 router.put('/all', auth, async (req, res) => {
   try {
     await updateEventSchema.validateAsync(req.body, { abortEarly: false });
     const { event_id, current_event_timestamp, event } = req.body;
-    const existing_event = await Event.findOne({ where: { id: event_id } });
+    let existing_event = await Event.findOne({ where: { id: event_id } });
     if (!existing_event) {
       return res
         .status(400)
@@ -225,15 +216,33 @@ router.put('/all', auth, async (req, res) => {
         message: event.message,
       });
     }
-    await Event.update(new_event, {
-      where: { id: event_id },
-    });
+    if (existing_event.parent_id) {
+      existing_event = await Event.findOne({
+        where: { id: existing_event.parent_id },
+      });
+    }
+
+    const { max_date } = await getMaxEndDate(existing_event.id);
+
+    await Event.update(
+      { ...new_event, end_date: new Date(max_date).getTime() },
+      {
+        where: { id: existing_event.id },
+      }
+    );
+
     await Event.destroy({
-      where: { parent_id: event_id },
+      where: { parent_id: existing_event.id },
     });
+
     await Exclusion.destroy({
       where: { event_id },
     });
+
+    await Exclusion.destroy({
+      where: { event_id: existing_event.id },
+    });
+
     if (process.env.NODE_ENV != 'test') {
       // reschedule board notifications
       axios.get(
@@ -531,11 +540,21 @@ const deleteAll = async (event) => {
 };
 
 const deleteFuture = async (event, current_event_timestamp) => {
-  const real_parent_id = event.parent_id
-    ? existing_event.parent_id
-    : existing_event.id;
+  const real_parent_id = event.parent_id ? event.parent_id : event.id;
+  const rule = RRule.parseString(event.recurrence_pattern);
+  let new_recurrence = generateRule(
+    rule.dtstart,
+    rule.freq,
+    rule.interval,
+    null,
+    new Date(current_event_timestamp - 1)
+  );
+  new_recurrence = new_recurrence.toString();
   await Event.update(
-    { end_date: current_event_timestamp - 1 },
+    {
+      end_date: current_event_timestamp - 1,
+      recurrence_pattern: new_recurrence,
+    },
     { where: { id: event.id } }
   );
 
@@ -547,6 +566,7 @@ const deleteFuture = async (event, current_event_timestamp) => {
       },
     },
   });
+
   await Exclusion.destroy({
     where: {
       event_id: event.id,
@@ -555,6 +575,16 @@ const deleteFuture = async (event, current_event_timestamp) => {
       },
     },
   });
+
+  await Exclusion.destroy({
+    where: {
+      event_id: real_parent_id,
+      start_date: {
+        [Op.gte]: current_event_timestamp,
+      },
+    },
+  });
+
   if (process.env.NODE_ENV != 'test') {
     // reschedule board notifications
     axios.get(
@@ -578,11 +608,17 @@ const deleteSingle = async (event, current_event_timestamp) => {
     delete exclusion_data.parent_id;
     delete exclusion_data.recurrence_pattern;
     const existing_exclusion = await Exclusion.findOne({
-      where: { event_id, exclusion_timestamp: current_event_timestamp },
+      where: {
+        event_id: event.id,
+        exclusion_timestamp: current_event_timestamp,
+      },
     });
     if (existing_exclusion) {
       await Exclusion.update(exclusion_data, {
-        where: { event_id, exclusion_timestamp: current_event_timestamp },
+        where: {
+          event_id: event.id,
+          exclusion_timestamp: current_event_timestamp,
+        },
       });
     } else {
       await Exclusion.create(exclusion_data);
@@ -631,15 +667,15 @@ router.delete('/', auth, async (req, res) => {
     }
 
     if (type === 'all') {
-      await deleteAll(existing_event);
+      await deleteAll(existing_event.dataValues);
     }
 
     if (type === 'future') {
-      await deleteFuture(existing_event, current_event_timestamp);
+      await deleteFuture(existing_event.dataValues, current_event_timestamp);
     }
 
     if (type === 'single') {
-      await deleteSingle(existing_event, current_event_timestamp);
+      await deleteSingle(existing_event.dataValues, current_event_timestamp);
     }
 
     return res.json({
