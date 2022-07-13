@@ -296,35 +296,46 @@ const LoginScreen = ({ navigation }) => {
             Log In
           </Button>
 
-          <Button
-            size="large"
-            status="basic"
-            style={styles.googleLoginButton}
-            disabled={!request}
-            accessoryLeft={
-              <Icon style={styles.icon} fill="#8F9BB3" name="google-outline" />
-            }
-            onPress={() => {
-              promptAsync();
-            }}
-          >
-            Log In With Google
-          </Button>
-
-          <Button
-            size="large"
-            status="basic"
-            style={styles.googleLoginButton}
-            disabled={!request}
-            accessoryLeft={
-              <Icon style={styles.icon} fill="#8F9BB3" name="google-outline" />
-            }
-            onPress={() => {
-              logIn();
-            }}
-          >
-            Log In With Facebook
-          </Button>
+          <View style={styles.googleFacebookGroup}>
+            <View style={styles.googleLoginButton}>
+              <Button
+                size="large"
+                status="basic"
+                disabled={!request}
+                accessoryLeft={
+                  <Icon
+                    style={styles.icon}
+                    fill="#8F9BB3"
+                    name="google-outline"
+                  />
+                }
+                onPress={() => {
+                  promptAsync();
+                }}
+              >
+                Google
+              </Button>
+            </View>
+            <View style={styles.facebookLoginButton}>
+              <Button
+                size="large"
+                status="basic"
+                disabled={!request}
+                accessoryLeft={
+                  <Icon
+                    style={styles.icon}
+                    fill="#8F9BB3"
+                    name="facebook-outline"
+                  />
+                }
+                onPress={() => {
+                  logIn();
+                }}
+              >
+                Facebook
+              </Button>
+            </View>
+          </View>
 
           <Button
             size="large"
@@ -374,10 +385,21 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     marginTop: '35%',
-    marginBottom: 10,
+    marginBottom: 30,
   },
   googleLoginButton: {
-    marginBottom: 10,
+    flex: 1,
+    marginRight: 10,
+  },
+  facebookLoginButton: {
+    flex: 1,
+  },
+  googleFacebookGroup: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 30,
   },
 });
 
