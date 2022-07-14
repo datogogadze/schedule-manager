@@ -35,7 +35,8 @@
     "save-dev": "^0.0.1-security",
     "sequelize": "^6.19.0",
     "uuid": "^8.3.2",
-    "winston": "^3.7.2"
+    "winston": "^3.7.2",
+    "@sendgrid/mail": "^7.7.0"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",
