@@ -79,8 +79,8 @@ const BoardsScreen = ({ navigation }) => {
   };
 
   useEffect(async () => {
-    await registerForPushNotificationsAsync();
     fetchBoards();
+    registerForPushNotificationsAsync();
   }, []);
 
   const fetchBoards = () => {

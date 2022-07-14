@@ -26,15 +26,35 @@ export const SignupSchema = Yup.object().shape({
 });
 
 export const EditEventSchema = Yup.object().shape({
-  name: Yup.string(),
-  description: Yup.string(),
-  eventDay: Yup.date(),
-  hourFrom: Yup.date(),
-  hourTo: Yup.date(),
-  isRecurring: Yup.boolean(),
-  interval: Yup.number(),
-  frequencyIndex: Yup.number(),
-  recurrenceEndingIndex: Yup.number(),
-  recurrenceEndDate: Yup.date(),
-  recurrenceCount: Yup.number()
+  name: Yup.string().required().min(3, 'Should contain at least 3 letters'),
+  description: Yup.string().required().min(3, 'Should contain at least 3 letters'),
+  eventDay: Yup.date().required(),
+  hourFrom: Yup.date().required(),
+  hourTo: Yup.date().required(),
+  enableNotification: Yup.boolean().required(),
+  notificationTime: Yup.number().when('enableNotification', {
+    is: true,
+    then: Yup.number().required()
+  }),
+  isRecurring: Yup.boolean().required(),
+  interval: Yup.number().when('isRecurring', {
+    is: true,
+    then: Yup.number().required()
+  }),
+  frequencyIndex: Yup.number().when('isRecurring', {
+    is: true,
+    then: Yup.number().required()
+  }),
+  recurrenceEndingIndex: Yup.number().when('isRecurring', {
+    is: true,
+    then: Yup.number().required()
+  }),
+  recurrenceEndDate: Yup.date().when('recurrenceEndingIndex', {
+    is: 0,
+    then: Yup.date().required()
+  }),
+  recurrenceCount: Yup.number().when('recurrenceEndingIndex', {
+    is: 1,
+    then: Yup.number().required()
+  }),
 });
