@@ -621,6 +621,7 @@ const deleteSingle = async (event, current_event_timestamp) => {
       end_date: event.start_date + event.duration * 60000,
       deleted: true,
     };
+    console.log({ event });
     delete exclusion_data.parent_id;
     delete exclusion_data.recurrence_pattern;
     const existing_exclusion = await Exclusion.findOne({
