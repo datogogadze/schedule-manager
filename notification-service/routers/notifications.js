@@ -25,12 +25,12 @@ const getMidnight = (d) => {
   ).getTime();
 };
 
-const getEndOfDay = (d) => {
+const getEndOfRange = (d) => {
   const date = new Date(d + DAY);
   const tommorow_midnight = new Date(
     Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
   ).getTime();
-  return tommorow_midnight - 1;
+  return tommorow_midnight - 1 + 8 * DAY;
 };
 
 const sendPushNotification = async (event) => {
@@ -71,7 +71,7 @@ const scheduleNotificationsForBoard = async (board_id) => {
   try {
     const now = Date.now();
     const start_date = getMidnight(now);
-    const end_date = getEndOfDay(now);
+    const end_date = getEndOfRange(now);
     const { data } = await axios.post(
       `${process.env.SERVER_ADDRESS}/board/events`,
       {

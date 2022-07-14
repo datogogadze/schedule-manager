@@ -119,8 +119,8 @@ describe('Test boards', () => {
       })
       .expect(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.user_id).toBe(user2_id);
-    expect(res.body.board_id).toBe(board_id);
+    expect(res.body.board.creator_id).toBe(user1_id);
+    expect(res.body.board.id).toBe(board_id);
   });
 
   it('Try adding creator to board', async () => {
