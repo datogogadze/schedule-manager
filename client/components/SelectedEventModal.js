@@ -30,12 +30,15 @@ const menuItemOptionsAll = [
 const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSuccess, onError }) => {
   const [loading, setLoading] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-  const [menuVisible, setMenuVisible] = React.useState(false);
   const [deleteMenuVisible, setDeleteMenuVisible] = React.useState(false);
-  const [menuItemOptions, setMenuItemOptions] = React.useState(menuItemOptionsAll);
+  const [menuItemOptions, setMenuItemOptions] = React.useState([]);
   const [formValues, setFormValues] = React.useState({});
 
   const refForm = useRef();
+
+  const menuVisible = useMemo(() => {
+    return menuItemOptions.length > 0;
+  }, [menuItemOptions]);
 
   const initialValues = useMemo(() => {
     const {
@@ -43,7 +46,8 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       description,
       start_date,
       duration,
-      recurrence_pattern
+      recurrence_pattern,
+      notification_time
     } = selectedEvent;
 
 
@@ -74,6 +78,14 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       }
 
     }
+
+    let enableNotification = false;
+    let notificationTime = '15';
+
+    if (notification_time) {
+      enableNotification = true;
+      notificationTime = notification_time;
+    }
     
     return {
       name: name,
@@ -86,16 +98,26 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       frequencyIndex,
       recurrenceEndingIndex,
       recurrenceEndDate,
-      recurrenceCount: recurrenceCount.toString()
+      recurrenceCount: recurrenceCount.toString(),
+      enableNotification,
+      notificationTime
     };
   }, selectedEvent.id);
 
-  useEffect(() => {
-    if (!initialValues.isRecurring && formValues.isRecurring) {
+  const handleFormChange = (values) => {
+    setFormValues({...values});
+  };
+
+  const handleSubmit = (values) => {
+    if (!initialValues.isRecurring && !values.isRecurring) {
       setMenuItemOptions([
         menuItemOptionsAll[0]
       ]);
-    } else if (initialValues.interval != formValues.interval || initialValues.frequencyIndex != formValues.frequencyIndex) {
+    } else if (!initialValues.isRecurring && values.isRecurring) {
+      setMenuItemOptions([
+        menuItemOptionsAll[0]
+      ]);
+    } else if (initialValues.interval != values.interval || initialValues.frequencyIndex != values.frequencyIndex) {
       setMenuItemOptions([
         menuItemOptionsAll[1],
         menuItemOptionsAll[2],
@@ -103,85 +125,6 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
     } else {
       setMenuItemOptions([...menuItemOptionsAll]);
     }
-  }, [formValues]);
-
-  const CardHeader = (props) => (
-    <View {...props}>
-      <Text category='h6'>{ selectedEvent.name }</Text>
-    </View>
-  );
-  
-  const CardFooter = (props) => (
-    <View {...props} style={[props.style, styles.footerContainer]}>
-      <Button
-        style={styles.footerControl}
-        size='medium'
-        status='basic'
-        onPress={onClose}
-      >
-        Cancel
-      </Button>
-      { !isEditing && <>
-        <OverflowMenu
-          anchor={() => <Button
-            style={styles.footerControl}
-            size='medium'
-            status='danger'
-            onPress={ () => setDeleteMenuVisible(true) }
-          >  
-          Delete
-          </Button>}
-          visible={deleteMenuVisible}
-          placement={'top'}
-          onBackdropPress={() => setDeleteMenuVisible(false)}
-        >
-          { menuItemOptionsAll.map((item, i) => <MenuItem key={i} title={item.title} onPress={() => {
-            handleDelete(item.type);
-            setDeleteMenuVisible(false);
-          }} />) }
-        </OverflowMenu>
-
-        <Button
-          style={styles.footerControl}
-          size='medium'
-          onPress={ () => setIsEditing(true) }
-        >  
-        Edit
-        </Button>
-      </> }
-      { isEditing && <>
-        <Button
-          style={styles.footerControl}
-          size='medium'
-          status='basic'
-          onPress={ () => setIsEditing(false) }
-        >
-          Discard
-        </Button>
-
-        <OverflowMenu
-          anchor={() => <Button
-            style={styles.footerControl}
-            size='medium'
-            onPress={() => setMenuVisible(true)}
-          >
-            Save
-          </Button>}
-          visible={menuVisible}
-          placement={'top'}
-          onBackdropPress={() => setMenuVisible(false)}
-        >
-          { menuItemOptions.map((item, i) => <MenuItem key={i} title={item.title} onPress={() => {
-            handleUpdate(item.type);
-            setMenuVisible(false);
-          }} />) }
-        </OverflowMenu>
-      </>}
-    </View>
-  );
-
-  const handleFormChange = (values) => {
-    setFormValues({...values});
   };
 
   const handleDelete = (type) => {
@@ -311,6 +254,83 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
     }
   };
 
+  const CardHeader = (props) => (
+    <View {...props}>
+      <Text category='h6'>{ selectedEvent.name }</Text>
+    </View>
+  );
+  
+  const CardFooter = (props) => (
+    <View {...props} style={[props.style, styles.footerContainer]}>
+      <Button
+        style={styles.footerControl}
+        size='medium'
+        status='basic'
+        onPress={onClose}
+      >
+        Cancel
+      </Button>
+      { !isEditing && <>
+        <OverflowMenu
+          anchor={() => <Button
+            style={styles.footerControl}
+            size='medium'
+            status='danger'
+            onPress={ () => setDeleteMenuVisible(true) }
+          >  
+          Delete
+          </Button>}
+          visible={deleteMenuVisible}
+          placement={'top'}
+          onBackdropPress={() => setDeleteMenuVisible(false)}
+        >
+          { menuItemOptionsAll.map((item, i) => <MenuItem key={i} title={item.title} onPress={() => {
+            handleDelete(item.type);
+            setDeleteMenuVisible(false);
+          }} />) }
+        </OverflowMenu>
+
+        <Button
+          style={styles.footerControl}
+          size='medium'
+          onPress={ () => setIsEditing(true) }
+        >  
+        Edit
+        </Button>
+      </> }
+      { isEditing && <>
+        <Button
+          style={styles.footerControl}
+          size='medium'
+          status='basic'
+          onPress={ () => setIsEditing(false) }
+        >
+          Discard
+        </Button>
+
+        <OverflowMenu
+          anchor={() => <Button
+            style={styles.footerControl}
+            size='medium'
+            onPress={() => {
+              refForm.current.handleSubmit();
+            }}
+          >
+            Save
+          </Button>}
+          visible={menuVisible}
+          placement={'top'}
+          onBackdropPress={() => setMenuItemOptions([])}
+        >
+          { menuItemOptions.map((item, i) => <MenuItem key={i} title={item.title} onPress={() => {
+            handleUpdate(item.type);
+            setMenuItemOptions([]);
+          }} />) }
+        </OverflowMenu>
+      </>}
+    </View>
+  );
+
 
   return (
     <>
@@ -321,7 +341,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       >
           
         <Card style={styles.createEventCard} header={CardHeader} footer={CardFooter } disabled>
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
             
             { !isEditing && <>
               <Text style={styles.text} category='s1'>Description</Text>
@@ -334,7 +354,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
               <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('H:mm') }</Text>
             </> }
 
-            { isEditing && <EditEventForm refForm={refForm} handleFormChange={handleFormChange} initialValues={initialValues} /> }
+            { isEditing && <EditEventForm refForm={refForm} handleSubmit={handleSubmit} handleFormChange={handleFormChange} initialValues={initialValues} /> }
           </ScrollView> 
         </Card>
         <OverlaySpinner visible={loading} />
@@ -374,7 +394,7 @@ const styles = StyleSheet.create({
     height: '75%'
   },
   modal: {
-    width: '80%',
+    width: '85%',
     height: '75%',
     alignItems: 'center',
     flex: 1,

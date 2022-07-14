@@ -26,7 +26,7 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
   recurrenceEndDate: new Date(),
   recurrenceCount: '1',
   enableNotification: false,
-  notificationTime: null
+  notificationTime: '15'
 } }) => {
   const refDescription = useRef();
 
@@ -43,20 +43,17 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
           handleSubmit(values);
         }}
       >
-        {({ handleChange, values }) => {
-
-          useEffect(() => {
-            handleFormChange(values);
-          }, [values]);
+        {({ handleChange, values, errors }) => {
           
           return <>
             <Input
               placeholder="Name"
-              status="basic"
+              status={errors.name ? 'danger' : 'basic'}
               style={styles.textInput}
               autoCapitalize="none"
               label="Event Name"
               size="large"
+              caption={errors.name || ' '}
               onChangeText={ handleChange('name')}
               onSubmitEditing={() => refDescription.current.focus()}
               value={values.name}
@@ -65,12 +62,12 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
             <Input
               placeholder="Description"
               label="Description"
-              status="basic"
+              status={errors.description ? 'danger' : 'basic'}
               style={styles.textInput}
               autoCapitalize="none"
               size="large"
+              caption={errors.description || ' '}
               multiline
-              numberOfLines={5}
               ref={refDescription}
               value={values.description}
 
@@ -79,48 +76,57 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
             />
 
             <View style={styles.dates}>
-              <Text style={styles.text} category='s2'>Day</Text>
-              <Field name="eventDay">
-                {({ field, form }) => (
-                  <DateTimePicker
-                    mode="date"
-                    onChange={ (event, value) =>  {
-                      form.setFieldValue(field.name, value);
-                      form.setFieldTouched(field.name, true);
-                    }}
-                    value={values.eventDay}
-                  />
-                )}
-              </Field>
+              <View style={styles.datePickerWrapper}>
+                <Text style={styles.text} category='s2'>Day</Text>
+                <Field name="eventDay">
+                  {({ field, form }) => (
+                    <DateTimePicker
+                      style={styles.datePicker}
+                      mode="date"
+                      onChange={ (event, value) =>  {
+                        form.setFieldValue(field.name, value);
+                        form.setFieldTouched(field.name, true);
+                      }}
+                      value={values.eventDay}
+                    />
+                  )}
+                </Field>
+              </View>
+              
+              <View style={styles.datePickerWrapper}>
+                <Text style={styles.text} category='s2'>From</Text>
+                <Field name="hourFrom">
+                  {({ field, form }) => (
+                    <DateTimePicker
+                      mode="time"
+                      style={styles.datePicker}
+                      onChange={ (event, value) =>  {
+                        form.setFieldValue(field.name, value);
+                        form.setFieldTouched(field.name, true);
+                      }}
+                      value={values.hourFrom}
+                    />
+                  )}
+                </Field>
+              </View>
 
-              <Text style={styles.text} category='s2'>From</Text>
-              <Field name="hourFrom">
-                {({ field, form }) => (
-                  <DateTimePicker
-                    mode="time"
-                    onChange={ (event, value) =>  {
-                      form.setFieldValue(field.name, value);
-                      form.setFieldTouched(field.name, true);
-                    }}
-                    value={values.hourFrom}
-                  />
-                )}
-              </Field>
-
-              <Text style={styles.text} category='s2'>To</Text>
-              <Field name="hourTo">
-                {({ field, form }) => (
-                  <DateTimePicker
-                    mode="time"
-                    onChange={ (event, value) =>  {
-                      form.setFieldValue(field.name, value);
-                      form.setFieldTouched(field.name, true);
-                    }}
-                    minimumDate={moment(values.hourFrom).add(1, 'minute').toDate()}
-                    value={values.hourTo}
-                  />
-                )}
-              </Field>
+              <View style={styles.datePickerWrapper}>
+                <Text style={styles.text} category='s2'>To</Text>
+                <Field name="hourTo">
+                  {({ field, form }) => (
+                    <DateTimePicker
+                      mode="time"
+                      style={styles.datePicker}
+                      onChange={ (event, value) =>  {
+                        form.setFieldValue(field.name, value);
+                        form.setFieldTouched(field.name, true);
+                      }}
+                      minimumDate={moment(values.hourFrom).add(1, 'minute').toDate()}
+                      value={values.hourTo}
+                    />
+                  )}
+                </Field>
+              </View>
             </View>
 
             <Field name="enableNotification">
@@ -139,7 +145,8 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
               )}
             </Field>
 
-            { values.enableNotification && <Input 
+            { values.enableNotification && <Input
+              status={errors.notificationTime ? 'danger' : 'basic'}
               style={styles.textInput}
               keyboardType = 'numeric'
               label="Minutes before notification"
@@ -165,12 +172,11 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
             </Field>
 
             { values.isRecurring && <>
-            
-              <Text>Repeat Every</Text>
-              
               <Layout style={styles.inputRow} level='1'>
                 <Input 
-                  style={styles.textInput}
+                  label='Repeats Every'
+                  style={{ marginRight: 20}}
+                  status={errors.interval ? 'danger' : 'basic'}
                   keyboardType = 'numeric'
                   onChangeText = { handleChange('interval')}
                   value = {values.interval}
@@ -180,6 +186,8 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                   {({ field, form }) => (
                     <Select
                       // {...field}
+                      style={{flexGrow: 1}}
+                      label=' '
                       selectedIndex={ new IndexPath(values.frequencyIndex) }
                       value={frequencyOptions[values.frequencyIndex]}
                       onSelect={ (v) => {
@@ -193,11 +201,11 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                 </Field>
               </Layout>
 
-              <Text>Ends</Text>
-              <View style={styles.frequency}>
+              <View style={styles.recurrenceEndDate}>
                 <Field name="recurrenceEndingIndex">
                   {({ field, form }) => (
                     <Select
+                      label='Ends'
                       selectedIndex={ new IndexPath(values.recurrenceEndingIndex) }
                       value={recurrenceEndingOptions[values.recurrenceEndingIndex]}
                       onSelect={ (v) => {
@@ -213,25 +221,30 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
               </View>
 
               { values.recurrenceEndingIndex == 0 && <>
-                <Text>Recurrence end date</Text>
-                <Field name="recurrenceEndDate">
-                  {({ field, form }) => (
-                    <DateTimePicker
-                      mode="date"
-                      minimumDate={values.eventDay}
-                      onChange={ (event, value) =>  {
-                        form.setFieldValue(field.name, value);
-                        form.setFieldTouched(field.name, true);
-                      }}
-                      value={values.recurrenceEndDate}
-                    />
-                  )}
-                </Field>
+                <View style={styles.datePickerWrapper}>
+                  <Text style={styles.text} category='s2'>Recurrence end date</Text>
+                  <Field name="recurrenceEndDate">
+                    {({ field, form }) => (
+                      <DateTimePicker
+                        mode="date"
+                        style={styles.datePicker}
+                        minimumDate={values.eventDay}
+                        onChange={ (event, value) =>  {
+                          form.setFieldValue(field.name, value);
+                          form.setFieldTouched(field.name, true);
+                        }}
+                        value={values.recurrenceEndDate}
+                      />
+                    )}
+                  </Field>
+                </View>
+                
               </> }
 
               { values.recurrenceEndingIndex == 1 && <>
-                <Text>Recurrence count</Text>
-                <Input 
+                <Input
+                  label='Recurrence Count'
+                  status={errors.recurrenceCount ? 'danger' : 'basic'}
                   style={styles.textInput}
                   keyboardType = 'numeric'
                   onChangeText = { handleChange('recurrenceCount')}
@@ -251,9 +264,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%'
   },
-  text: {
-    marginBottom: 12,
-  },
   backdrop: {
     backgroundColor: '#F5FCFF88',
   },
@@ -270,11 +280,25 @@ const styles = StyleSheet.create({
   dates: {
     marginTop: 20
   },
-  frequency: {
-    marginTop: 20
+  datePickerWrapper: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20
+  },
+  datePicker: {
+    flexGrow: 1
+  },
+  recurrenceEndDate: {
+    marginTop: 20,
+    marginBottom: 20
   },
   scrollView: {
     height: '75%'
+  },
+  checkbox: {
+    marginBottom: 15
   },
   modal: {
     width: '80%',
@@ -284,7 +308,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   inputRow: {
-    flexDirection: 'row'
+    flexDirection: 'row',
   }
 });
 

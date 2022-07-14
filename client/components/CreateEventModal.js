@@ -133,9 +133,8 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       >
           
         <Card style={styles.createEventCard} header={CardHeader} footer={CardFooter } disabled>
-          <ScrollView style={styles.scrollView}>
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
             <EditEventForm refForm={refForm} handleSubmit={handleSubmit} />
-
           </ScrollView> 
         </Card>
         <OverlaySpinner visible={loading} />
@@ -175,7 +174,7 @@ const styles = StyleSheet.create({
     height: '75%'
   },
   modal: {
-    width: '80%',
+    width: '85%',
     height: '75%',
     alignItems: 'center',
     flex: 1,
