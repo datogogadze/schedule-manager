@@ -111,7 +111,7 @@ const BoardsScreen = ({ navigation }) => {
   return (
     <SafeAreaView>
       <View style={styles.container}>
-        <Header text="Boards" navigation={navigation} smallHeader showMenu />
+        <Header text="My Boards" navigation={navigation} smallHeader showMenu />
         <ScrollView
           style={styles.boardsWrapper}
           showsVerticalScrollIndicator={false}
@@ -127,6 +127,7 @@ const BoardsScreen = ({ navigation }) => {
                 onPress={() =>
                   navigation.navigate('SelectedBoard', {
                     boardId: board.id,
+                    boardName: board.name
                   })
                 }
               >
@@ -138,37 +139,21 @@ const BoardsScreen = ({ navigation }) => {
           )}
         </ScrollView>
 
-        <CreateBoardModal
-          visible={createBoardModalOpen}
+        { createBoardModalOpen && <CreateBoardModal
           onClose={() => setCreateBoardModalOpen(false)}
-          onSuccess={(boardId) => {
+          onSuccess={(board) => {
             setCreateBoardModalOpen(false);
-            navigation.navigate('SelectedBoard', { boardId });
+            navigation.navigate('SelectedBoard', { boardId: board.id, boardName: board.name });
           }}
-          onError={(message) => {
-            Toast.show({
-              type: 'error',
-              text1: 'Whoops',
-              text2: message,
-            });
-          }}
-        />
+        /> }
 
-        <JoinBoardModal
-          visible={joinBoardModalOpen}
+        { joinBoardModalOpen && <JoinBoardModal
           onClose={() => setJoinBoardModalOpen(false)}
-          onSuccess={(boardId) => {
+          onSuccess={(board) => {
             setJoinBoardModalOpen(false);
-            navigation.navigate('SelectedBoard', { boardId });
+            navigation.navigate('SelectedBoard', { boardId: board.id, boardName: board.name });
           }}
-          onError={(message) => {
-            Toast.show({
-              type: 'error',
-              text1: 'Whoops',
-              text2: message,
-            });
-          }}
-        />
+        /> }
 
         <Layout style={styles.buttonsWrapper} level="1">
           <Button

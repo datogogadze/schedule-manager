@@ -32,7 +32,8 @@
     "@sendgrid/mail": "^7.7.0",
     "babel-preset-react-native": "^4.0.1",
     "concurrently": "^7.2.0",
-    "dotenv": "^16.0.1"
+    "dotenv": "^16.0.1",
+    "expo-updates": "^0.13.3"
   },
   "devDependencies": {
     "prettier": "^2.6.2"

@@ -103,7 +103,7 @@ router.post('/add-user', auth, async (req, res) => {
       role,
     };
     const result = await UserBoard.create(addUserPayload);
-    return res.json({ success: true, ...result.dataValues });
+    return res.json({ success: true, board: { ...board.dataValues } });
   } catch (err) {
     logger.error('Error in board add user: ', err);
     return res.status(502).json({ success: false, message: err.message });
