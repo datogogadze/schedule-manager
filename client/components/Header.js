@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View, Image, SafeAreaView } from 'react-native';
-import { Button, Icon, MenuItem, Text } from '@ui-kitten/components';
+import { Button, Icon, Text } from '@ui-kitten/components';
 
 import Modal from 'react-native-modal';
 import { logout, logoutDevice } from '../utils/api-calls';
@@ -9,7 +9,14 @@ import { getUser, removeUser } from '../utils/auth';
 const logo = require('../assets/logo.png');
 
 const Header = ({ navigation, text, showMenu, backButton }) => {
+  const [user, setUser] = React.useState('');
   const [sideMenuVisible, setSideMenuVisible] = React.useState(false);
+
+  useEffect(async () => {
+    const currentUser = await getUser();
+    setUser(currentUser);
+    console.log(currentUser);
+  }, []);
 
   const handleLogout = () => {
     logout()
@@ -87,29 +94,37 @@ const Header = ({ navigation, text, showMenu, backButton }) => {
           <SafeAreaView>
             <View style={styles.sideMenuContent}>
               <Text style={styles.fullName} category="h6">
-                Test User
+                { user.display_name }
               </Text>
               <Button
                 style={styles.logoutButton}
                 status="basic"
-                accessoryLeft={<Icon name="star" />}
+                accessoryLeft={<Icon name="credit-card-outline" />}
                 appearance="ghost"
+                onPress={() => {
+                  navigation.navigate('Boards', {
+                    user
+                  });
+                  setSideMenuVisible(false);
+                }}
               >
-                View Boards
+                My Boards
               </Button>
               <Button
                 style={styles.logoutButton}
                 status="basic"
-                accessoryLeft={<Icon name="star" />}
+                accessoryLeft={<Icon name="person" />}
                 appearance="ghost"
+                onPress={() => {
+                  navigation.navigate('Profile', {
+                    user
+                  });
+                  setSideMenuVisible(false);
+                }}
               >
                 Profile
               </Button>
-              <MenuItem
-                title="View boards"
-                accessoryRight={<Icon name="arrow-ios-forward" />}
-                style={styles.menuItem}
-              />
+
               <View style={styles.logoutButtonWrapper}>
                 <Button
                   style={styles.logoutButton}

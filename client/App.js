@@ -16,6 +16,7 @@ import BoardsScreen from './screens/BoardsScreen';
 import SelectedBoardScreen from './screens/SelectedBoardScreen';
 import { checkLogin } from './utils/api-calls';
 import { setUser } from './utils/auth';
+import ProfileScreen from './screens/ProfileScreen';
 
 const prefix = Linking.createURL('/');
 
@@ -100,6 +101,7 @@ const App = () => {
             <Stack.Screen name="Login" component={LoginScreen}></Stack.Screen>
             <Stack.Screen name="SignUp" component={SignUpScreen}></Stack.Screen>
             <Stack.Screen name="Main" component={MainScreen}></Stack.Screen>
+            <Stack.Screen name="Profile" component={ProfileScreen}></Stack.Screen>
             <Stack.Screen
               name="VerifyEmail"
               component={VerifyEmailScreen}

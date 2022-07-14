@@ -30,7 +30,7 @@ const ModalOptions = {
 };
 
 const SelectedBoardScreen = ({ navigation, route }) => {
-  const { boardId } = route.params;
+  const { boardId, boardName } = route.params;
 
   const [selectedModal, setSelectedModal] = React.useState(ModalOptions.NONE);
 
@@ -200,7 +200,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header navigation={navigation} text={'TEST'} showMenu backButton />
+        <Header navigation={navigation} text={boardName} showMenu backButton />
 
         <FlatList
           style={styles.eventList}
