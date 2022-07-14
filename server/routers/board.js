@@ -51,6 +51,28 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: '"id" is required as a parameter',
+      });
+    }
+    const board = await Board.findOne({ where: { id } });
+    if (!board) {
+      return res
+        .status(400)
+        .json({ success: false, message: 'board not found' });
+    }
+    return res.json({ success: true, board: { ...board.dataValues } });
+  } catch (err) {
+    logger.error('Error in getting board: ', err);
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
 router.post('/add-user', auth, async (req, res) => {
   try {
     await boardAddUserSchema.validateAsync(req.body, { abortEarly: false });
@@ -184,10 +206,8 @@ router.post('/kids', auth, async (req, res) => {
     if (!userIds.includes(req.user.id)) {
       return res.status(403).json({ success: false, message: 'unauthorized' });
     }
-
-    userIds = userBoards.map((user) => {
-      if (user.dataValues.role == 'kid') return user.dataValues.id;
-    });
+    userIds = userBoards.filter((user) => user.dataValues.role == 'kid');
+    userIds = userIds.map((user) => user.dataValues.user_id);
     const users = await User.findAll({
       attributes: [
         'id',
@@ -199,6 +219,7 @@ router.post('/kids', auth, async (req, res) => {
       ],
       where: { id: { [Op.in]: userIds } },
     });
+
     const usersList = users.map((user) => user.dataValues);
     return res.json({ success: true, kids: usersList });
   } catch (err) {

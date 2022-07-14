@@ -49,7 +49,7 @@ beforeAll(async () => {
   await db.UserBoard.create({
     user_id: user1.id,
     board_id: board.id,
-    role: 'aunt',
+    role: 'kid',
   });
 
   const event = await db.Event.create({
@@ -104,6 +104,12 @@ describe('Test boards', () => {
     expect(res.body.board.name).toBe('board');
   });
 
+  it('Test getting board', async () => {
+    const res = await agent1.get(`/board/${board_id}`).expect(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.board.name).toBe('board1');
+  });
+
   it('Test adding user to board', async () => {
     const res = await agent2
       .post('/board/add-user')
@@ -143,6 +149,20 @@ describe('Test boards', () => {
     expect(u1.email).toBe('johndoe1@mail.com');
     const u2 = users.find((u) => u.id == user2_id);
     expect(u2.email).toBe('johndoe2@mail.com');
+  });
+
+  it('Test getting kids from board', async () => {
+    const res = await agent1
+      .post('/board/kids')
+      .send({
+        board_id,
+      })
+      .expect(200);
+    expect(res.body.success).toBe(true);
+    const { kids } = res.body;
+    expect(kids.length).toBe(1);
+    const u1 = kids.find((u) => u.id == user1_id);
+    expect(u1.email).toBe('johndoe1@mail.com');
   });
 
   it('Test removing user from board', async () => {
