@@ -1,21 +1,9 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const jwt = require('jsonwebtoken');
 const User = require('../models/index').User;
 const logger = require('../utils/winston');
-const fs = require('fs');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  host: 'smtp.gmail.com',
-  port: 465,
-  auth: {
-    type: 'OAuth2',
-    user: process.env.GMAIL_USER,
-    clientId: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    refreshToken: process.env.GOOGLE_REFRESH_TOKEN,
-  },
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const sendVerificationMail = async (email) => {
   try {
@@ -35,33 +23,26 @@ const sendVerificationMail = async (email) => {
           return;
         }
         const url = `${process.env.HOST_ADDRESS}/auth/confirm/${token}`;
-        transporter.sendMail(
-          {
-            from: process.env.GMAIL_USER,
-            to: email,
-            subject: 'Schedule manager confirmation',
-            text: `მადლობას გიხდით რეგისტრაციისთვის <a href="${url}">დადასტურება</a>`,
-            html: `მადლობას გიხდით რეგისტრაციისთვის <a href="${url}">დადასტურება</a>`,
-            list: {
-              help: `${process.env.GMAIL_USER}?subject=help`,
-              unsubscribe: {
-                url: process.env.HOST_ADDRESS,
-                comment: 'Comment',
-              },
-            },
-          },
-          (err, info) => {
-            if (err) {
-              logger.error('nodemailer error: ', err);
-              return;
-            }
-            logger.debug('nodemailer info', info.messageId);
-          }
-        );
+        const msg = {
+          to: email,
+          from: 'kidschedulemanager@gmail.com',
+          subject: 'იმეილის ვერიფიკაცია',
+          text: `მადლობას გიხდით რეგისტრაციისთვის, გთხოვთ დააჭიროთ დადასტურებას რათა დაასრულოთ პროცესი`,
+          html: `<strong>მადლობას გიხდით რეგისტრაციისთვის, გთხოვთ დააჭიროთ ღილაკს <a href="${url}"><button>დადასტურება</button></a><strong> რათა დაასრულოთ პროცესი`,
+        };
+
+        sgMail
+          .send(msg)
+          .then((response) => {
+            logger.info('verification mail sent to: ', email);
+          })
+          .catch((err) => {
+            logger.error('error in mail verification send', err);
+          });
       }
     );
   } catch (err) {
-    logger.error('error in sending mail', err);
+    logger.error('error in sending verification mail', err);
   }
 };
 
@@ -83,33 +64,26 @@ const sendResetPasswrdMail = async (email) => {
           return;
         }
         const url = `${process.env.HOST_ADDRESS}/resetPassword?token=${token}`;
-        transporter.sendMail(
-          {
-            from: process.env.GMAIL_USER,
-            to: email,
-            subject: 'Schedule manager reset password',
-            text: `პაროლს შესაცვლელად შემდეგი 15 წუთის განმავლობაში გადადით ლინკზე: <a href="${url}">გადასვლა</a>`,
-            html: `პაროლს შესაცვლელად შემდეგი 15 წუთის განმავლობაში გადადით ლინკზე: <a href="${url}">გადასვლა</a>`,
-            list: {
-              help: `${process.env.GMAIL_USER}?subject=help`,
-              unsubscribe: {
-                url: process.env.HOST_ADDRESS,
-                comment: 'Comment',
-              },
-            },
-          },
-          (err, info) => {
-            if (err) {
-              logger.error('nodemailer error: ', err);
-              return;
-            }
-            logger.debug('nodemailer info', info.messageId);
-          }
-        );
+        const msg = {
+          to: email,
+          from: 'kidschedulemanager@gmail.com',
+          subject: 'პაროლის ცვლილება',
+          text: `პაროლის შესაცვლელად შემდეგი 15 წუთის განმავლობაში დააჭირეთ ღილაკს გადასვლა`,
+          html: `<strong>პაროლის შესაცვლელად შემდეგი 15 წუთის განმავლობაში დააჭირეთ ღილაკს <a href="${url}"><button>გადასვლა</button></a><strong>`,
+        };
+
+        sgMail
+          .send(msg)
+          .then((response) => {
+            logger.info('password reset mail sent to', email);
+          })
+          .catch((err) => {
+            logger.error('error in password reset send', err);
+          });
       }
     );
   } catch (err) {
-    logger.error('error in sending mail', err);
+    logger.error('error in sending password reset mail', err);
   }
 };
 

@@ -159,16 +159,83 @@ router.get('/confirm/:token', async (req, res) => {
       async (err, decoded) => {
         if (err) {
           logger.error('Error cinfirm token verify: ', err);
-          return res.json(400).json({ success: false, message: err.message });
+          return res.send(
+            `
+            <html>
+              <body style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    ">
+                <h1>დაფიქსირდა შეცდომა</h1>
+              </body>
+            </html>
+            `
+          );
         }
         const id = decoded.id;
+        const user = await User.findOne({ where: { id } });
+        if (!user) {
+          return res.send(
+            `
+            <html>
+              <body style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    ">
+                <h1>მომხმარებელი ვერ მოიძებნა</h1>
+              </body>
+            </html>
+            `
+          );
+        }
+        if (user.dataValues.email_verified) {
+          return res.send(
+            `
+            <html>
+              <body style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    ">
+                <h1>ამ მომხმარებელზე იმეილი უკვე ვერიფიცირებულა</h1>
+              </body>
+            </html>
+            `
+          );
+        }
         await User.update({ email_verified: true }, { where: { id } });
-        return res.json({ success: true, message: 'email verified' });
+        return res.send(
+          `
+          <html>
+            <body style="
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  ">
+              <h1>იმეილის ვერიფიკაცია წარმატებით დასრულდა</h1>
+            </body>
+          </html>
+          `
+        );
       }
     );
   } catch (err) {
     logger.error('Error in confirm token: ', err);
-    return res.status(502).json({ success: false, message: err.message });
+    return res.send(
+      `
+      <html>
+        <body style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              ">
+          <h1>დაფიქსირდა შეცდომა</h1>
+        </body>
+      </html>
+      `
+    );
   }
 });
 
@@ -214,17 +281,53 @@ router.post('/password/reset/:token', async (req, res) => {
       async (err, decoded) => {
         if (err) {
           logger.error('Error in password reset token verify: ', err);
-          return res.json(400).json({ success: false, message: err.message });
+          return res.send(
+            `
+            <html>
+              <body style="
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    ">
+                <h1>დაფიქსირდა შეცდომა</h1>
+              </body>
+            </html>
+            `
+          );
         }
         const id = decoded.id;
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         await User.update({ password_hash: hashedPassword }, { where: { id } });
-        return res.json({ success: true, message: 'password changed' });
+        return res.send(
+          `
+          <html>
+            <body style="
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+            ">
+              <h1>პაროლის ცვლილება წარმატებით დასრულდა</h1>
+            </body>
+          </html>
+          `
+        );
       }
     );
   } catch (err) {
     logger.error('Error in password reset token: ', err);
-    return res.status(502).json({ success: false, message: err.message });
+    return res.send(
+      `
+      <html>
+        <body style="
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              ">
+          <h1>დაფიქსირდა შეცდომა</h1>
+        </body>
+      </html>
+      `
+    );
   }
 });
 
