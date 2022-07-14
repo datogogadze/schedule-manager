@@ -186,8 +186,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
 
   const handleDelete = (type) => {
     setLoading(true);
-    console.log(selectedEvent.event_id, selectedEvent.start_date, type);
-    deleteEvent(selectedEvent.event_id, selectedEvent.start_date, type).then(res => {
+    deleteEvent(selectedEvent.event_id, selectedEvent.current_event_timestamp, type).then(res => {
       setLoading(false);
       const { success } = res.data;
       if (success) {
@@ -265,7 +264,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
 
     setLoading(true);
     if (type == 'single') {     
-      updateEventSingle(selectedEvent.event_id, selectedEvent.start_date, updatedEvent).then(res => {
+      updateEventSingle(selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
         setLoading(false);
         const { success } = res.data;
         if (success) {
@@ -280,7 +279,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
         onError(message);
       });
     } else if (type == 'future') {
-      updateEventFuture(selectedEvent.event_id, selectedEvent.start_date, updatedEvent).then(res => {
+      updateEventFuture(selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
         setLoading(false);
         const { success } = res.data;
         if (success) {
@@ -295,7 +294,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
         onError(message);
       });
     } else if (type == 'all') {
-      updateEventAll(selectedEvent.event_id, selectedEvent.start_date, updatedEvent).then(res => {
+      updateEventAll(selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
         setLoading(false);
         const { success } = res.data;
         if (success) {
@@ -311,21 +310,6 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       });
     }
   };
-
-  // const handleSubmit = (values) => {
-  // //   // console.log(v);
-  // //   // console.log(isEqual(v, initialValues));
-
-  // //   // const requestBody = {
-  // //   //   event
-  // //   // }
-  // //   const newEvent = {...event};
-  // //   console.log(event);
-  // //   if (updateType == 'single') {
-  // //     console.log('yppp', values);
-  // //     // updateEventSingle();
-  // //   }
-  // }; 
 
 
   return (
@@ -347,7 +331,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
               <Text style={styles.text} category='p1'>{ moment(selectedEvent.start_date).format('MMMM Do YYYY, h:mm:ss A') }</Text>
 
               <Text style={styles.text} category='s1'>Duration</Text>
-              <Text style={styles.text} category='p1'>{ moment.utc(selectedEvent.duration * 60000).format('h:mm:ss') }</Text>
+              <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('H:mm') }</Text>
             </> }
 
             { isEditing && <EditEventForm refForm={refForm} handleFormChange={handleFormChange} initialValues={initialValues} /> }

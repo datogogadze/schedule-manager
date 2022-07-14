@@ -286,6 +286,7 @@ router.post('/events', auth, async (req, res) => {
           kid_id: e.kid_id,
           name: e.name,
           description: e.description,
+          current_event_timestamp: new Date(e.start_date).getTime(),
           start_date: new Date(e.start_date).getTime(),
           end_date: new Date(e.start_date + e.duration * 60000).getTime(),
           duration: e.duration,

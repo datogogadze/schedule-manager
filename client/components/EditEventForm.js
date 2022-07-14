@@ -9,6 +9,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Field, Formik } from 'formik';
 import { EditEventSchema } from '../utils/formik-schemas';
 import { frequencyOptions, recurrenceEndingOptions } from '../utils/select-options';
+import moment from 'moment';
 
 
 
@@ -17,7 +18,7 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
   description: '',
   eventDay: new Date(),
   hourFrom: new Date(),
-  hourTo: new Date(),
+  hourTo: moment().add(1, 'hours').toDate(),
   isRecurring: false,
   interval: '1',
   frequencyIndex: 0,
@@ -115,6 +116,7 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                       form.setFieldValue(field.name, value);
                       form.setFieldTouched(field.name, true);
                     }}
+                    minimumDate={moment(values.hourFrom).add(1, 'minute').toDate()}
                     value={values.hourTo}
                   />
                 )}
