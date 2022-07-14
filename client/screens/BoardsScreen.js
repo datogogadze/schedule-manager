@@ -17,7 +17,7 @@ import OverlaySpinner from '../components/OverlaySpinner';
 import { getUserBoards, loginDevice } from '../utils/api-calls';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
-import { getUser, setUser } from '../utils/auth';
+import { getUser, setUser, setDeviceToken } from '../utils/auth';
 
 const BoardsScreen = ({ navigation }) => {
   const [boards, setBoards] = React.useState([]);
@@ -53,8 +53,7 @@ const BoardsScreen = ({ navigation }) => {
         if (token) {
           const user = await getUser();
           await loginDevice(user.id, token, user.session_expires);
-          user.device_token = token;
-          await setUser(user);
+          await setDeviceToken(token);
         } else {
           alert('Can not send notifications to this device');
         }

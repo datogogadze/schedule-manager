@@ -4,7 +4,12 @@ import { Button, Icon, MenuItem, Text } from '@ui-kitten/components';
 
 import Modal from 'react-native-modal';
 import { logout, logoutDevice } from '../utils/api-calls';
-import { getUser, removeUser } from '../utils/auth';
+import {
+  getUser,
+  removeUser,
+  getDeviceToken,
+  removeDeviceToken,
+} from '../utils/auth';
 
 const logo = require('../assets/logo.png');
 
@@ -15,8 +20,10 @@ const Header = ({ navigation, text, showMenu, backButton }) => {
     logout()
       .then(async () => {
         const user = await getUser();
-        await logoutDevice(user.id, user.device_token);
+        const device_token = await getDeviceToken();
+        await logoutDevice(user.id, device_token);
         await removeUser();
+        await removeDeviceToken();
         navigation.reset({
           index: 0,
           routes: [{ name: 'Login' }],
