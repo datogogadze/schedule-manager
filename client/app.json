@@ -3,7 +3,7 @@
     "scheme": "myapp",
     "name": "client",
     "slug": "schedule-manager",
-    "owner": "datogogadze",
+    "owner": "schedule-manager-org",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
