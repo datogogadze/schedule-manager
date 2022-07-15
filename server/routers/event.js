@@ -170,7 +170,7 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-const getMaxEndDate = (parent_id) =>
+const getMaxEndDate = async (parent_id) =>
   Event.findOne({
     attributes: [[fn('max', col('end_date')), 'max_date']],
     raw: true,
@@ -226,7 +226,11 @@ router.put('/all', auth, async (req, res) => {
       });
     }
 
-    const { max_date } = await getMaxEndDate(existing_event.id);
+    let { max_date } = await getMaxEndDate(existing_event.id);
+
+    if (max_date == null) {
+      max_date = new_event.end_date;
+    }
 
     if (!event.frequency) {
       await Event.update(
