@@ -7,7 +7,7 @@ const flash = require('express-flash');
 const MySQLStore = require('express-mysql-session')(session);
 const MemoryStore = require('memorystore')(session);
 const mysql2 = require('mysql2/promise');
-const morgan = require('morgan');
+const morganBody = require('morgan-body');
 require('./utils/passport');
 
 // Routers
@@ -52,7 +52,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 if (process.env.NODE_ENV != 'test') {
-  app.use(morgan('combined'));
+  morganBody(app);
 }
 
 app.use('/auth', auth);

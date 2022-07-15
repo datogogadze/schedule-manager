@@ -26,7 +26,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "memorystore": "^1.6.7",
-    "morgan": "^1.10.0",
+    "morgan-body": "^2.6.6",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.7.3",
     "passport": "^0.5.2",

@@ -5,12 +5,12 @@ const db = require('./models/index');
 const logger = require('./utils/winston');
 const auth = require('./routers/auth');
 const notifications = require('./routers/notifications');
-const morgan = require('morgan');
+const morganBody = require('morgan-body');
 
 app.use(express.json());
 
 if (process.env.NODE_ENV != 'test') {
-  app.use(morgan('combined'));
+  morganBody(app);
 }
 
 db.sequelize

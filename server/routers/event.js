@@ -198,9 +198,6 @@ router.put('/all', auth, async (req, res) => {
     const before = rule.before(new Date(current_event_timestamp), true);
     const exists = before ? before.getTime() == current_event_timestamp : null;
     if (!exists) {
-      logger.error(
-        `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
-      );
       return res.status(400).json({
         success: false,
         message: 'wrong "current_event_timestamp"',
@@ -442,9 +439,6 @@ router.put('/future', auth, async (req, res) => {
     const before = rule.before(new Date(current_event_timestamp), true);
     const exists = before ? before.getTime() == current_event_timestamp : null;
     if (!exists) {
-      logger.error(
-        `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
-      );
       return res.status(400).json({
         success: false,
         message: 'wrong "current_event_timestamp"',
@@ -530,9 +524,6 @@ router.put('/single', auth, async (req, res) => {
           ? before.getTime() == current_event_timestamp
           : null;
         if (!exists) {
-          logger.error(
-            `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
-          );
           return res.status(400).json({
             success: false,
             message: 'wrong "current_event_timestamp"',
@@ -724,9 +715,6 @@ router.delete('/', auth, async (req, res) => {
         ? before.getTime() == current_event_timestamp
         : null;
       if (!exists) {
-        logger.error(
-          `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
-        );
         return res.status(400).json({
           success: false,
           message: 'wrong "current_event_timestamp"',
