@@ -248,6 +248,13 @@ router.put('/all', auth, async (req, res) => {
       );
     } else {
       const new_rule = RRule.parseString(new_event.recurrence_pattern);
+      if (new_rule.count) {
+        const newRRule = RRule.fromString(new_event.recurrence_pattern);
+        const events = newRRule.all();
+        const len = Object.keys(events).length;
+        const last = events[len - 1];
+        max_date = new Date(last).getTime() + new_event.duration * 60000;
+      }
       const rule_to_set = generateRule(
         existing_event.start_date,
         new_rule.freq,
