@@ -475,6 +475,12 @@ router.put('/single', auth, async (req, res) => {
 
     if (!existing_event.recurrence_pattern) {
       await Event.update(new_event, { where: { id: event_id } });
+      if (process.env.NODE_ENV != 'test') {
+        // reschedule board notifications
+        axios.get(
+          `${process.env.NOTIFICATION_SERVICE_ADDRESS}/notifications/board/${event.board_id}`
+        );
+      }
       return res.json({ success: true, event: { ...new_event } });
     } else {
       if (isRecurrenceChanging(existing_event, new_event)) {
