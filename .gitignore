@@ -18,3 +18,4 @@ web-build/
 combined.log
 error.log
 scripts
+update.sh
