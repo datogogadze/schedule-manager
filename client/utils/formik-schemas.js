@@ -32,9 +32,17 @@ export const EditEventSchema = Yup.object().shape({
   hourFrom: Yup.date().required(),
   hourTo: Yup.date().required(),
   enableNotification: Yup.boolean().required(),
-  notificationTime: Yup.number().when('enableNotification', {
+  notificationTimeDay: Yup.number().when('enableNotification', {
     is: true,
     then: Yup.number().required()
+  }),
+  notificationTimeHour: Yup.number().when('enableNotification', {
+    is: true,
+    then: Yup.number().required()
+  }),
+  notificationTimeMinute: Yup.number().when('enableNotification', {
+    is: true,
+    then: Yup.number().max(59).required()
   }),
   isRecurring: Yup.boolean().required(),
   interval: Yup.number().when('isRecurring', {

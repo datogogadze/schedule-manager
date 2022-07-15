@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import {
   ScrollView,
   StyleSheet, View,
@@ -10,24 +10,34 @@ import { deleteEvent, updateEventAll, updateEventFuture, updateEventSingle } fro
 import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
 import { frequencies } from '../utils/select-options';
+import Toast from 'react-native-toast-message';
 
+const UPDATE_TYPE_SINGLE = 'single';
+const UPDATE_TYPE_FUTURE = 'future';
+const UPDATE_TYPE_ALL = 'all';
+
+const updateRequestFunctions = {
+  [UPDATE_TYPE_SINGLE]: updateEventSingle,
+  [UPDATE_TYPE_FUTURE]: updateEventFuture,
+  [UPDATE_TYPE_ALL]: updateEventAll
+};
 
 const menuItemOptionsAll = [
   {
     title: 'This event',
-    type: 'single'
+    type: UPDATE_TYPE_SINGLE
   },
   {
     title: 'This and following events',
-    type: 'future'
+    type: UPDATE_TYPE_FUTURE
   },
   {
     title: 'All events',
-    type: 'all'
+    type: UPDATE_TYPE_ALL
   },
 ];
 
-const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSuccess, onError }) => {
+const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSuccess }) => {
   const [loading, setLoading] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [deleteMenuVisible, setDeleteMenuVisible] = React.useState(false);
@@ -80,11 +90,19 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
     }
 
     let enableNotification = false;
-    let notificationTime = '15';
+    let notificationTimeDay = '0';
+    let notificationTimeHour = '00';
+    let notificationTimeMinute = '15';
 
     if (notification_time) {
       enableNotification = true;
-      notificationTime = notification_time;
+      let time = notification_time;
+
+      notificationTimeDay = Math.floor(time / (24 * 60)).toString();
+      time -= notificationTimeDay * 24 * 60;
+      notificationTimeHour = Math.floor(time / 60).toString();
+      time -= notificationTimeHour * 60;
+      notificationTimeMinute = time.toString();
     }
     
     return {
@@ -100,7 +118,9 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       recurrenceEndDate,
       recurrenceCount: recurrenceCount.toString(),
       enableNotification,
-      notificationTime
+      notificationTimeDay,
+      notificationTimeHour,
+      notificationTimeMinute,
     };
   }, selectedEvent.id);
 
@@ -109,6 +129,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
   };
 
   const handleSubmit = (values) => {
+    setFormValues(values);
     if (!initialValues.isRecurring && !values.isRecurring) {
       setMenuItemOptions([
         menuItemOptionsAll[0]
@@ -135,13 +156,21 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       if (success) {
         onSuccess();
       } else {
-        onError('Error while updating board');
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: 'Error while deleting event',
+        });
       }
     }).catch(e => {
       setLoading(false);
       const { message } = e.response.data;
       console.log(message);
-      onError(message);
+      Toast.show({
+        type: 'error',
+        text1: 'Whoops',
+        text2: message,
+      });
     });
   };
 
@@ -159,7 +188,9 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       recurrenceEndDate,
       recurrenceEndingIndex,
       enableNotification,
-      notificationTime
+      notificationTimeDay,
+      notificationTimeHour,
+      notificationTimeMinute
     } = formValues;
   
     const startDayMilliseconds = moment(eventDay).startOf('day').valueOf();
@@ -186,9 +217,12 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
 
     let eventNotificationTime = null;
 
+
     if (enableNotification) {
-      eventNotificationTime = notificationTime;
+      eventNotificationTime = Number(notificationTimeDay) * 24  * 60 + Number(notificationTimeHour) * 60 + Number(notificationTimeMinute);
     } 
+
+    console.log('eventNotificationTime', eventNotificationTime);
   
     const updatedEvent = {
       board_id: boardId,
@@ -204,54 +238,31 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       notification_time: eventNotificationTime
     };
 
-
     setLoading(true);
-    if (type == 'single') {     
-      updateEventSingle(selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
-        setLoading(false);
-        const { success } = res.data;
-        if (success) {
-          onSuccess();
-        } else {
-          onError('Error while updating board');
-        }
-      }).catch(e => {
-        setLoading(false);
-        const { message } = e.response.data;
-        console.log(message);
-        onError(message);
+
+    updateRequestFunctions[type](selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
+      setLoading(false);
+      const { success } = res.data;
+      if (success) {
+        onSuccess();
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: 'Error while updating event',
+        });
+      }
+    }).catch(e => {
+      setLoading(false);
+      const { message } = e.response.data;
+      console.log(message);
+      Toast.show({
+        type: 'error',
+        text1: 'Whoops',
+        text2: message,
       });
-    } else if (type == 'future') {
-      updateEventFuture(selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
-        setLoading(false);
-        const { success } = res.data;
-        if (success) {
-          onSuccess();
-        } else {
-          onError('Error while updating board');
-        }
-      }).catch(e => {
-        setLoading(false);
-        const { message } = e.response.data;
-        console.log(message);
-        onError(message);
-      });
-    } else if (type == 'all') {
-      updateEventAll(selectedEvent.event_id, selectedEvent.current_event_timestamp, updatedEvent).then(res => {
-        setLoading(false);
-        const { success } = res.data;
-        if (success) {
-          onSuccess();
-        } else {
-          onError('Error while updating board');
-        }
-      }).catch(e => {
-        setLoading(false);
-        const { message } = e.response.data;
-        console.log(message);
-        onError(message);
-      });
-    }
+    });
+
   };
 
   const CardHeader = (props) => (
@@ -357,6 +368,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
             { isEditing && <EditEventForm refForm={refForm} handleSubmit={handleSubmit} handleFormChange={handleFormChange} initialValues={initialValues} /> }
           </ScrollView> 
         </Card>
+        <Toast />
         <OverlaySpinner visible={loading} />
       </Modal>
     </>

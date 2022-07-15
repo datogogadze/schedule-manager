@@ -18,6 +18,11 @@ import { checkLogin } from './utils/api-calls';
 import { setUser } from './utils/auth';
 import ProfileScreen from './screens/ProfileScreen';
 
+require('axios-debug-log');
+let debug = require('debug');
+
+debug.enable('axios');
+
 const prefix = Linking.createURL('/');
 
 const Stack = createStackNavigator();
