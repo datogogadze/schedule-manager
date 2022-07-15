@@ -200,7 +200,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header navigation={navigation} text={boardName} showMenu backButton />
+        <Header navigation={navigation} text={boardName} boardId={boardId} showMenu backButton />
 
         <FlatList
           style={styles.eventList}

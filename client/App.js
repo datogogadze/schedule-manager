@@ -17,6 +17,7 @@ import SelectedBoardScreen from './screens/SelectedBoardScreen';
 import { checkLogin } from './utils/api-calls';
 import { setUser } from './utils/auth';
 import ProfileScreen from './screens/ProfileScreen';
+import BoardDetailsScreen from './screens/BoardDetailsScreen';
 
 require('axios-debug-log');
 let debug = require('debug');
@@ -107,6 +108,7 @@ const App = () => {
             <Stack.Screen name="SignUp" component={SignUpScreen}></Stack.Screen>
             <Stack.Screen name="Main" component={MainScreen}></Stack.Screen>
             <Stack.Screen name="Profile" component={ProfileScreen}></Stack.Screen>
+            <Stack.Screen name="BoardDetails" component={BoardDetailsScreen}></Stack.Screen>
             <Stack.Screen
               name="VerifyEmail"
               component={VerifyEmailScreen}

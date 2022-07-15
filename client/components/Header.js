@@ -13,7 +13,7 @@ import {
 
 const logo = require('../assets/logo.png');
 
-const Header = ({ navigation, text, showMenu, backButton }) => {
+const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
   const [user, setUser] = React.useState('');
   const [sideMenuVisible, setSideMenuVisible] = React.useState(false);
 
@@ -131,6 +131,21 @@ const Header = ({ navigation, text, showMenu, backButton }) => {
               >
                 Profile
               </Button>
+              { boardId && <Button
+                style={styles.logoutButton}
+                status="basic"
+                accessoryLeft={<Icon name="person" />}
+                appearance="ghost"
+                onPress={() => {
+                  navigation.navigate('BoardDetails', {
+                    boardId,
+                    userId: user.id
+                  });
+                  setSideMenuVisible(false);
+                }}
+              >
+                Board Details
+              </Button> }
 
               <View style={styles.logoutButtonWrapper}>
                 <Button
