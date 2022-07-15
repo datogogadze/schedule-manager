@@ -4,13 +4,12 @@ import {
   Text,
   Icon,
   Button,
-  Layout,
+  Layout
 } from '@ui-kitten/components';
 import React, { useEffect, useMemo } from 'react';
 import moment from 'moment';
 import 'react-native-get-random-values';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
-import { FlatList } from 'react-native-bidirectional-infinite-scroll';
+import { View, StyleSheet, SafeAreaView, FlatList } from 'react-native';
 
 import Toast from 'react-native-toast-message';
 import Header from '../components/Header';
@@ -54,7 +53,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
     const arr = [];
     eventsCalendar.map((obj) => {
       if (obj.header) {
-        arr.push(eventsCalendar.indexOf(obj) + 1);
+        arr.push(eventsCalendar.indexOf(obj));
       }
     });
     return arr;
@@ -235,17 +234,8 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           onEndReachedThreshold={0}
           onStartReachedThreshold={0}
           refreshing={false}
-          enableAutoscrollToTop={false}
-          onStartReached={ () => {
-            setStartDate(moment(startDate).startOf('day').subtract(1, 'days').subtract(2, 'weeks').valueOf());
-            return new Promise();
-          }}
           onEndReached={ () => {
             setEndDate(moment(endDate).startOf('day').add(1, 'days').add(2, 'weeks').valueOf() - 1);
-            const res = new Promise((resolve) => {
-              resolve();
-            });
-            return res;
           }}
         />
 

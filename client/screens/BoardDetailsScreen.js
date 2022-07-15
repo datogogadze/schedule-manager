@@ -29,17 +29,28 @@ const BoardDetailsScreen = ({ navigation, route }) => {
     const reqests = [
       getBoardUsers(boardId).then(res => {
         const { users } = res.data;
-        console.log(users);
         setUsers(users);
       }).catch(e => {
-        console.log(e);
+        const { message } = e.response.data;
+
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: message,
+        });
       }),
   
       getBoard(boardId).then(res => {
         const { board } = res.data;
         setBoard(board);
       }).catch(e => {
-        console.log(e);
+        const { message } = e.response.data;
+
+        Toast.show({
+          type: 'error',
+          text1: 'Whoops',
+          text2: message,
+        });
       })
     ];
 
@@ -56,6 +67,13 @@ const BoardDetailsScreen = ({ navigation, route }) => {
       setLoading(false);
     }).catch(e => {
       setLoading(false);
+      const { message } = e.response.data;
+
+      Toast.show({
+        type: 'error',
+        text1: 'Whoops',
+        text2: message,
+      });
     });
   };
 
