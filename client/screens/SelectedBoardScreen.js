@@ -6,11 +6,11 @@ import {
   Button,
   Layout,
 } from '@ui-kitten/components';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import moment from 'moment';
 import 'react-native-get-random-values';
-import { v4 } from 'uuid';
-import { View, StyleSheet, FlatList, SafeAreaView } from 'react-native';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { FlatList } from 'react-native-bidirectional-infinite-scroll';
 
 import Toast from 'react-native-toast-message';
 import Header from '../components/Header';
@@ -37,34 +37,38 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   const [selectedEvent, setSelectedEvent] = React.useState(null);
 
   const [eventsCalendar, setEventsCalendar] = React.useState([]);
-
-  const [stickyHeaderIndices, setStickyHeaderIndices] = React.useState([]);
-  
+ 
   const [loading, setLoading] = React.useState(false);
+  const [initialLoad, setInitialLoad] = React.useState(true);
 
   const [startDate, setStartDate] = React.useState(
     moment().startOf('day').valueOf()
   );
+  
   const [endDate, setEndDate] = React.useState(
-    moment().startOf('day').add(3, 'weeks').valueOf() - 1
+    moment().startOf('day').add(2, 'weeks').valueOf() - 1
   );
 
-  useEffect(() => {
+
+  const stickyHeaderIndices = useMemo(() => {
     const arr = [];
     eventsCalendar.map((obj) => {
       if (obj.header) {
-        arr.push(eventsCalendar.indexOf(obj));
+        arr.push(eventsCalendar.indexOf(obj) + 1);
       }
     });
-    setStickyHeaderIndices(arr);
+    return arr;
   }, [eventsCalendar]);
 
   useEffect(() => {
-    fetchEvents();
+    fetchEvents(initialLoad);
   }, [startDate, endDate]);
 
-  const fetchEvents = () => {
-    setLoading(true);
+  const fetchEvents = (withReload = false) => {
+    if (withReload) {
+      setLoading(true);
+    }
+
     getEvents(boardId, startDate, endDate)
       .then((res) => {
         const { events } = res.data;
@@ -74,11 +78,11 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         const b = moment(endDate);
 
         for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
-          eventsGroup[m.format('MMMM DD')] = [];
+          eventsGroup[m.format('MMMM DD - dddd')] = [];
         }
 
         events.forEach((event) => {
-          const day = moment(event.start_date).format('MMMM DD');
+          const day = moment(event.start_date).format('MMMM DD - dddd');
           if (day in eventsGroup) {
             eventsGroup[day] = [...eventsGroup[day], event];
           } else {
@@ -90,14 +94,14 @@ const SelectedBoardScreen = ({ navigation, route }) => {
 
         for (const key in eventsGroup) {
           const calendarHeader = {
-            id: v4(),
+            id: key,
             name: key,
             header: true,
           };
 
           const eventsForDay = eventsGroup[key];
           const calendarItems = eventsForDay.map((event) => ({
-            id: v4(),
+            id: event.event_id + event.current_event_timestamp,
             name: event.name,
             hourFrom: moment(event.start_date).format('hh:mm A'),
             hourTo: moment(event.start_date)
@@ -106,11 +110,28 @@ const SelectedBoardScreen = ({ navigation, route }) => {
             header: false,
             event
           }));
-          newEventsCalendar = [
-            ...newEventsCalendar,
-            calendarHeader,
-            ...calendarItems,
-          ];
+
+
+          if (calendarItems.length == 0) {
+            const noEventsPlaceholder = {
+              id: key + ' no event',
+              name: 'No events for this day',
+              header: false,
+            };
+
+            newEventsCalendar = [
+              ...newEventsCalendar,
+              calendarHeader,
+              noEventsPlaceholder
+            ];
+          } else {
+            newEventsCalendar = [
+              ...newEventsCalendar,
+              calendarHeader,
+              ...calendarItems,
+            ];
+          }
+
         }
         setEventsCalendar(newEventsCalendar);
         setLoading(false);
@@ -124,7 +145,9 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   const renderItem = ({ item }) => {
     if (item.header) {
       return <ListItem key={item.id} title={() => <Text category="h6">{item.name}</Text>} />;
-    } else {
+    } if (!item.event) {
+      return <ListItem key={item.id} style={styles.noEvents} title={() => <Text category="s1" appearance='hint'>{item.name}</Text>} />;
+    }else {
       return (
         <Card
           key={item.id}
@@ -209,7 +232,21 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           keyExtractor={(item) => item.id}
           stickyHeaderIndices={stickyHeaderIndices}
           showsVerticalScrollIndicator={false}
-
+          onEndReachedThreshold={0}
+          onStartReachedThreshold={0}
+          refreshing={false}
+          enableAutoscrollToTop={false}
+          onStartReached={ () => {
+            setStartDate(moment(startDate).startOf('day').subtract(1, 'days').subtract(2, 'weeks').valueOf());
+            return new Promise();
+          }}
+          onEndReached={ () => {
+            setEndDate(moment(endDate).startOf('day').add(1, 'days').add(2, 'weeks').valueOf() - 1);
+            const res = new Promise((resolve) => {
+              resolve();
+            });
+            return res;
+          }}
         />
 
         <Layout style={styles.buttonGroup} level='1'>
@@ -266,6 +303,10 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 0,
     height: '100%'
+  },
+  noEvents: {
+    marginTop: 15,
+    marginBottom: 15,
   },
   eventList: {
     height: '85%',
