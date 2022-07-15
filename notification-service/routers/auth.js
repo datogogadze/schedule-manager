@@ -36,7 +36,7 @@ router.post('/login', async (req, res) => {
 
     return res.json({ succes: true });
   } catch (err) {
-    logger.error('Error in device login: ', err);
+    logger.error('Error in device login', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -57,7 +57,7 @@ router.post('/logout', async (req, res) => {
     );
     return res.json({ succes: true });
   } catch (err) {
-    logger.error('Error in device logout: ', err);
+    logger.error('Error in device logout', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });

@@ -46,7 +46,7 @@ router.get('/:id', auth, async (req, res) => {
     }
     return res.json({ success: true, event });
   } catch (err) {
-    logger.error('Error in getting event with id: ', err);
+    logger.error('Error in getting event with id', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -165,7 +165,7 @@ router.post('/', auth, async (req, res) => {
     }
     return res.json({ success: true, event: { ...createdEvent.dataValues } });
   } catch (err) {
-    logger.error('Error in creating event: ', err);
+    logger.error('Error in creating event', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -267,7 +267,7 @@ router.put('/all', auth, async (req, res) => {
     }
     return res.json({ success: true, event });
   } catch (err) {
-    logger.error('Error in update all: ', err);
+    logger.error('Error in update all', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -449,7 +449,7 @@ router.put('/future', auth, async (req, res) => {
     }
     return res.json({ success: true, event: { ...created.dataValues } });
   } catch (err) {
-    logger.error('Error in update future: ', err);
+    logger.error('Error in update future', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -537,7 +537,7 @@ router.put('/single', auth, async (req, res) => {
       }
     }
   } catch (err) {
-    logger.error('Error in update single: ', err);
+    logger.error('Error in update single', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -705,7 +705,7 @@ router.delete('/', auth, async (req, res) => {
       event_id,
     });
   } catch (err) {
-    logger.error('Error in delete event: ', err);
+    logger.error('Error in delete event', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });

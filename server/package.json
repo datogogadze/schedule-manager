@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
     "axios": "^0.27.2",
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
@@ -25,6 +26,7 @@
     "joi": "^17.6.0",
     "jsonwebtoken": "^8.5.1",
     "memorystore": "^1.6.7",
+    "morgan": "^1.10.0",
     "mysql2": "^2.3.3",
     "nodemailer": "^6.7.3",
     "passport": "^0.5.2",
@@ -35,8 +37,7 @@
     "save-dev": "^0.0.1-security",
     "sequelize": "^6.19.0",
     "uuid": "^8.3.2",
-    "winston": "^3.7.2",
-    "@sendgrid/mail": "^7.7.0"
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "concurrently": "^7.1.0",

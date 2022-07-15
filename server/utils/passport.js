@@ -22,7 +22,7 @@ const basicAuthenticateUser = async (email, password, done) => {
       return done(null, null, { message: 'Incorrect password' });
     }
   } catch (err) {
-    logger.error('Error in basicAuthenticateUser: ', err);
+    logger.error('Error in basicAuthenticateUser', err);
     return done(err);
   }
 };
@@ -55,7 +55,7 @@ const oAuthAuthenticateUser = async (req, email, password, done) => {
       done(null, createdUser.dataValues);
     }
   } catch (err) {
-    logger.error('Error in oAuthAuthenticateUser: ', err);
+    logger.error('Error in oAuthAuthenticateUser', err);
     return done(err, null);
   }
 };
@@ -92,7 +92,7 @@ passport.deserializeUser((id, done) => {
       done(null, user.dataValues);
     })
     .catch((err) => {
-      logger.error('Error in deserializeUser: ', err);
+      logger.error('Error in deserializeUser', err);
       return done(err);
     });
 });

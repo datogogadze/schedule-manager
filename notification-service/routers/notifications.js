@@ -62,7 +62,7 @@ const sendPushNotification = async (event) => {
     }
     return true;
   } catch (err) {
-    logger.error('Error in sendPushNotification: ', err);
+    logger.error('Error in sendPushNotification', err);
     return false;
   }
 };
@@ -90,7 +90,12 @@ const scheduleNotificationsForBoard = async (board_id) => {
     const notifications = [];
     for (let event of data.events) {
       if (event.notification_time && event.notification_time >= 0) {
-        console.log('Scheduling notification for event ' + event.name + ' for date ' +  new Date(event.start_date - event.notification_time * 60000));
+        console.log(
+          'Scheduling notification for event ' +
+            event.name +
+            ' for date ' +
+            new Date(event.start_date - event.notification_time * 60000)
+        );
         const job = schedule.scheduleJob(
           new Date(event.start_date - event.notification_time * 60000),
           async () => {
@@ -104,7 +109,7 @@ const scheduleNotificationsForBoard = async (board_id) => {
     eventNotifications[board_id] = notifications;
     return true;
   } catch (err) {
-    logger.error('Error in scheduleNotificationsForBoard: ', err);
+    logger.error('Error in scheduleNotificationsForBoard', err);
     return false;
   }
 };
@@ -119,7 +124,7 @@ const scheduleNotificationsForAllEventsFromAllBoards = async () => {
     return true;
   } catch (err) {
     logger.error(
-      'Error in scheduleNotificationsForAllEventsFromAllBoards: ',
+      'Error in scheduleNotificationsForAllEventsFromAllBoards',
       err
     );
     return false;
@@ -133,7 +138,7 @@ const scheduleNotifications = async () => {
       await scheduleNotificationsForAllEventsFromAllBoards();
     });
   } catch (err) {
-    logger.error('Error in scheduleNotifications: ', err);
+    logger.error('Error in scheduleNotifications', err);
   }
 };
 scheduleNotifications();
@@ -150,7 +155,7 @@ router.get('/board/:id', async (req, res) => {
     await scheduleNotificationsForBoard(id);
     return res.json({ success: true });
   } catch (err) {
-    logger.error('Error in rescheduling board notifications: ', err);
+    logger.error('Error in rescheduling board notifications', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -160,7 +165,7 @@ router.get('/today', async (req, res) => {
     await scheduleNotificationsForAllEventsFromAllBoards();
     return res.json({ success: true });
   } catch (err) {
-    logger.error('Error in today: ', err);
+    logger.error('Error in today', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });

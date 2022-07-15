@@ -22,7 +22,7 @@ router.get('/me', auth, async (req, res) => {
       },
     });
   } catch (err) {
-    logger.error('Error in me: ', err);
+    logger.error('Error in me', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
@@ -39,7 +39,7 @@ router.get('/boards', auth, async (req, res) => {
     const boardsList = boards.map((board) => board.dataValues);
     return res.json({ success: true, boards: boardsList });
   } catch (err) {
-    logger.error('Error in user boards: ', err);
+    logger.error('Error in user boards', err);
     return res.status(502).json({ success: false, message: err.message });
   }
 });
