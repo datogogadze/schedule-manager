@@ -35,6 +35,15 @@ const BoardsScreen = ({ navigation }) => {
     }),
   });
 
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchBoards();
+    });
+
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigation]);
+
   const registerForPushNotificationsAsync = async () => {
     try {
       if (Device.isDevice) {
@@ -79,7 +88,6 @@ const BoardsScreen = ({ navigation }) => {
   };
 
   useEffect(async () => {
-    fetchBoards();
     registerForPushNotificationsAsync();
   }, []);
 

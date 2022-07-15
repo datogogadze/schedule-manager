@@ -67,6 +67,20 @@ export const getUserData = (accessToken) =>
     },
   });
 
+export const getBoard = (id) =>
+  axios.get(`${SERVER_ADDRESS}/board/${id}`);
+
+export const removeUserFromBoard = (boardId, userId) =>
+  axios.post(`${SERVER_ADDRESS}/board/remove-user`, {
+    board_id: boardId,
+    user_id: userId,
+  });
+
+export const getBoardUsers = (boardId) =>
+  axios.post(`${SERVER_ADDRESS}/board/users`, {
+    board_id: boardId
+  });
+
 export const createBoard = (name, role) =>
   axios.post(`${SERVER_ADDRESS}/board`, {
     name,
