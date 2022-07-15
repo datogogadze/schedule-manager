@@ -247,10 +247,21 @@ router.put('/all', auth, async (req, res) => {
         }
       );
     } else {
+      const new_rule = RRule.parseString(new_event.recurrence_pattern);
+      const rule_to_set = generateRule(
+        existing_event.start_date,
+        new_rule.freq,
+        new_rule.interval,
+        new_rule.count,
+        new Date(max_date)
+      );
+      rule_str_to_set = rule_to_set.toString();
+
       await Event.update(
         {
           ...new_event,
           start_date: existing_event.start_date,
+          recurrence_pattern: rule_str_to_set,
           end_date: new Date(max_date).getTime(),
         },
         {

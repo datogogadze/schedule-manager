@@ -521,7 +521,7 @@ describe('Test events', () => {
       .expect(200);
     expect(res.body.success).toBe(true);
 
-    expect(res.body.size).toBe(6);
+    expect(res.body.size).toBe(10);
 
     const names111 = res.body.events.filter((e) => e.name == 'STARTING VALUE');
     const names211 = res.body.events.filter((e) => e.name == 'FIRST UPDATE');
@@ -531,7 +531,7 @@ describe('Test events', () => {
     expect(Object.keys(names111).length).toBe(0);
     expect(Object.keys(names211).length).toBe(0);
     expect(Object.keys(names311).length).toBe(0);
-    expect(Object.keys(names411).length).toBe(6);
+    expect(Object.keys(names411).length).toBe(10);
   });
 
   it('Test delete all', async () => {
