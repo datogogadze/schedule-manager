@@ -10,6 +10,7 @@ router.post('/login', async (req, res) => {
     const { user_id, device_token, session_expires } = req.body;
     const user = await User.findOne({ where: { id: user_id } });
     if (!user) {
+      logger.error('user not found in login');
       return res
         .status(400)
         .json({ success: false, message: 'user not found' });
@@ -47,6 +48,7 @@ router.post('/logout', async (req, res) => {
     const { user_id, device_token } = req.body;
     const user = await User.findOne({ where: { id: user_id } });
     if (!user) {
+      logger.error('user not found in logout');
       return res
         .status(400)
         .json({ success: false, message: 'user not found' });

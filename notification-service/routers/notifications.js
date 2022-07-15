@@ -148,6 +148,7 @@ router.get('/board/:id', async (req, res) => {
     const id = req.params.id;
     const board = await Board.findOne({ where: { id } });
     if (!board) {
+      logger.error('board not found with id');
       return res
         .status(400)
         .json({ success: false, message: 'board not found' });
