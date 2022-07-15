@@ -1,15 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  StyleSheet, View
+  StyleSheet, View, Keyboard
 } from 'react-native';
 // import Checkbox from 'expo-checkbox';
 
 import { Text, Input, Select, SelectItem, IndexPath, Layout, CheckBox } from '@ui-kitten/components';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import TimePicker from 'react-native-simple-time-picker';
 import { Field, Formik } from 'formik';
 import { EditEventSchema } from '../utils/formik-schemas';
 import { frequencyOptions, recurrenceEndingOptions } from '../utils/select-options';
 import moment from 'moment';
+import { min } from 'lodash';
 
 
 
@@ -26,9 +28,14 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
   recurrenceEndDate: new Date(),
   recurrenceCount: '1',
   enableNotification: false,
-  notificationTime: '15'
+  notificationFrequencyIndex: 0,
+  notificationTimeDay: '0',
+  notificationTimeHour: '00',
+  notificationTimeMinute: '15',
 } }) => {
   const refDescription = useRef();
+  const refNotificationTimeHour = useRef();
+  const refNotificationTimeMinute = useRef();
 
 
   return (
@@ -44,7 +51,10 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
         }}
       >
         {({ handleChange, values, errors }) => {
-          
+          useEffect(() => {
+            handleFormChange(values);
+          }, [values]);
+    
           return <>
             <Input
               placeholder="Name"
@@ -70,6 +80,7 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
               multiline
               ref={refDescription}
               value={values.description}
+              onSubmitEditing={Keyboard.dismiss} 
 
               onChangeText={ handleChange('description')}
 
@@ -145,15 +156,87 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
               )}
             </Field>
 
-            { values.enableNotification && <Input
-              status={errors.notificationTime ? 'danger' : 'basic'}
-              style={styles.textInput}
-              keyboardType = 'numeric'
-              label="Minutes before notification"
-              placeholder='Minutes'
-              onChangeText = { handleChange('notificationTime')}
-              value = {values.notificationTime}
-            />}
+            { values.enableNotification && <Text style={{marginBottom: 20}} category='s1'>
+              Remind me before
+            </Text> } 
+
+            { values.enableNotification && <Layout style={styles.inputRow} level='1'>
+              <Input 
+                label='Days'
+                style={{ width: '20%', marginRight: 20}} 
+                caption={errors.notificationTimeDay || ' '}
+                status={errors.notificationTimeDay ? 'danger' : 'basic'}
+                keyboardType = 'numeric'
+                onChangeText = { (value) => {
+                  let nextVal = value;
+
+                  if (value.length > 0) {
+                    nextVal = Math.min(Number(value), 7).toString();
+                  }
+                  if (value.length >= 2) return refNotificationTimeHour.current.focus();
+                  handleChange('notificationTimeDay')(nextVal);
+                  if (value.length >= 1) refNotificationTimeHour.current.focus();
+                }}
+                value = {values.notificationTimeDay}
+                onFocus={() => handleChange('notificationTimeDay')('')}
+                onBlur={() => {
+                  if (values.notificationTimeDay == '') {
+                    handleChange('notificationTimeDay')('0');
+                  }
+                }}
+              />
+              <Input 
+                label='Hours'
+                style={{ width: '20%', marginRight: 20}}
+                caption={errors.notificationTimeHour || ' '}
+                status={errors.notificationTimeHour ? 'danger' : 'basic'}
+                keyboardType = 'numeric'
+                onChangeText = { (value) => {
+                  let nextVal = value;
+
+                  if (value.length > 0) {
+                    nextVal = Math.min(Number(value), 23).toString();
+                  }
+                  if (value.length >= 3) return refNotificationTimeMinute.current.focus();
+                  handleChange('notificationTimeHour')(nextVal);
+
+                  if (value.length >= 2) refNotificationTimeMinute.current.focus();
+                }}
+                ref={refNotificationTimeHour}
+                value = {values.notificationTimeHour}
+                onFocus={() => handleChange('notificationTimeHour')('')}
+                onBlur={() => {
+                  if (values.notificationTimeHour == '') {
+                    handleChange('notificationTimeHour')('00');
+                  }
+                }}
+              />
+              <Input 
+                label='Minutes'
+                style={{ width: '20%', marginRight: 20}}
+                caption={errors.notificationTimeMinute || ' '}
+                status={errors.notificationTimeMinute ? 'danger' : 'basic'}
+                keyboardType = 'numeric'
+                onChangeText = { (value) => {
+                  let nextVal = value;
+
+                  if (value.length > 0) {
+                    nextVal = Math.min(Number(value), 59).toString();
+                  }
+                  if (value.length >= 3) return Keyboard.dismiss();
+                  handleChange('notificationTimeMinute')(nextVal);
+                  if (value.length >= 2) Keyboard.dismiss();
+                }}
+                ref={refNotificationTimeMinute}
+                value = {values.notificationTimeMinute}
+                onFocus={() => handleChange('notificationTimeMinute')('')}
+                onBlur={() => {
+                  if (values.notificationTimeMinute == '') {
+                    handleChange('notificationTimeMinute')('00');
+                  }
+                }}
+              />
+            </Layout> }
 
             <Field name="isRecurring">
               {({ field, form }) => (

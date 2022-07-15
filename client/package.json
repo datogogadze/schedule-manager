@@ -8,7 +8,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "dev": "npm start"
+    "dev": "DEBUG=axios && npm start",
+    "dev-remote": "DEBUG=axios && SERVER_ADDRESS=http://157.245.74.15:8080 && NOTIFICATION_SERVICE_ADDRESS=http://157.245.74.15:8081 && npm start"
   },
   "dependencies": {
     "@eva-design/eva": "^2.1.1",
@@ -22,13 +23,18 @@
     "@ui-kitten/eva-icons": "^5.1.2",
     "@ui-kitten/moment": "^5.1.2",
     "axios": "^0.27.2",
+    "axios-debug-log": "^0.8.4",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "expo": "~44.0.0",
     "expo-auth-session": "~3.5.0",
     "expo-checkbox": "~2.0.0",
     "expo-crypto": "~10.1.1",
     "expo-dev-client": "~0.8.6",
+    "expo-device": "~4.1.0",
+    "expo-facebook": "~12.1.0",
     "expo-google-app-auth": "~8.3.0",
     "expo-linking": "^3.0.0",
+    "expo-notifications": "~0.14.0",
     "expo-random": "~12.1.1",
     "expo-splash-screen": "~0.14.1",
     "expo-status-bar": "~1.2.0",
@@ -51,6 +57,7 @@
     "react-native-reanimated": "~2.3.1",
     "react-native-safe-area-context": "^3.3.2",
     "react-native-screens": "~3.10.1",
+    "react-native-simple-time-picker": "^1.3.11",
     "react-native-svg": "12.1.1",
     "react-native-toast-message": "^2.1.5",
     "react-native-web": "0.17.1",
@@ -58,10 +65,7 @@
     "rrule": "^2.7.1",
     "ui-kitten-toast": "^0.0.2",
     "uuid": "^8.3.2",
-    "yup": "^0.32.11",
-    "expo-device": "~4.1.0",
-    "expo-notifications": "~0.14.0",
-    "expo-facebook": "~12.1.0"
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

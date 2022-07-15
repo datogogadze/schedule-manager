@@ -1,7 +1,7 @@
 {
   "expo": {
     "scheme": "myapp",
-    "name": "client",
+    "name": "Schedule Manager",
     "slug": "schedule-manager",
     "owner": "schedule-manager-org",
     "version": "1.0.0",

@@ -35,7 +35,9 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       recurrenceEndDate,
       recurrenceEndingIndex,
       enableNotification,
-      notificationTime
+      notificationTimeDay,
+      notificationTimeHour,
+      notificationTimeMinute,
     } = values;
 
     const startDayMilliseconds = moment(eventDay).startOf('day').valueOf();
@@ -63,7 +65,7 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
     let eventNotificationTime = null;
 
     if (enableNotification) {
-      eventNotificationTime = notificationTime;
+      eventNotificationTime = Number(notificationTimeDay) * 24  * 60 + Number(notificationTimeHour) * 60 + Number(notificationTimeMinute);
     } 
 
     createEvent(
