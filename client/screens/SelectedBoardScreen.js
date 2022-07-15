@@ -144,9 +144,9 @@ const SelectedBoardScreen = ({ navigation, route }) => {
 
   const renderItem = ({ item }) => {
     if (item.header) {
-      return <ListItem key={item.id} style={styles.calendarHeader} title={() => <Text category="h6">{item.name}</Text>} />;
+      return <ListItem key={item.id} title={() => <Text category="h6">{item.name}</Text>} />;
     } if (!item.event) {
-      return <ListItem key={item.id} title={() => <Text category="s1" appearance='hint'>{item.name}</Text>} />;
+      return <ListItem key={item.id} style={styles.noEvents} title={() => <Text category="s1" appearance='hint'>{item.name}</Text>} />;
     }else {
       return (
         <Card
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     height: '100%'
   },
-  calendarHeader: {
+  noEvents: {
     marginTop: 15,
     marginBottom: 15,
   },
