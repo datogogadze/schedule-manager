@@ -198,6 +198,9 @@ router.put('/all', auth, async (req, res) => {
     const before = rule.before(new Date(current_event_timestamp), true);
     const exists = before ? before.getTime() == current_event_timestamp : null;
     if (!exists) {
+      logger.error(
+        `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
+      );
       return res.status(400).json({
         success: false,
         message: 'wrong "current_event_timestamp"',
@@ -412,6 +415,9 @@ router.put('/future', auth, async (req, res) => {
     const before = rule.before(new Date(current_event_timestamp), true);
     const exists = before ? before.getTime() == current_event_timestamp : null;
     if (!exists) {
+      logger.error(
+        `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
+      );
       return res.status(400).json({
         success: false,
         message: 'wrong "current_event_timestamp"',
@@ -483,6 +489,13 @@ router.put('/single', auth, async (req, res) => {
       }
       return res.json({ success: true, event: { ...new_event } });
     } else {
+      if (new_event.recurrence_pattern == null) {
+        logger.error('cancelling reccurence in single');
+        return res.status(400).json({
+          success: false,
+          message: 'if you want to cancell recurrence use update all',
+        });
+      }
       if (isRecurrenceChanging(existing_event, new_event)) {
         const rule = RRule.fromString(existing_event.recurrence_pattern);
         const before = rule.before(new Date(current_event_timestamp), true);
@@ -490,6 +503,9 @@ router.put('/single', auth, async (req, res) => {
           ? before.getTime() == current_event_timestamp
           : null;
         if (!exists) {
+          logger.error(
+            `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
+          );
           return res.status(400).json({
             success: false,
             message: 'wrong "current_event_timestamp"',
@@ -681,6 +697,9 @@ router.delete('/', auth, async (req, res) => {
         ? before.getTime() == current_event_timestamp
         : null;
       if (!exists) {
+        logger.error(
+          `wrong timestamp ${current_event_timestamp}, for event ${existing_event.id}`
+        );
         return res.status(400).json({
           success: false,
           message: 'wrong "current_event_timestamp"',
