@@ -667,7 +667,7 @@ const deleteSingle = async (event, current_event_timestamp) => {
       ...event,
       exclusion_timestamp: current_event_timestamp,
       event_id: event.id,
-      end_date: event.start_date + event.duration * 60000,
+      end_date: new Date(event.start_date).getTime() + event.duration * 60000,
       deleted: true,
     };
     delete exclusion_data.parent_id;
