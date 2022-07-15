@@ -206,6 +206,7 @@ router.put('/all', auth, async (req, res) => {
         message: 'wrong "current_event_timestamp"',
       });
     }
+
     if (getMidnight(current_event_timestamp) != getMidnight(event.start_date)) {
       return res.status(400).json({
         success: false,
@@ -247,7 +248,11 @@ router.put('/all', auth, async (req, res) => {
       );
     } else {
       await Event.update(
-        { ...new_event, end_date: new Date(max_date).getTime() },
+        {
+          ...new_event,
+          start_date: existing_event.start_date,
+          end_date: new Date(max_date).getTime(),
+        },
         {
           where: { id: existing_event.id },
         }
