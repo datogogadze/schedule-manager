@@ -43,6 +43,9 @@ module.exports = function (sequelize, DataTypes) {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      notification_time: {
+        type: DataTypes.INTEGER,
+      },
       deleted: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
