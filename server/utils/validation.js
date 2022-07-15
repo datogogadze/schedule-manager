@@ -86,8 +86,8 @@ const eventSchema = Joi.object({
   description: Joi.string().min(3).max(254).lowercase().trim().required(),
   start_date: Joi.number().required().strict(),
   end_date: Joi.number().allow(null).required().strict(),
-  duration: Joi.number().integer().required().strict(),
-  notification_time: Joi.number().integer().allow(null).required(),
+  duration: Joi.number().integer().required().strict().min(0),
+  notification_time: Joi.number().integer().allow(null).required().min(0),
   frequency: Joi.string()
     .allow(null)
     .required()
@@ -97,8 +97,8 @@ const eventSchema = Joi.object({
       }
       return value;
     }),
-  interval: Joi.number().allow(null).required(),
-  count: Joi.number().allow(null).required().strict(),
+  interval: Joi.number().allow(null).required().min(1),
+  count: Joi.number().allow(null).required().strict().min(1),
 });
 
 const updateEventSchema = Joi.object({
@@ -111,8 +111,8 @@ const updateEventSchema = Joi.object({
     description: Joi.string().min(3).max(254).lowercase().trim().required(),
     start_date: Joi.number().required().strict(),
     end_date: Joi.number().allow(null).required().strict(),
-    duration: Joi.number().integer().required().strict(),
-    notification_time: Joi.number().integer().allow(null).required(),
+    duration: Joi.number().integer().required().strict().min(1),
+    notification_time: Joi.number().integer().allow(null).required().min(1),
     frequency: Joi.string()
       .allow(null)
       .required()
@@ -122,8 +122,8 @@ const updateEventSchema = Joi.object({
         }
         return value;
       }),
-    interval: Joi.number().allow(null).required(),
-    count: Joi.number().allow(null).required().strict(),
+    interval: Joi.number().allow(null).required().min(1),
+    count: Joi.number().allow(null).required().strict().min(1),
   }),
 });
 

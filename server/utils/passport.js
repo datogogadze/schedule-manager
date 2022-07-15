@@ -12,6 +12,9 @@ const basicAuthenticateUser = async (email, password, done) => {
     if (!user) {
       return done(null, null, { message: 'User not found' });
     }
+    if (user.external_id) {
+      return done(null, null, { message: 'Use oauth for this email' });
+    }
     if (!user.email_verified) {
       return done(null, null, { message: 'Email not verified' });
     }
