@@ -358,6 +358,33 @@ const whenRecurrenceChanging = async (
       },
     },
   });
+
+  const new_rule = RRule.parseString(new_event.recurrence_pattern);
+  if (new_rule.count && old_rule.count && new_rule.count == old_rule.count) {
+    const cnt = new_rule.count - changed_recurrence_pattern.all().length;
+    const changed_new_recurrence_pattern_rule = new RRule({
+      dtstart: new_rule.dtstart,
+      freq: new_rule.freq,
+      interval: new_rule.interval,
+      count: cnt,
+    });
+
+    const events = changed_new_recurrence_pattern_rule.all();
+    const len = Object.keys(events).length;
+    const last = events[len - 1];
+    new_end_date = new Date(last).getTime() + new_event.duration * 60000;
+
+    const changed_new_recurrence_pattern = new RRule({
+      dtstart: new_rule.dtstart,
+      freq: new_rule.freq,
+      interval: new_rule.interval,
+      count: new_rule.count,
+      until: new_end_date,
+    }).toString();
+    new_event.end_date = new_end_date;
+    new_event.recurrence_pattern = changed_new_recurrence_pattern;
+  }
+
   return Event.create(new_event);
 };
 
@@ -424,7 +451,8 @@ const whenRecurrenceNotChanging = async (
       dtstart: new_rule.dtstart,
       freq: new_rule.freq,
       interval: new_rule.interval,
-      count: cnt,
+      count: new_rule.count,
+      until: old_end_date,
     }).toString();
     new_event.end_date = old_end_date;
     new_event.recurrence_pattern = changed_new_recurrence_pattern;
