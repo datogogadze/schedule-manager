@@ -435,6 +435,12 @@ router.put('/future', auth, async (req, res) => {
           'This is a one time event, call update endpoint for single event',
       });
     }
+    if (!event.frequency) {
+      return res.status(400).json({
+        success: false,
+        message: 'call update all if you want to cancel recurrence',
+      });
+    }
     const rule = RRule.fromString(existing_event.recurrence_pattern);
     const before = rule.before(new Date(current_event_timestamp), true);
     const exists = before ? before.getTime() == current_event_timestamp : null;
