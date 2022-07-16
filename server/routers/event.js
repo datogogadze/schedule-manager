@@ -204,7 +204,10 @@ router.put('/all', auth, async (req, res) => {
       });
     }
 
-    if (getMidnight(current_event_timestamp) != getMidnight(event.start_date)) {
+    if (
+      getMidnight(current_event_timestamp) != getMidnight(event.start_date) &&
+      event.frequency
+    ) {
       return res.status(400).json({
         success: false,
         message: 'When changing day, use update single or future events',
