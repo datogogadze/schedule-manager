@@ -370,6 +370,7 @@ const whenRecurrenceNotChanging = async (
     ? existing_event.parent_id
     : existing_event.id;
   new_event.parent_id = real_parent_id;
+  const old_end_date = existing_event.end_date;
   existing_event.end_date = current_event_timestamp - 1;
   const old_rule = RRule.parseString(existing_event.recurrence_pattern);
   const changed_recurrence_pattern = new RRule({
@@ -415,9 +416,18 @@ const whenRecurrenceNotChanging = async (
       },
     },
   });
-  if (new_event.count == existing_event.count) {
-    const cnt = new_event.count - changed_recurrence_pattern.all().length;
-    new_event.count = cnt;
+
+  const new_rule = RRule.parseString(new_event.recurrence_pattern);
+  if (new_rule.count && old_rule.count && new_rule.count == old_rule.count) {
+    const cnt = new_rule.count - changed_recurrence_pattern.all().length;
+    const changed_new_recurrence_pattern = new RRule({
+      dtstart: new_rule.dtstart,
+      freq: new_rule.freq,
+      interval: new_rule.interval,
+      count: cnt,
+    }).toString();
+    new_event.end_date = old_end_date;
+    new_event.recurrence_pattern = changed_new_recurrence_pattern;
   }
   return Event.create(new_event);
 };
