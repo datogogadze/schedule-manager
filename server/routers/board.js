@@ -143,14 +143,45 @@ router.post('/remove-user', auth, async (req, res) => {
         .json({ success: false, message: 'User is not on this board' });
     }
 
-    const result = await UserBoard.destroy({
-      where: {
-        board_id,
-        user_id,
-      },
-    });
-
-    return res.json({ success: true, ...result.dataValues });
+    if (userBoard.role == 'kid') {
+      await Event.destroy({
+        where: { kid_id: userBoard.user_id, board_id: board.id },
+      });
+      await Exclusion.destroy({
+        where: { kid_id: userBoard.user_id, board_id: board.id },
+      });
+      await UserBoard.destroy({
+        where: {
+          board_id,
+          user_id,
+        },
+      });
+    } else if (userBoard.user_id == board.creator_id) {
+      await Event.destroy({
+        where: { board_id: board.id },
+      });
+      await Exclusion.destroy({
+        where: { board_id: board.id },
+      });
+      await UserBoard.destroy({
+        where: {
+          board_id,
+        },
+      });
+      await Board.destroy({
+        where: {
+          board_id,
+        },
+      });
+    } else {
+      await UserBoard.destroy({
+        where: {
+          board_id,
+          user_id,
+        },
+      });
+    }
+    return res.json({ success: true, board_id: board.id });
   } catch (err) {
     logger.error('Error in board remove user', err);
     return res.status(502).json({ success: false, message: err.message });
