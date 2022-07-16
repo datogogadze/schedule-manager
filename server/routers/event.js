@@ -415,6 +415,10 @@ const whenRecurrenceNotChanging = async (
       },
     },
   });
+  if (new_event.count == existing_event.count) {
+    const cnt = new_event.count - changed_recurrence_pattern.all().length;
+    new_event.count = cnt;
+  }
   return Event.create(new_event);
 };
 

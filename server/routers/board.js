@@ -120,7 +120,7 @@ router.post('/remove-user', auth, async (req, res) => {
         .status(400)
         .json({ success: false, message: 'Incorrect board_id' });
     }
-    if (board.creator_id != req.user.id && req.user.id) {
+    if (board.creator_id != req.user.id && req.user.id == user_id) {
       return res.status(403).json({ success: false, message: 'unauthorized' });
     }
     const user = await User.findOne({ where: { id: user_id } });
