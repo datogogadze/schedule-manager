@@ -73,7 +73,7 @@ const sendPushNotification = async (event) => {
 
 const scheduleNotificationsForBoard = async (board_id) => {
   try {
-    console.log('Scheduling notification for board ' + board_id);
+    logger.info('Scheduling notification for board ' + board_id);
     const now = Date.now();
     const start_date = getMidnight(now);
     const end_date = getEndOfRange(now);
@@ -91,22 +91,22 @@ const scheduleNotificationsForBoard = async (board_id) => {
         },
       }
     );
+
     const notifications = [];
     for (let event of data.events) {
       if (event.notification_time && event.notification_time >= 0) {
-        console.log(
-          'Scheduling notification for event ' +
-            event.name +
-            ' for date ' +
-            new Date(event.start_date - event.notification_time * 60000)
+        logger.info(
+          `Scheduling notification for event ${event.name}, for date ${new Date(
+            event.start_date - event.notification_time * 60000
+          )}`
         );
-        const old_job = schedule.scheduledJobs[event.id];
+        const old_job =
+          schedule.scheduledJobs[event.event_id + event.start_date];
         if (old_job) {
-          console.log('cancelled job', old_job);
           old_job.cancel();
         }
         const job = schedule.scheduleJob(
-          event.id,
+          event.event_id + event.start_date,
           new Date(event.start_date - event.notification_time * 60000),
           async () => {
             await sendPushNotification(event);
