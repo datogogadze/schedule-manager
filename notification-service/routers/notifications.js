@@ -44,7 +44,7 @@ const sendPushNotification = async (event) => {
         where: { user_id: user },
       });
       userDeviceData = [...userDeviceData].map((d) => d.dataValues);
-      for (data of userDeviceData) {
+      for (let data of userDeviceData) {
         const { logged_in, session_expires, device_token } = data;
         if (logged_in && session_expires > Date.now()) {
           const message = {
@@ -56,6 +56,10 @@ const sendPushNotification = async (event) => {
           const ticket = await expo.sendPushNotificationsAsync([message]);
           logger.info(
             `Push notification to user: ${user}, status: ${ticket[0].status}`
+          );
+        } else {
+          logger.info(
+            `Notification not sent to ${user}, logged in: ${logged_in},session_expires: ${session_expires}`
           );
         }
       }
@@ -70,6 +74,12 @@ const sendPushNotification = async (event) => {
 const scheduleNotificationsForBoard = async (board_id) => {
   try {
     console.log('Scheduling notification for board ' + board_id);
+    const old_jobs = eventNotifications[board_id];
+    for (let j in old_jobs) {
+      if (j) {
+        j.cancel();
+      }
+    }
     const now = Date.now();
     const start_date = getMidnight(now);
     const end_date = getEndOfRange(now);
