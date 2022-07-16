@@ -36,6 +36,16 @@ const BoardsScreen = ({ navigation }) => {
     }),
   });
 
+  const handleNotificationResponse = response => {
+    const data = response?.notification?.request?.content?.data;
+    navigation.navigate('SelectedBoard', {
+      boardId: data.board_id,
+      
+    });
+  };
+
+  Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => {
       fetchBoards();

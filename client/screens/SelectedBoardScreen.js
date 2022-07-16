@@ -137,7 +137,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           };
 
           const eventsForDay = eventsGroup[key];
-          eventsForDay.sort((a, b) => a.start_date = b.start_date);
+          eventsForDay.sort((a, b) => a.start_date - b.start_date);
           const calendarItems = eventsForDay.map((event) => ({
             id: event.event_id + event.current_event_timestamp,
             name: event.name,
