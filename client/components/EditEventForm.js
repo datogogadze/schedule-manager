@@ -1,26 +1,26 @@
 import React, { useEffect, useRef } from 'react';
 import {
-  StyleSheet, View, Keyboard
+  StyleSheet, View, Keyboard, Platform, Button
 } from 'react-native';
 // import Checkbox from 'expo-checkbox';
 
 import { Text, Input, Select, SelectItem, IndexPath, Layout, CheckBox } from '@ui-kitten/components';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import TimePicker from 'react-native-simple-time-picker';
 import { Field, Formik } from 'formik';
 import { EditEventSchema } from '../utils/formik-schemas';
 import { frequencyOptions, recurrenceEndingOptions } from '../utils/select-options';
 import moment from 'moment';
-import { min } from 'lodash';
 
 
 
-const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = () => {}, initialValues = {
+const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {}, handleFormChange = () => {}, initialValues = {
   name: '',
   description: '',
-  eventDay: new Date(),
-  hourFrom: new Date(),
-  hourTo: moment().add(1, 'hours').toDate(),
+  kidIndex: null,
+  eventDay: moment().startOf('day').toDate(),
+  hourFrom: moment().toDate(),
+  durationMinute: '00',
+  durationHour: '01',
   isRecurring: false,
   interval: '1',
   frequencyIndex: 0,
@@ -36,6 +36,11 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
   const refDescription = useRef();
   const refNotificationTimeHour = useRef();
   const refNotificationTimeMinute = useRef();
+  const refDurationMinute = useRef();
+
+  const [showEventDay, setShowEventDay] = React.useState(false);
+  const [showEventStartTime, setShowEventStartTime] = React.useState(false);
+  const [showRecurrenceEndDate, setShowRecurrenceEndDate] = React.useState(false);
 
 
   return (
@@ -54,7 +59,7 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
           useEffect(() => {
             handleFormChange(values);
           }, [values]);
-    
+
           return <>
             <Input
               placeholder="Name"
@@ -86,17 +91,41 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
 
             />
 
+            { !isEditing && <Field name="kidIndex">
+              {({ field, form }) => (
+                <Select
+                  style={{flexGrow: 1}}
+                  label='Kid'
+                  status={errors.kidIndex ? 'danger' : 'basic'}
+                  caption={errors.kidIndex || ' '}
+                  selectedIndex={ new IndexPath(values.kidIndex) }
+                  value={boardKids[values.kidIndex]?.['display_name'] || 'Select Kid'}
+                  onSelect={ (v) => {
+                    form.setFieldValue(field.name, v.row);
+                    form.setFieldTouched(field.name, true);
+                  }}
+                >
+                  { boardKids.map((kid, i) => <SelectItem key={i} title={kid['display_name']}/>) }
+                </Select>
+              )}
+            </Field> }
+
             <View style={styles.dates}>
               <View style={styles.datePickerWrapper}>
                 <Text style={styles.text} category='s2'>Day</Text>
                 <Field name="eventDay">
-                  {({ field, form }) => (
+                  {({ field, form }) => Platform.OS == 'android' && !showEventDay ? (
+                    <Button onPress={() => setShowEventDay(true)} title={moment(values[field.name]).format('MMM D YYYY')} />
+                  ) : (
                     <DateTimePicker
                       style={styles.datePicker}
                       mode="date"
                       onChange={ (event, value) =>  {
-                        form.setFieldValue(field.name, value);
-                        form.setFieldTouched(field.name, true);
+                        setShowEventDay(false);
+                        if (value) {
+                          form.setFieldValue(field.name, value);
+                          form.setFieldTouched(field.name, true);
+                        }
                       }}
                       value={values.eventDay}
                     />
@@ -106,14 +135,20 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
               
               <View style={styles.datePickerWrapper}>
                 <Text style={styles.text} category='s2'>From</Text>
+                
                 <Field name="hourFrom">
-                  {({ field, form }) => (
+                  {({ field, form }) => Platform.OS == 'android' && !showEventStartTime ? (
+                    <Button onPress={() => setShowEventStartTime(true)} title={moment(values[field.name]).format('LT')} />
+                  ) : (
                     <DateTimePicker
-                      mode="time"
                       style={styles.datePicker}
+                      mode="time"
                       onChange={ (event, value) =>  {
-                        form.setFieldValue(field.name, value);
-                        form.setFieldTouched(field.name, true);
+                        setShowEventStartTime(false);
+                        if (value) {
+                          form.setFieldValue(field.name, value);
+                          form.setFieldTouched(field.name, true);
+                        }
                       }}
                       value={values.hourFrom}
                     />
@@ -121,23 +156,68 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                 </Field>
               </View>
 
-              <View style={styles.datePickerWrapper}>
-                <Text style={styles.text} category='s2'>To</Text>
-                <Field name="hourTo">
-                  {({ field, form }) => (
-                    <DateTimePicker
-                      mode="time"
-                      style={styles.datePicker}
-                      onChange={ (event, value) =>  {
-                        form.setFieldValue(field.name, value);
-                        form.setFieldTouched(field.name, true);
-                      }}
-                      minimumDate={moment(values.hourFrom).add(1, 'minute').toDate()}
-                      value={values.hourTo}
-                    />
-                  )}
-                </Field>
-              </View>
+
+              <Text style={{marginBottom: 20}} category='s1'>
+                Duration
+              </Text>
+
+              <Layout style={styles.inputRow} level='1'>
+                <Input 
+                  label='Hours'
+                  style={{ width: '20%', marginRight: 20}}
+                  caption={errors.durationHour || ' '}
+                  status={errors.durationHour ? 'danger' : 'basic'}
+                  keyboardType = 'numeric'
+                  onChangeText = { (value) => {
+                    let nextVal = value;
+
+                    if (value.length > 0) {
+                      nextVal = Math.min(Number(value), 23).toString();
+                    }
+                    if (value.length >= 3) return refDurationMinute.current.focus();
+                    handleChange('durationHour')(nextVal);
+
+                    if (value.length >= 2) refDurationMinute.current.focus();
+                  }}
+
+                  value = {values.durationHour}
+                  onFocus={() => handleChange('durationHour')('')}
+                  onBlur={() => {
+                    if (values.durationHour == '') {
+                      handleChange('durationHour')('00');
+                    } else if (values.durationHour.length == 1) {
+                      handleChange('durationHour')('0' + values.durationHour);
+                    }
+                  }}
+                />
+                <Input 
+                  label='Minutes'
+                  style={{ width: '20%', marginRight: 20}}
+                  caption={errors.durationMinute || ' '}
+                  status={errors.durationMinute ? 'danger' : 'basic'}
+                  keyboardType = 'numeric'
+                  onChangeText = { (value) => {
+                    let nextVal = value;
+
+                    if (value.length > 0) {
+                      nextVal = Math.min(Number(value), 59).toString();
+                    }
+                    if (value.length >= 3) return Keyboard.dismiss();
+                    handleChange('durationMinute')(nextVal);
+                    if (value.length >= 2) Keyboard.dismiss();
+                  }}
+                  ref={refDurationMinute}
+                  value = {values.durationMinute}
+                  onFocus={() => handleChange('durationMinute')('')}
+                  onBlur={() => {
+                    if (values.durationMinute == '') {
+                      handleChange('durationMinute')('00');
+                    } else if (values.durationMinute.length == 1) {
+                      handleChange('durationMinute')('0' + values.durationMinute);
+                    }
+                  }}
+                />
+              </Layout>
             </View>
 
             <Field name="enableNotification">
@@ -208,6 +288,8 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                 onBlur={() => {
                   if (values.notificationTimeHour == '') {
                     handleChange('notificationTimeHour')('00');
+                  } else if (values.notificationTimeHour.length == 1) {
+                    handleChange('notificationTimeHour')('0' + values.notificationTimeHour);
                   }
                 }}
               />
@@ -233,6 +315,8 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                 onBlur={() => {
                   if (values.notificationTimeMinute == '') {
                     handleChange('notificationTimeMinute')('00');
+                  } else if (values.notificationTimeMinute.length == 1) {
+                    handleChange('notificationTimeMinute')('0' + values.notificationTimeMinute);
                   }
                 }}
               />
@@ -307,14 +391,18 @@ const EditEventForm = ({ refForm, handleSubmit = () => {}, handleFormChange = ()
                 <View style={styles.datePickerWrapper}>
                   <Text style={styles.text} category='s2'>Recurrence end date</Text>
                   <Field name="recurrenceEndDate">
-                    {({ field, form }) => (
+                    {({ field, form }) => Platform.OS == 'android' && !showRecurrenceEndDate ? (
+                      <Button onPress={() => setShowRecurrenceEndDate(true)} title={moment(values[field.name]).format('MMM D YYYY')} />
+                    ) : (
                       <DateTimePicker
-                        mode="date"
                         style={styles.datePicker}
-                        minimumDate={values.eventDay}
+                        mode="date"
                         onChange={ (event, value) =>  {
-                          form.setFieldValue(field.name, value);
-                          form.setFieldTouched(field.name, true);
+                          setShowRecurrenceEndDate(false);
+                          if (value) {
+                            form.setFieldValue(field.name, value);
+                            form.setFieldTouched(field.name, true);
+                          }
                         }}
                         value={values.recurrenceEndDate}
                       />
@@ -392,6 +480,7 @@ const styles = StyleSheet.create({
   },
   inputRow: {
     flexDirection: 'row',
+    marginBottom: 15
   }
 });
 

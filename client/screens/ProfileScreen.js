@@ -4,6 +4,7 @@ import {
   View,
   StyleSheet,
   SafeAreaView,
+  StatusBar,
 } from 'react-native';
 
 import Toast from 'react-native-toast-message';
@@ -15,7 +16,7 @@ const ProfileScreen = ({ navigation, route }) => {
   const { user } = route.params;
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <Header text="Profile" navigation={navigation} smallHeader showMenu />
         <Text style={styles.text} category='h5'>Personal Information</Text>
@@ -40,6 +41,11 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 0,
     height: '100%',
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   header: {
     marginBottom: 30,

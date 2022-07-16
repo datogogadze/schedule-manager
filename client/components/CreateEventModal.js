@@ -12,7 +12,7 @@ import EditEventForm from './EditEventForm';
 import { frequencies } from '../utils/select-options';
 
 
-const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => {
+const CreateEventModal = ({ boardKids, visible, boardId, onClose, onSuccess, onError }) => {
   const [loading, setLoading] = React.useState(false);
 
 
@@ -27,7 +27,9 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       eventDay,
       frequencyIndex,
       hourFrom,
-      hourTo,
+      kidIndex,
+      durationHour,
+      durationMinute,
       interval,
       isRecurring,
       name,
@@ -42,10 +44,12 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
 
     const startDayMilliseconds = moment(eventDay).startOf('day').valueOf();
     const startTimeMilliseconds = hourFrom.getHours() * 60 * 60 * 1000 + hourFrom.getMinutes() * 60 * 1000;
-    const endTimeMilliseconds = hourTo.getHours() * 60 * 60 * 1000 + hourTo.getMinutes() * 60 * 1000;
     
     const startTime = startDayMilliseconds + startTimeMilliseconds;
-    const duration = Math.floor((endTimeMilliseconds - startTimeMilliseconds) / 60000);
+    const duration = Number(durationHour) * 60 + Number(durationMinute);
+
+    const kidId = boardKids[kidIndex]['id'];
+
 
     let rEndDate = null;
     let rFrequency = null;
@@ -56,7 +60,7 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
       rFrequency = frequencies[frequencyIndex];
       rInterval = Number(interval);
       if (recurrenceEndingIndex == 0) {
-        rEndDate = moment(recurrenceEndDate).startOf('day').valueOf();
+        rEndDate = moment(recurrenceEndDate).endOf('day').valueOf();
       } else {
         rCount = Number(recurrenceCount);
       }
@@ -70,7 +74,7 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
 
     createEvent(
       boardId,
-      user.id,
+      kidId,
       name,
       description,
       startTime,
@@ -136,7 +140,7 @@ const CreateEventModal = ({ visible, boardId, onClose, onSuccess, onError }) => 
           
         <Card style={styles.createEventCard} header={CardHeader} footer={CardFooter } disabled>
           <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            <EditEventForm refForm={refForm} handleSubmit={handleSubmit} />
+            <EditEventForm boardKids={boardKids} boardId={boardId} refForm={refForm} handleSubmit={handleSubmit} />
           </ScrollView> 
         </Card>
         <OverlaySpinner visible={loading} />

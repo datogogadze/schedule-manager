@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Image, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Image, SafeAreaView, StatusBar } from 'react-native';
 import { Button, Icon, Text } from '@ui-kitten/components';
 
 import Modal from 'react-native-modal';
@@ -98,7 +98,7 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
           onSwipeComplete={() => setSideMenuVisible(false)}
           swipeDirection="right"
         >
-          <SafeAreaView>
+          <SafeAreaView style={styles.safe}>
             <View style={styles.sideMenuContent}>
               <Text style={styles.fullName} category="h6">
                 { user.display_name }
@@ -173,6 +173,11 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
 const styles = StyleSheet.create({
   header: {
     marginBottom: 30,
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   smallHeader: {},
   smallHeaderWrapper: {

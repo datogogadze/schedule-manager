@@ -81,6 +81,12 @@ export const getBoardUsers = (boardId) =>
     board_id: boardId
   });
 
+export const getBoardKids = (boardId) =>
+  axios.post(`${SERVER_ADDRESS}/board/kids`, {
+    board_id: boardId
+  });
+
+
 export const createBoard = (name, role) =>
   axios.post(`${SERVER_ADDRESS}/board`, {
     name,

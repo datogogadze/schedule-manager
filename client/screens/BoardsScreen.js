@@ -6,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   RefreshControl,
+  StatusBar,
 } from 'react-native';
 
 import Toast from 'react-native-toast-message';
@@ -117,14 +118,17 @@ const BoardsScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <Header text="My Boards" navigation={navigation} smallHeader showMenu />
         <ScrollView
           style={styles.boardsWrapper}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={fetchBoards} />
+            <RefreshControl refreshing={refreshing} onRefresh={() => {
+              setRefreshing(true);
+              fetchBoards();
+            }} />
           }
         >
           {boards.length > 0 &&
@@ -197,6 +201,11 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 0,
     height: '100%',
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   header: {
     marginBottom: 30,

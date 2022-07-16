@@ -6,6 +6,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  StatusBar,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { Icon, Input, Button } from '@ui-kitten/components';
@@ -221,7 +222,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.container}>
           <KeyboardAvoidingView
             behavior="position"
@@ -358,6 +359,11 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 30,
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   captionContainer: {
     display: 'flex',

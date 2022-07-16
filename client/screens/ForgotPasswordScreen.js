@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   SafeAreaView,
+  StatusBar,
 } from 'react-native';
 
 import {
@@ -47,7 +48,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <Header text="Reset Password" />
         <Input
@@ -81,6 +82,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 30,
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   header: {
     marginBottom: 30,
