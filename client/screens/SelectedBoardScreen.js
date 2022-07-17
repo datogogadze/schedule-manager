@@ -29,7 +29,7 @@ const statusColors = [
 ];
 
 const SelectedBoardScreen = ({ navigation, route }) => {
-  const { boardId, boardName } = route.params;
+  const { boardId, boardName, notificationEventId, notificationStartDate } = route.params;
 
   const [selectedModal, setSelectedModal] = React.useState(ModalOption.None);
 
@@ -42,11 +42,22 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   const [boardKids, setBoardKids] = React.useState([]);
 
   const isMounted = useRef(false);
+  const notificationStartDateLoaded = useRef(false);
+  const notificationEventIdLoaded = useRef(false);
 
 
-  const [startDate, setStartDate] = React.useState(
-    moment().startOf('day').valueOf()
-  );
+  
+  const [startDate, setStartDate] = React.useState(moment().startOf('day').valueOf());
+
+  useEffect(() => {
+    if (!notificationStartDateLoaded.current) {
+      if (notificationStartDate) {
+        setStartDate(notificationStartDate);
+        notificationStartDateLoaded.current = true;
+      }
+    }
+
+  }, [boardId, notificationEventId]);
   
   const [endDate, setEndDate] = React.useState(
     moment().startOf('day').add(2, 'weeks').valueOf() - 1
@@ -126,6 +137,18 @@ const SelectedBoardScreen = ({ navigation, route }) => {
             eventsGroup[day] = [];
           }
         });
+
+        if (!notificationEventIdLoaded.current) {
+          if (notificationEventId) {
+            const eventToSelect = events.find((e) => e.event_id == notificationEventId);
+
+            if (eventToSelect) {
+              setSelectedEvent(eventToSelect);
+              setSelectedModal(ModalOption.Select);
+            }
+            notificationEventIdLoaded.current = true;
+          }
+        }
 
         let newEventsCalendar = [];
 

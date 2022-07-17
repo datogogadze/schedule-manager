@@ -38,9 +38,12 @@ const BoardsScreen = ({ navigation }) => {
 
   const handleNotificationResponse = response => {
     const data = response?.notification?.request?.content?.data;
+
     navigation.navigate('SelectedBoard', {
       boardId: data.board_id,
-      
+      boardName: data.board_name,
+      notificationStartDate: data.start_date,
+      notificationEventId: data.event_id
     });
   };
 
