@@ -392,7 +392,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         backdropStyle={styles.backdrop}
       >
           
-        <Card style={styles.createEventCard} header={CardHeader} footer={CardFooter } disabled>
+        <Card style={styles.selectedEventCard} header={CardHeader} footer={CardFooter } disabled>
           <ScrollView style={styles.scrollView} keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
             
             { !isEditing && <>
@@ -472,7 +472,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
 };
 
 const styles = StyleSheet.create({
-  createEventCard: {
+  selectedEventCard: {
     width: '100%',
     height: '100%'
   },

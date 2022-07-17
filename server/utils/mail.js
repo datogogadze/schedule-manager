@@ -63,7 +63,7 @@ const sendResetPasswrdMail = async (email) => {
           logger.error('token creation error', err);
           return;
         }
-        const url = `${process.env.HOST_ADDRESS}/resetPassword?token=${token}`;
+        const url = `${process.env.HOST_ADDRESS}/auth/reset/password/page/${token}`;
         const msg = {
           to: email,
           from: 'kidschedulemanager@gmail.com',
