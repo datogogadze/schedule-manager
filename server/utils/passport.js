@@ -40,6 +40,11 @@ const oAuthAuthenticateUser = async (req, email, password, done) => {
       if (!user.email_verified) {
         return done(null, null, { message: 'Email not verified' });
       }
+      if (!user.external_type) {
+        return done(null, null, {
+          message: 'User is registered with email and password',
+        });
+      }
       delete user.dataValues.password_hash;
       done(null, user.dataValues);
     } else {

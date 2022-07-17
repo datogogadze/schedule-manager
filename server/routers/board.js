@@ -262,7 +262,7 @@ router.post('/kids', auth, async (req, res) => {
 router.post('/events', auth, async (req, res) => {
   try {
     await boardEventsSchema.validateAsync(req.body, { abortEarly: false });
-    const { board_id, start_date, end_date } = req.body;
+    const { board_id, start_date, end_date, kid_ids } = req.body;
     const eventsList = await Event.findAll({
       where: {
         board_id,
@@ -296,55 +296,61 @@ router.post('/events', auth, async (req, res) => {
 
           if (exclusion) {
             if (!exclusion.deleted) {
+              if (!kid_ids || kid_ids.includes(exclusion.kid_id)) {
+                events.push({
+                  event_id: e.id,
+                  parent_id: e.parent_id,
+                  board_id: e.board_id,
+                  kid_id: exclusion.kid_id,
+                  name: exclusion.name,
+                  description: exclusion.description,
+                  current_event_timestamp: new Date(date).getTime(),
+                  start_date: new Date(exclusion.start_date).getTime(),
+                  end_date: new Date(
+                    exclusion.start_date + exclusion.duration * 60000
+                  ).getTime(),
+                  duration: exclusion.duration,
+                  notification_time: exclusion.notification_time,
+                  recurrence_pattern: e.recurrence_pattern,
+                });
+              }
+            }
+          } else {
+            if (!kid_ids || kid_ids.includes(e.kid_id)) {
               events.push({
                 event_id: e.id,
                 parent_id: e.parent_id,
                 board_id: e.board_id,
-                kid_id: exclusion.kid_id,
-                name: exclusion.name,
-                description: exclusion.description,
+                kid_id: e.kid_id,
+                name: e.name,
+                description: e.description,
                 current_event_timestamp: new Date(date).getTime(),
-                start_date: new Date(exclusion.start_date).getTime(),
-                end_date: new Date(
-                  exclusion.start_date + exclusion.duration * 60000
-                ).getTime(),
-                duration: exclusion.duration,
-                notification_time: exclusion.notification_time,
+                start_date: new Date(date).getTime(),
+                end_date: new Date(date + e.duration * 60000).getTime(),
+                duration: e.duration,
+                notification_time: e.notification_time,
                 recurrence_pattern: e.recurrence_pattern,
               });
             }
-          } else {
-            events.push({
-              event_id: e.id,
-              parent_id: e.parent_id,
-              board_id: e.board_id,
-              kid_id: e.kid_id,
-              name: e.name,
-              description: e.description,
-              current_event_timestamp: new Date(date).getTime(),
-              start_date: new Date(date).getTime(),
-              end_date: new Date(date + e.duration * 60000).getTime(),
-              duration: e.duration,
-              notification_time: e.notification_time,
-              recurrence_pattern: e.recurrence_pattern,
-            });
           }
         }
       } else {
-        events.push({
-          event_id: e.id,
-          parent_id: e.parent_id,
-          board_id: e.board_id,
-          kid_id: e.kid_id,
-          name: e.name,
-          description: e.description,
-          current_event_timestamp: new Date(e.start_date).getTime(),
-          start_date: new Date(e.start_date).getTime(),
-          end_date: new Date(e.start_date + e.duration * 60000).getTime(),
-          duration: e.duration,
-          notification_time: e.notification_time,
-          recurrence_pattern: e.recurrence_pattern,
-        });
+        if (!kid_ids || kid_ids.includes(e.kid_id)) {
+          events.push({
+            event_id: e.id,
+            parent_id: e.parent_id,
+            board_id: e.board_id,
+            kid_id: e.kid_id,
+            name: e.name,
+            description: e.description,
+            current_event_timestamp: new Date(e.start_date).getTime(),
+            start_date: new Date(e.start_date).getTime(),
+            end_date: new Date(e.start_date + e.duration * 60000).getTime(),
+            duration: e.duration,
+            notification_time: e.notification_time,
+            recurrence_pattern: e.recurrence_pattern,
+          });
+        }
       }
     }
     return res.json({
