@@ -1,0 +1,48 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "NODE_ENV=test && npx sequelize-cli db:migrate --env test && jest --watchAll --detectOpenHandles",
+    "dev": "NODE_ENV=development && npx sequelize-cli db:migrate --env development && nodemon server.js",
+    "server": "NODE_ENV=production && npx sequelize-cli db:migrate --env production && node server.js",
+    "start": "npm run server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "axios": "^0.27.2",
+    "bcrypt": "^5.0.1",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "express-flash": "0.0.2",
+    "express-mysql-session": "^2.1.7",
+    "express-session": "^1.17.2",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^8.5.1",
+    "memorystore": "^1.6.7",
+    "morgan-body": "^2.6.6",
+    "mysql2": "^2.3.3",
+    "nodemailer": "^6.7.3",
+    "passport": "^0.5.2",
+    "passport-facebook": "^3.0.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "rrule": "^2.7.0",
+    "save-dev": "^0.0.1-security",
+    "sequelize": "^6.19.0",
+    "uuid": "^8.3.2",
+    "winston": "^3.7.2"
+  },
+  "devDependencies": {
+    "concurrently": "^7.1.0",
+    "jest": "^28.1.1",
+    "nodemon": "^2.0.15",
+    "supertest": "^6.2.3"
+  }
+}

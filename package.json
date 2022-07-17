@@ -1,0 +1,40 @@
+{
+  "name": "schedule-manager",
+  "version": "1.0.0",
+  "description": "Project for bachelor's degree",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test --prefix ./server",
+    "server-dev": "npm run dev --prefix ./server",
+    "notif-dev": "npm run dev --prefix ./notification-service",
+    "client-dev": "npm run dev --prefix ./client",
+    "dev": "concurrently \"npm run server-dev\" \"npm run client-dev\" \"npm run notif-dev\"",
+    "server": "npm start --prefix ./server",
+    "notif": "npm start --prefix ./notification-service",
+    "client": "npm start --prefix ./client",
+    "start": "concurrently \"npm run server\" \"npm run client\" \"npm run notif\"",
+    "server-dependencies": "npm install --prefix ./server",
+    "client-dependencies": "npm install --prefix ./client",
+    "notif-dependencies": "npm install --prefix ./notification-service",
+    "install-all": "npm run server-dependencies && npm run client-dependencies && npm run notif-dependencies"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/datogogadze/schedule-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/datogogadze/schedule-manager/issues"
+  },
+  "homepage": "https://github.com/datogogadze/schedule-manager#readme",
+  "dependencies": {
+    "babel-preset-react-native": "^4.0.1",
+    "concurrently": "^7.2.0",
+    "dotenv": "^16.0.1",
+    "expo-updates": "^0.13.3"
+  },
+  "devDependencies": {
+    "prettier": "^2.6.2"
+  }
+}
