@@ -93,6 +93,16 @@ const scheduleNotificationsForBoard = async (board_id) => {
       }
     );
 
+    const names = eventNotificationNames[board_id];
+    if (names) {
+      for (let name of names) {
+        const old_job = schedule.scheduledJobs[name];
+        if (old_job) {
+          old_job.cancel();
+        }
+      }
+    }
+
     const notificationNames = [];
     for (let event of data.events) {
       if (event.notification_time && event.notification_time >= 0) {
@@ -102,15 +112,6 @@ const scheduleNotificationsForBoard = async (board_id) => {
         logger.info(
           `Scheduling notification for event ${event.name}, for date ${schedule_date}`
         );
-        const names = eventNotificationNames[board_id];
-        if (names) {
-          for (let name of names) {
-            const old_job = schedule.scheduledJobs[name];
-            if (old_job) {
-              old_job.cancel();
-            }
-          }
-        }
         const notification_name = event.event_id + event.start_date;
         const job = schedule.scheduleJob(
           notification_name,
