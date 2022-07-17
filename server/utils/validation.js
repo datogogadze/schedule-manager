@@ -136,6 +136,7 @@ const deleteEventSchema = Joi.object({
 const boardEventsSchema = Joi.object({
   board_id: Joi.string().guid().required(),
   start_date: Joi.number().required().strict(),
+  kid_ids: Joi.array().items(Joi.string().guid()).allow(null),
   end_date: Joi.number().allow(null).required().strict(),
 });
 
