@@ -10,7 +10,6 @@ const { Expo } = require('expo-server-sdk');
 const logger = require('../utils/winston');
 const expo = new Expo({ accessToken: process.env.EXPO_ACCESS_TOKEN });
 
-const eventNotifications = new Map();
 const eventNotificationNames = new Map();
 
 const DAY = 86400000;
@@ -48,11 +47,12 @@ const sendPushNotification = async (event) => {
       for (let data of userDeviceData) {
         const { logged_in, session_expires, device_token } = data;
         if (logged_in && session_expires > Date.now()) {
+          const board = await Board.findOne({ where: { id: event.board_id } });
           const message = {
             to: device_token,
             sound: 'default',
             body: event.name,
-            data: event,
+            data: { ...event, board_id: board.name, board_code: board.code },
           };
           const ticket = await expo.sendPushNotificationsAsync([message]);
           logger.info(
@@ -93,14 +93,14 @@ const scheduleNotificationsForBoard = async (board_id) => {
       }
     );
 
-    const notifications = [];
     const notificationNames = [];
     for (let event of data.events) {
       if (event.notification_time && event.notification_time >= 0) {
+        const schedule_date = new Date(
+          event.start_date - event.notification_time * 60000
+        );
         logger.info(
-          `Scheduling notification for event ${event.name}, for date ${new Date(
-            event.start_date - event.notification_time * 60000
-          )}`
+          `Scheduling notification for event ${event.name}, for date ${schedule_date}`
         );
         const names = eventNotificationNames[board_id];
         if (names) {
@@ -114,18 +114,16 @@ const scheduleNotificationsForBoard = async (board_id) => {
         const notification_name = event.event_id + event.start_date;
         const job = schedule.scheduleJob(
           notification_name,
-          new Date(event.start_date - event.notification_time * 60000),
+          schedule_date,
           async () => {
             await sendPushNotification(event);
             job.cancel();
           }
         );
         notificationNames.push(notification_name);
-        notifications.push(job);
       }
     }
     eventNotificationNames[board_id] = notificationNames;
-    eventNotifications[board_id] = notifications;
     return true;
   } catch (err) {
     logger.error('Error in scheduleNotificationsForBoard', err);
