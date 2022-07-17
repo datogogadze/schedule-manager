@@ -26,11 +26,11 @@ export const SignupSchema = Yup.object().shape({
 });
 
 export const EditEventSchema = Yup.object().shape({
-  name: Yup.string().required().min(3, 'Should contain at least 3 letters'),
-  description: Yup.string().required().min(3, 'Should contain at least 3 letters'),
+  name: Yup.string().required('Name field is required').min(3, 'Should contain at least 3 letters'),
+  description: Yup.string().required('Description field is required').min(3, 'Should contain at least 3 letters'),
+  kidIndex: Yup.number().nullable().required('Please select kid for this event'),
   eventDay: Yup.date().required(),
   hourFrom: Yup.date().required(),
-  hourTo: Yup.date().required(),
   enableNotification: Yup.boolean().required(),
   notificationTimeDay: Yup.number().when('enableNotification', {
     is: true,

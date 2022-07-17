@@ -1,18 +1,23 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Button, Card, Text, Modal, Input } from '@ui-kitten/components';
+import { Button, Card, Text, Modal, Input, IndexPath, Select, SelectItem } from '@ui-kitten/components';
 import { createBoard } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import Toast from 'react-native-toast-message';
-
+import { roleOptions, roleValues } from '../utils/select-options';
 
 const CreateBoardModal = ({ onClose, onSuccess }) => {
   const [boardName, setBoardName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [roleIndex, setRoleIndex] = React.useState(0);
+
+  const role = useMemo(() => {
+    return roleValues[roleIndex];
+  }, [roleIndex]);
 
   const handleCreateBoard = () => {
     setLoading(true);
-    createBoard(boardName, 'father')
+    createBoard(boardName, role)
       .then((res) => {
         setLoading(false);
         const { success, board } = res.data;
@@ -73,8 +78,8 @@ const CreateBoardModal = ({ onClose, onSuccess }) => {
         backdropStyle={styles.backdrop}
       >
         <Card style={styles.card} header={CardHeader} footer={CardFooter}>
-          <Text style={styles.text}>Enter the name of the board.</Text>
           <Input
+            label='Board Name'
             placeholder="Name"
             status="basic"
             style={styles.textInput}
@@ -83,6 +88,17 @@ const CreateBoardModal = ({ onClose, onSuccess }) => {
             value={boardName}
             onChangeText={(text) => setBoardName(text)}
           />
+          <Select
+            style={{flexGrow: 1}}
+            label='Role'
+            selectedIndex={ new IndexPath(roleIndex) }
+            value={roleOptions[roleIndex]}
+            onSelect={ (v) => {
+              setRoleIndex(v.row);
+            }}
+          >
+            { roleOptions.map((option, i) => <SelectItem key={i} title={option}/>) }
+          </Select>
         </Card>
         <Toast />
         <OverlaySpinner visible={loading} />
@@ -103,8 +119,8 @@ const styles = StyleSheet.create({
     // height: '50%'
     width: '85%'
   },
-  text: {
-    marginBottom: 12,
+  textInput: {
+    marginBottom: 20,
   },
   backdrop: {
     backgroundColor: '#F5FCFF88',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, SafeAreaView } from 'react-native';
+import { View, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 
 import { Button, Text } from '@ui-kitten/components';
 
@@ -40,7 +40,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <Header text="Verify Email" />
         <Text category="h6">
@@ -73,6 +73,11 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 30,
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   header: {
     marginBottom: 30,

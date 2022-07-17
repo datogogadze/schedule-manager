@@ -5,11 +5,11 @@ import {
 } from 'react-native';
 import moment from 'moment';
 import { RRule } from 'rrule';
-import { Button, Card, Text, Modal, OverflowMenu, MenuItem } from '@ui-kitten/components';
+import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem } from '@ui-kitten/components';
 import { deleteEvent, updateEventAll, updateEventFuture, updateEventSingle } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
-import { frequencies } from '../utils/select-options';
+import { frequencies, frequencyOptions } from '../utils/select-options';
 import Toast from 'react-native-toast-message';
 
 const UPDATE_TYPE_SINGLE = 'single';
@@ -37,7 +37,7 @@ const menuItemOptionsAll = [
   },
 ];
 
-const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSuccess }) => {
+const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClose, onSuccess }) => {
   const [loading, setLoading] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [deleteMenuVisible, setDeleteMenuVisible] = React.useState(false);
@@ -53,12 +53,21 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
   const initialValues = useMemo(() => {
     const {
       name,
+      kid_id,
       description,
       start_date,
       duration,
       recurrence_pattern,
       notification_time
     } = selectedEvent;
+
+    let durationTime = duration;
+
+    const durationHour = Math.floor(durationTime / 60).toString();
+    durationTime -= durationHour * 60;
+    const durationMinute = durationTime.toString();
+
+    const kidIndex = boardKids.findIndex((kid) => kid.id == kid_id);
 
 
     let isRecurring = false;
@@ -86,7 +95,6 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       } else {
         recurrenceEndDate = new Date(until);
       }
-
     }
 
     let enableNotification = false;
@@ -110,7 +118,9 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
       description: description,
       eventDay: new Date(start_date),
       hourFrom: new Date(start_date),
-      hourTo: new Date(start_date + duration * 60000),
+      kidIndex,
+      durationHour,
+      durationMinute,
       isRecurring,
       interval: interval.toString(),
       frequencyIndex,
@@ -130,21 +140,48 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
 
   const handleSubmit = (values) => {
     setFormValues(values);
-    if (!initialValues.isRecurring && !values.isRecurring) {
+    if (initialValues.isRecurring && !values.isRecurring) {
       setMenuItemOptions([
-        menuItemOptionsAll[0]
+        menuItemOptionsAll[2]
       ]);
-    } else if (!initialValues.isRecurring && values.isRecurring) {
-      setMenuItemOptions([
-        menuItemOptionsAll[0]
-      ]);
-    } else if (initialValues.interval != values.interval || initialValues.frequencyIndex != values.frequencyIndex) {
-      setMenuItemOptions([
-        menuItemOptionsAll[1],
-        menuItemOptionsAll[2],
-      ]);
+    } else if (initialValues.isRecurring && values.isRecurring) {
+      if (initialValues.interval != values.interval
+        || initialValues.frequencyIndex != values.frequencyIndex
+        || initialValues.recurrenceEndingIndex != values.recurrenceEndingIndex
+        || (initialValues.recurrenceEndingIndex == 0 && new Date(initialValues.recurrenceEndDate).getTime() != new Date(values.recurrenceEndDate).getTime())
+        || initialValues.recurrenceCount != values.recurrenceCount
+      ) {
+        console.log(initialValues.interval != values.interval,
+          initialValues.frequencyIndex != values.frequencyIndex,
+          initialValues.recurrenceEndingIndex != values.recurrenceEndingIndex,
+          new Date(initialValues.recurrenceEndDate), new Date(values.recurrenceEndDate),
+          initialValues.recurrenceCount != values.recurrenceCount);
+        if (new Date(initialValues.eventDay).getTime() == new Date(values.eventDay).getTime()) {
+          setMenuItemOptions([
+            menuItemOptionsAll[1]
+          ]);
+        } else {
+          setMenuItemOptions([
+            menuItemOptionsAll[1],
+            menuItemOptionsAll[2]
+          ]);
+        }    
+      } else {
+        if (new Date(initialValues.eventDay).getTime() == new Date(values.eventDay).getTime()) {
+          setMenuItemOptions([
+            menuItemOptionsAll[0],
+            menuItemOptionsAll[1],
+            menuItemOptionsAll[2],
+          ]);
+        } else {
+          setMenuItemOptions([
+            menuItemOptionsAll[0],
+            menuItemOptionsAll[1],
+          ]);
+        }
+      }
     } else {
-      setMenuItemOptions([...menuItemOptionsAll]);
+      setMenuItemOptions([menuItemOptionsAll[0]]);
     }
   };
 
@@ -178,9 +215,11 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
     const {
       description,
       eventDay,
+      kidIndex,
       frequencyIndex,
       hourFrom,
-      hourTo,
+      durationHour,
+      durationMinute,
       interval,
       isRecurring,
       name,
@@ -195,21 +234,23 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
   
     const startDayMilliseconds = moment(eventDay).startOf('day').valueOf();
     const startTimeMilliseconds = hourFrom.getHours() * 60 * 60 * 1000 + hourFrom.getMinutes() * 60 * 1000;
-    const endTimeMilliseconds = hourTo.getHours() * 60 * 60 * 1000 + hourTo.getMinutes() * 60 * 1000;
       
     const startTime = startDayMilliseconds + startTimeMilliseconds;
-    const duration = Math.floor((endTimeMilliseconds - startTimeMilliseconds) / 60000);
-  
+    const duration = Number(durationHour) * 60 + Number(durationMinute);
+    
+    const kidId = boardKids[kidIndex]['id'];
+
     let rEndDate = null;
     let rFrequency = null;
     let rInterval = null;
     let rCount = null;
+
   
     if (isRecurring) {
       rFrequency = frequencies[frequencyIndex];
       rInterval = Number(interval);
       if (recurrenceEndingIndex == 0) {
-        rEndDate = moment(recurrenceEndDate).startOf('day').valueOf();
+        rEndDate = moment(recurrenceEndDate).endOf('day').valueOf();
       } else {
         rCount = Number(recurrenceCount);
       }
@@ -226,7 +267,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
   
     const updatedEvent = {
       board_id: boardId,
-      kid_id: selectedEvent.kid_id,
+      kid_id: kidId,
       name,
       description,
       start_date: startTime,
@@ -279,7 +320,7 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
         status='basic'
         onPress={onClose}
       >
-        Cancel
+        Close
       </Button>
       { !isEditing && <>
         <OverflowMenu
@@ -363,9 +404,64 @@ const SelectedEventModal = ({ visible, selectedEvent, boardId, onClose, onSucces
 
               <Text style={styles.text} category='s1'>Duration</Text>
               <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('H:mm') }</Text>
+            
+              <Select
+                style={{flexGrow: 1}}
+                label='Kid'
+                selectedIndex={ new IndexPath(initialValues.kidIndex) }
+                value={boardKids[initialValues.kidIndex]?.['display_name'] || 'Select Kid'}
+                onSelect={ (v) => {
+                  if (v.row != initialValues.kidIndex) {
+                    const { recurrence_pattern } =selectedEvent;
+                    let frequency = null;
+                    let interval = null;
+                    let count = null;
+                    let type = UPDATE_TYPE_SINGLE;
+                    const newEvent = {...selectedEvent};
+                    if (recurrence_pattern) {
+                      const rule = RRule.parseString(recurrence_pattern);
+                
+                      const freq = rule.freq;
+                      const until = rule.until;
+                      const frequencyIndex = 3 - freq;
+                      frequency = frequencies[frequencyIndex];
+
+                      if (rule.count) {
+                        count = rule.count;
+                      } else {
+                        newEvent.end_date = new Date(until).getTime();
+                      }
+
+                      interval = rule.interval;
+
+                      type = UPDATE_TYPE_ALL;  
+                      
+                      if (!frequency || count) {
+                        newEvent.end_date = null;
+                      }
+                    }
+
+                    delete newEvent.event_id;
+                    delete newEvent.parent_id;
+                    delete newEvent.recurrence_pattern;
+                    delete newEvent.current_event_timestamp;
+
+                    newEvent.kid_id = boardKids[v.row].id;
+                    newEvent.frequency = frequency;
+                    newEvent.interval = interval;
+                    newEvent.count = count;
+
+                    console.log(newEvent);
+                    
+                    updateRequestFunctions[type](selectedEvent.event_id, selectedEvent.current_event_timestamp, newEvent);
+                  }
+                }}
+              >
+                { boardKids.map((kid, i) => <SelectItem key={i} title={kid['display_name']}/>) }
+              </Select>
             </> }
 
-            { isEditing && <EditEventForm refForm={refForm} handleSubmit={handleSubmit} handleFormChange={handleFormChange} initialValues={initialValues} /> }
+            { isEditing && <EditEventForm isEditing boardId={boardId} boardKids={boardKids} refForm={refForm} handleSubmit={handleSubmit} handleFormChange={handleFormChange} initialValues={initialValues} /> }
           </ScrollView> 
         </Card>
         <Toast />

@@ -5,6 +5,7 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   SafeAreaView,
+  StatusBar,
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scrollview';
 import { Input, Button } from '@ui-kitten/components';
@@ -73,7 +74,7 @@ const SignUpScreen = ({ navigation }) => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <SafeAreaView>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.container}>
           <Header text="Sign Up" />
           <KeyboardAwareScrollView
@@ -203,6 +204,11 @@ const SignUpScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     padding: 30,
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   captionContainer: {
     display: 'flex',

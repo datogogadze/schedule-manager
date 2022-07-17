@@ -4,7 +4,8 @@ import {
   View,
   StyleSheet,
   SafeAreaView,
-  Clipboard
+  Clipboard,
+  StatusBar
 } from 'react-native';
 
 import Toast from 'react-native-toast-message';
@@ -22,6 +23,8 @@ const BoardDetailsScreen = ({ navigation, route }) => {
   const [loading, setLoading] = React.useState(true);
   const [board, setBoard] = React.useState(null);
   const [users, setUsers] = React.useState([]);
+
+  console.log('board', board);
 
   // onPress={() => Clipboard.setString('mail@mail.com')}
 
@@ -92,7 +95,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
   );
   
   return (
-    <SafeAreaView>
+    <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
         <Header text={board?.name} navigation={navigation} smallHeader showMenu />
         { board && <>
@@ -128,7 +131,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
             status="danger"
             onPress={handleLeaveBoard}
           >
-            Leave Board
+            {board?.creator_id == userId ? 'Delete Board' : 'Leave Board'}
           </Button>
         </> }
 
@@ -144,6 +147,11 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingTop: 0,
     height: '100%',
+  },
+  safe: {
+    flex: 1,
+    backgroundColor: 'white',
+    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
   },
   textGroup: {
     display: 'flex',
