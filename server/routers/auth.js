@@ -256,6 +256,32 @@ router.post('/confirm/resend', async (req, res) => {
   }
 });
 
+router.get('/reset/password/page/:token', (req, res) => {
+  try {
+    const { token } = req.params;
+    return res.send(
+      `
+        <html>
+          <body style="
+                display: flex;
+                justify-content: center;
+                align-items: center;
+          ">
+              <form stype="display: flex; flex-direction:column;" action=${process.env.HOST_ADDRESS}/auth/password/reset/${token} method="post">
+                <div>ახალი პაროლი: <input type="password" name="password" /></div>
+                <div>გაიმეორეთ: <input type="password" name="passwordConfirmation" /></div>
+                <div><input type="submit" value="შეცვლა"></div>
+              </form>
+            </body>
+        </html>
+        `
+    );
+  } catch (err) {
+    logger.error('Error in reset password page', err);
+    return res.status(502).json({ success: false, message: err.message });
+  }
+});
+
 router.post('/password/reset/send', async (req, res) => {
   try {
     await emailSchema.validateAsync(req.body, { abortEarly: false });
