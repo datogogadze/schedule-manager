@@ -151,19 +151,17 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         || (initialValues.recurrenceEndingIndex == 0 && new Date(initialValues.recurrenceEndDate).getTime() != new Date(values.recurrenceEndDate).getTime())
         || initialValues.recurrenceCount != values.recurrenceCount
       ) {
-        console.log(initialValues.interval != values.interval,
-          initialValues.frequencyIndex != values.frequencyIndex,
-          initialValues.recurrenceEndingIndex != values.recurrenceEndingIndex,
-          new Date(initialValues.recurrenceEndDate), new Date(values.recurrenceEndDate),
-          initialValues.recurrenceCount != values.recurrenceCount);
         if (new Date(initialValues.eventDay).getTime() == new Date(values.eventDay).getTime()) {
           setMenuItemOptions([
             menuItemOptionsAll[1]
           ]);
-        } else {
           setMenuItemOptions([
             menuItemOptionsAll[1],
             menuItemOptionsAll[2]
+          ]);
+        } else {
+          setMenuItemOptions([
+            menuItemOptionsAll[1]
           ]);
         }    
       } else {

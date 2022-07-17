@@ -38,6 +38,7 @@ const BoardsScreen = ({ navigation }) => {
 
   const handleNotificationResponse = response => {
     const data = response?.notification?.request?.content?.data;
+    console.log('data', data);
 
     navigation.navigate('SelectedBoard', {
       boardId: data.board_id,
