@@ -103,10 +103,12 @@ const scheduleNotificationsForBoard = async (board_id) => {
           )}`
         );
         const names = eventNotificationNames[board_id];
-        for (let name of names) {
-          const old_job = schedule.scheduledJobs[name];
-          if (old_job) {
-            old_job.cancel();
+        if (names) {
+          for (let name of names) {
+            const old_job = schedule.scheduledJobs[name];
+            if (old_job) {
+              old_job.cancel();
+            }
           }
         }
         const notification_name = event.event_id + event.start_date;
