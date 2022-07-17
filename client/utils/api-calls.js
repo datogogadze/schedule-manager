@@ -99,11 +99,12 @@ export const joinBoard = (code, role) =>
     role,
   });
 
-export const getEvents = (boardId, startDate, endDate) =>
+export const getEvents = (boardId, startDate, endDate, selectedKids = null) =>
   axios.post(`${SERVER_ADDRESS}/board/events`, {
     board_id: boardId,
     start_date: startDate,
     end_date: endDate,
+    kid_ids: selectedKids
   });
 
 export const createEvent = (

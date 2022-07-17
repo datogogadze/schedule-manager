@@ -244,11 +244,24 @@ const styles = StyleSheet.create({
   boardsWrapper: {
     marginTop: 10,
     height: '77%',
+    width: '115%',
+    alignSelf: 'center',
+    paddingRight: 30,
+    paddingLeft: 30,
+    elevation: 20,
+    shadowColor: '#171717',
+    shadowOffset: {width: 2, height: 4},
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   board: {
-    marginTop: 7,
-    marginBottom: 7,
+    marginTop: 10,
+    marginBottom: 10,
+    paddingTop: 7,
+    paddingBottom: 7,
+    borderColor: 'white'
   },
+
 });
 
 export default BoardsScreen;
