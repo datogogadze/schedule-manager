@@ -52,7 +52,7 @@ const sendPushNotification = async (event) => {
             to: device_token,
             sound: 'default',
             body: event.name,
-            data: { ...event, board_id: board.name, board_code: board.code },
+            data: { ...event, board_id: board.id, board_name: board.name },
           };
           const ticket = await expo.sendPushNotificationsAsync([message]);
           logger.info(
