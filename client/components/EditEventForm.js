@@ -62,11 +62,11 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
 
           return <>
             <Input
-              placeholder="Name"
+              placeholder="სახელი"
               status={errors.name ? 'danger' : 'basic'}
               style={styles.textInput}
               autoCapitalize="none"
-              label="Event Name"
+              label="ივენთის სახელი"
               size="large"
               caption={errors.name || ' '}
               onChangeText={ handleChange('name')}
@@ -75,8 +75,8 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
             />
 
             <Input
-              placeholder="Description"
-              label="Description"
+              placeholder="აღწერა"
+              label="აღწერა"
               status={errors.description ? 'danger' : 'basic'}
               style={styles.textInput}
               autoCapitalize="none"
@@ -95,11 +95,11 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
               {({ field, form }) => (
                 <Select
                   style={{flexGrow: 1}}
-                  label='Kid'
+                  label='ბავშვი'
                   status={errors.kidIndex ? 'danger' : 'basic'}
                   caption={errors.kidIndex || ' '}
                   selectedIndex={ new IndexPath(values.kidIndex) }
-                  value={boardKids[values.kidIndex]?.['display_name'] || 'Select Kid'}
+                  value={boardKids[values.kidIndex]?.['display_name'] || 'აირჩიეთ ბავშვი'}
                   onSelect={ (v) => {
                     form.setFieldValue(field.name, v.row);
                     form.setFieldTouched(field.name, true);
@@ -112,7 +112,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
 
             <View style={styles.dates}>
               <View style={styles.datePickerWrapper}>
-                <Text style={styles.text} category='s2'>Day</Text>
+                <Text style={styles.text} category='s2'>დაწყების დღე</Text>
                 <Field name="eventDay">
                   {({ field, form }) => Platform.OS == 'android' && !showEventDay ? (
                     <Button onPress={() => setShowEventDay(true)} title={moment(values[field.name]).format('MMM D YYYY')} />
@@ -134,7 +134,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
               </View>
               
               <View style={styles.datePickerWrapper}>
-                <Text style={styles.text} category='s2'>From</Text>
+                <Text style={styles.text} category='s2'>დაწყების დრო</Text>
                 
                 <Field name="hourFrom">
                   {({ field, form }) => Platform.OS == 'android' && !showEventStartTime ? (
@@ -158,12 +158,12 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
 
 
               <Text style={{marginBottom: 20}} category='s1'>
-                Duration
+                ხანგრძლივობა
               </Text>
 
               <Layout style={styles.inputRow} level='1'>
                 <Input 
-                  label='Hours'
+                  label='საათი'
                   style={{ width: '20%', marginRight: 20}}
                   caption={errors.durationHour || ' '}
                   status={errors.durationHour ? 'danger' : 'basic'}
@@ -191,7 +191,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
                   }}
                 />
                 <Input 
-                  label='Minutes'
+                  label='წუთი'
                   style={{ width: '20%', marginRight: 20}}
                   caption={errors.durationMinute || ' '}
                   status={errors.durationMinute ? 'danger' : 'basic'}
@@ -231,18 +231,18 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
                     form.setFieldTouched(field.name, true);
                   }}
                 >
-                  Enable Notification
+                  ნოთიფიკაციის ჩართვა
                 </CheckBox> 
               )}
             </Field>
 
             { values.enableNotification && <Text style={{marginBottom: 20}} category='s1'>
-              Remind me before
+              შემახსენე
             </Text> } 
 
             { values.enableNotification && <Layout style={styles.inputRow} level='1'>
               <Input 
-                label='Days'
+                label='დღე'
                 style={{ width: '20%', marginRight: 20}} 
                 caption={errors.notificationTimeDay || ' '}
                 status={errors.notificationTimeDay ? 'danger' : 'basic'}
@@ -266,7 +266,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
                 }}
               />
               <Input 
-                label='Hours'
+                label='საათი'
                 style={{ width: '20%', marginRight: 20}}
                 caption={errors.notificationTimeHour || ' '}
                 status={errors.notificationTimeHour ? 'danger' : 'basic'}
@@ -294,7 +294,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
                 }}
               />
               <Input 
-                label='Minutes'
+                label='წუთი'
                 style={{ width: '20%', marginRight: 20}}
                 caption={errors.notificationTimeMinute || ' '}
                 status={errors.notificationTimeMinute ? 'danger' : 'basic'}
@@ -333,7 +333,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
                     form.setFieldTouched(field.name, true);
                   }}
                 >
-                  Recurring
+                  განმეორებითი
                 </CheckBox> 
               )}
             </Field>
@@ -341,7 +341,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
             { values.isRecurring && <>
               <Layout style={styles.inputRow} level='1'>
                 <Input 
-                  label='Repeats Every'
+                  label='გამეორდეს ყოველი'
                   style={{ marginRight: 20}}
                   status={errors.interval ? 'danger' : 'basic'}
                   keyboardType = 'numeric'
@@ -372,7 +372,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
                 <Field name="recurrenceEndingIndex">
                   {({ field, form }) => (
                     <Select
-                      label='Ends'
+                      label='მთავრდება'
                       selectedIndex={ new IndexPath(values.recurrenceEndingIndex) }
                       value={recurrenceEndingOptions[values.recurrenceEndingIndex]}
                       onSelect={ (v) => {
@@ -389,7 +389,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
 
               { values.recurrenceEndingIndex == 0 && <>
                 <View style={styles.datePickerWrapper}>
-                  <Text style={styles.text} category='s2'>Recurrence end date</Text>
+                  <Text style={styles.text} category='s2'>გამეორების ბოლო ვადა</Text>
                   <Field name="recurrenceEndDate">
                     {({ field, form }) => Platform.OS == 'android' && !showRecurrenceEndDate ? (
                       <Button onPress={() => setShowRecurrenceEndDate(true)} title={moment(values[field.name]).format('MMM D YYYY')} />
@@ -414,7 +414,7 @@ const EditEventForm = ({ isEditing, boardKids, refForm, handleSubmit = () => {},
 
               { values.recurrenceEndingIndex == 1 && <>
                 <Input
-                  label='Recurrence Count'
+                  label='გამეორების რაოდენობა'
                   status={errors.recurrenceCount ? 'danger' : 'basic'}
                   style={styles.textInput}
                   keyboardType = 'numeric'

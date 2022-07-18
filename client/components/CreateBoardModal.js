@@ -9,13 +9,18 @@ import { roleOptions, roleValues } from '../utils/select-options';
 const CreateBoardModal = ({ onClose, onSuccess }) => {
   const [boardName, setBoardName] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [roleIndex, setRoleIndex] = React.useState(0);
+  const [roleIndex, setRoleIndex] = React.useState(null);
+  const [roleError, setRoleError] = React.useState(false);
 
   const role = useMemo(() => {
     return roleValues[roleIndex];
   }, [roleIndex]);
 
   const handleCreateBoard = () => {
+    if (roleIndex == null) {
+      setRoleError(true);
+      return;
+    }
     setLoading(true);
     createBoard(boardName, role)
       .then((res) => {
@@ -46,7 +51,7 @@ const CreateBoardModal = ({ onClose, onSuccess }) => {
 
   const CardHeader = (props) => (
     <View {...props}>
-      <Text category="h6">Create Board</Text>
+      <Text category="h6">კალენდრის შექმნა</Text>
     </View>
   );
 
@@ -58,14 +63,14 @@ const CreateBoardModal = ({ onClose, onSuccess }) => {
         status="basic"
         onPress={onClose}
       >
-        Cancel
+        დახურვა
       </Button>
       <Button
         style={styles.footerControl}
         size="medium"
         onPress={handleCreateBoard}
       >
-        Create
+        შექმნა
       </Button>
     </View>
   );
@@ -79,8 +84,8 @@ const CreateBoardModal = ({ onClose, onSuccess }) => {
       >
         <Card style={styles.card} header={CardHeader} footer={CardFooter}>
           <Input
-            label='Board Name'
-            placeholder="Name"
+            label='კალენდარის სახელი'
+            placeholder="სახელი"
             status="basic"
             style={styles.textInput}
             autoCapitalize="none"
@@ -90,10 +95,12 @@ const CreateBoardModal = ({ onClose, onSuccess }) => {
           />
           <Select
             style={{flexGrow: 1}}
-            label='Role'
+            label='როლი'
+            status={ roleError ? 'danger' : 'basic' }
             selectedIndex={ new IndexPath(roleIndex) }
-            value={roleOptions[roleIndex]}
+            value={roleIndex == null ? 'აირჩიეთ როლი' : roleOptions[roleIndex]}
             onSelect={ (v) => {
+              setRoleError(false);
               setRoleIndex(v.row);
             }}
           >

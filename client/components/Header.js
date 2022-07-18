@@ -116,7 +116,7 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
                     setSideMenuVisible(false);
                   }}
                 >
-                My Boards
+                ჩემი კალენდრები
                 </Button>
                 <Button
                   style={styles.navigatorButton}
@@ -130,7 +130,7 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
                     setSideMenuVisible(false);
                   }}
                 >
-                Profile
+                ჩემი პროფილი
                 </Button>
                 { boardId && <Button
                   style={styles.navigatorButton}
@@ -146,7 +146,7 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
                     setSideMenuVisible(false);
                   }}
                 >
-                Board Details
+                კალენდრის დეტალები
                 </Button> }
               </View>
 
@@ -156,7 +156,7 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
                   status="danger"
                   onPress={handleLogout}
                 >
-                  Log Out
+                  გასვლა
                 </Button>
               </View>
             </View>

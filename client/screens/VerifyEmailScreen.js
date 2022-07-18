@@ -19,7 +19,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
         setLoading(false);
         const { success, message } = res.data;
         const type = success ? 'success' : 'error';
-        const text1 = success ? 'Success' : 'Error';
+        const text1 = success ? 'წარმატება' : 'შეცდომა';
 
         Toast.show({
           type,
@@ -33,7 +33,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
 
         Toast.show({
           type: 'error',
-          text1: 'Error',
+          text1: 'შეცდომა',
           text2: message,
         });
       });
@@ -42,9 +42,9 @@ const VerifyEmailScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="Verify Email" />
+        <Header text="მეილის ვერიფიკაცია" />
         <Text category="h6">
-          We sent you verification mail. Please check your inbox
+          ჩვენ გამოგიგზავნეთ ვერიფიკაციის მეილი. შეამოწმეთ ფოსტა.
         </Text>
 
         <Button
@@ -53,7 +53,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
           onPress={handleSubmit}
           disabled={loading}
         >
-          Resend Verification Mail
+          თავიდან გაგზავნა
         </Button>
 
         <Button
@@ -62,7 +62,7 @@ const VerifyEmailScreen = ({ navigation, route }) => {
           status="primary"
           onPress={() => navigation.navigate('Login')}
         >
-          Go to login page
+          ავტორიზაციის გვერდზე გადასვლა
         </Button>
         <Toast />
       </View>

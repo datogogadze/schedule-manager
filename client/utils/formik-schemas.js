@@ -26,9 +26,9 @@ export const SignupSchema = Yup.object().shape({
 });
 
 export const EditEventSchema = Yup.object().shape({
-  name: Yup.string().required('Name field is required').min(3, 'Should contain at least 3 letters'),
-  description: Yup.string().required('Description field is required').min(3, 'Should contain at least 3 letters'),
-  kidIndex: Yup.number().nullable().required('Please select kid for this event'),
+  name: Yup.string().required('სახელის შეყვანა სავალდებულოა').min(3, 'მინიმუმ 3 ასო უნდა იყოს'),
+  description: Yup.string().required('აღწერის შეყვანა სავალდებულოა').min(3, 'მინიმუმ 3 ასო უნდა იყოს'),
+  kidIndex: Yup.number().nullable().required('აირჩიეთ ბავშვილ'),
   eventDay: Yup.date().required(),
   hourFrom: Yup.date().required(),
   enableNotification: Yup.boolean().required(),

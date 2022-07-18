@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import moment from 'moment';
 import { RRule } from 'rrule';
-import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem, Divider } from '@ui-kitten/components';
+import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem, Divider, Icon } from '@ui-kitten/components';
 import { deleteEvent, updateEventAll, updateEventFuture, updateEventSingle } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
@@ -24,15 +24,15 @@ const updateRequestFunctions = {
 
 const menuItemOptionsAll = [
   {
-    title: 'This event',
+    title: 'მხოლოდ ეს',
     type: UPDATE_TYPE_SINGLE
   },
   {
-    title: 'This and following events',
+    title: 'ეს და მომავალი ივენთები',
     type: UPDATE_TYPE_FUTURE
   },
   {
-    title: 'All events',
+    title: 'ყველა ივენთი',
     type: UPDATE_TYPE_ALL
   },
 ];
@@ -55,7 +55,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
     const notificationTimeHoursAndMinutes = moment.utc(moment.duration(selectedEvent.notification_time, 'minutes').asMilliseconds()).format('HH:mm');
     let res = notificationTimeHoursAndMinutes;
     if (notificationTimeDays > 0) {
-      res = `${notificationTimeDays} day and ${res}`;
+      res = `${notificationTimeDays} დღე და ${res}`;
     }
     return res;
   });
@@ -204,8 +204,8 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Error while deleting event',
+          text1: 'შეცდომა',
+          text2: 'შეცდომა ივენთის წაშლისას',
         });
       }
     }).catch(e => {
@@ -214,7 +214,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       console.log(message);
       Toast.show({
         type: 'error',
-        text1: 'Whoops',
+        text1: 'შეცდომა',
         text2: message,
       });
     });
@@ -298,8 +298,8 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Error while updating event',
+          text1: 'შეცდომა',
+          text2: 'შეცდომა ივენთის განახლებისას',
         });
       }
     }).catch(e => {
@@ -308,7 +308,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       console.log(message);
       Toast.show({
         type: 'error',
-        text1: 'Whoops',
+        text1: 'შეცდომა',
         text2: message,
       });
     });
@@ -329,7 +329,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         status='basic'
         onPress={onClose}
       >
-        Close
+        დახურვა
       </Button>
       { !isEditing && <>
         <OverflowMenu
@@ -337,10 +337,9 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
             style={styles.footerControl}
             size='medium'
             status='danger'
+            accessoryLeft={<Icon name="trash" />}
             onPress={ () => setDeleteMenuVisible(true) }
-          >  
-          Delete
-          </Button>}
+          ></Button>}
           visible={deleteMenuVisible}
           placement={'top'}
           onBackdropPress={() => setDeleteMenuVisible(false)}
@@ -354,31 +353,29 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         <Button
           style={styles.footerControl}
           size='medium'
+          accessoryLeft={<Icon name="edit" />}
+          edit-outline
           onPress={ () => setIsEditing(true) }
-        >  
-        Edit
-        </Button>
+        ></Button>
       </> }
       { isEditing && <>
         <Button
           style={styles.footerControl}
           size='medium'
           status='basic'
+          accessoryLeft={<Icon name="close" />}
           onPress={ () => setIsEditing(false) }
-        >
-          Discard
-        </Button>
+        ></Button>
 
         <OverflowMenu
           anchor={() => <Button
             style={styles.footerControl}
             size='medium'
+            accessoryLeft={<Icon name="save" />}
             onPress={() => {
               refForm.current.handleSubmit();
             }}
-          >
-            Save
-          </Button>}
+          ></Button>}
           visible={menuVisible}
           placement={'top'}
           onBackdropPress={() => setMenuItemOptions([])}
@@ -405,27 +402,27 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
           <ScrollView style={styles.scrollView} keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
             
             { !isEditing && <>
-              <Text style={styles.text} category='s1'>Description</Text>
+              <Text style={styles.text} category='s1'>აღწერა</Text>
               <Text style={styles.text} category='p1'>{ selectedEvent.description }</Text>
               <Divider style={styles.divider}/>
 
-              <Text style={styles.text} category='s1'>Star Time</Text>
+              <Text style={styles.text} category='s1'>დაწყების დრო</Text>
               <Text style={styles.text} category='p1'>{ moment(selectedEvent.start_date).format('MMMM Do YYYY, h:mm:ss A') }</Text>
               <Divider style={styles.divider} />
 
-              <Text style={styles.text} category='s1'>Duration</Text>
+              <Text style={styles.text} category='s1'>ხანგრძლივობა</Text>
               <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('HH:mm') }</Text>
               <Divider style={styles.divider} />
             
 
-              <Text style={styles.text} category='s1'>Notification time</Text>
+              <Text style={styles.text} category='s1'>ნოთიფიკაციის დრო</Text>
 
               <Text style={styles.text} category='p1'>{ notificationTimeFormatted }</Text>
               <Divider style={styles.divider} />
 
               <Select
                 style={{flexGrow: 1, marginTop: 10}}
-                label='Kid'
+                label='ბავშვი'
                 selectedIndex={ new IndexPath(initialValues.kidIndex) }
                 value={boardKids[initialValues.kidIndex]?.['display_name'] || 'Select Kid'}
                 onSelect={ (v) => {
@@ -457,6 +454,8 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
                       if (!frequency || count) {
                         newEvent.end_date = null;
                       }
+                    } else {
+                      newEvent.end_date = null;
                     }
 
                     delete newEvent.event_id;
@@ -468,10 +467,27 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
                     newEvent.frequency = frequency;
                     newEvent.interval = interval;
                     newEvent.count = count;
-
-                    console.log(newEvent);
                     
-                    updateRequestFunctions[type](selectedEvent.event_id, selectedEvent.current_event_timestamp, newEvent);
+                    updateRequestFunctions[type](selectedEvent.event_id, selectedEvent.current_event_timestamp, newEvent).then(res => {
+                      const { success } = res.data;
+                      if (success) {
+                        onSuccess();
+                      } else {
+                        Toast.show({
+                          type: 'error',
+                          text1: 'შეცდომა',
+                          text2: 'შეცდომა ივენთის განახლებისას',
+                        });
+                      }
+                    }).catch(e => {
+                      const { message } = e.response.data;
+                      console.log(message);
+                      Toast.show({
+                        type: 'error',
+                        text1: 'შეცდომა',
+                        text2: message,
+                      });
+                    });
                   }
                 }}
               >

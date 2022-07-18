@@ -85,8 +85,8 @@ const SelectedBoardScreen = ({ navigation, route }) => {
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Error while creating board',
+          text1: 'შეცდომა',
+          text2: 'მოულოდნელი შეცდომა',
         });
       }
     })
@@ -96,7 +96,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         // onError(message);
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       });
@@ -192,7 +192,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           if (calendarItems.length == 0) {
             const noEventsPlaceholder = {
               id: key + ' no event',
-              name: 'No events for this day',
+              name: 'დღეს ივენთები არაა',
               header: false,
             };
 
@@ -275,7 +275,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         onError={(message) => {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
             text2: message,
           });
         }}
@@ -294,7 +294,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         onError={(message) => {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
             text2: message,
           });
         }}
@@ -315,7 +315,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         onError={(message) => {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
             text2: message,
           });
         }}
@@ -383,8 +383,8 @@ const SelectedBoardScreen = ({ navigation, route }) => {
               } else {
                 Toast.show({
                   type: 'error',
-                  text1: 'Whoops',
-                  text2: 'There must be kids on the board to create events',
+                  text1: 'შეცდომა',
+                  text2: 'კალენდარში ბავშვები უნდა იყვნენ ივენთის შესაქმნელად',
                 });
               }
             }}
@@ -406,8 +406,8 @@ const SelectedBoardScreen = ({ navigation, route }) => {
               } else {
                 Toast.show({
                   type: 'error',
-                  text1: 'Whoops',
-                  text2: 'There must be kids on the board to filter',
+                  text1: 'შეცდომა',
+                  text2: 'კალენდარში ბავშვები უნდა იყვნენ ივენთის გაფილტრისთვის',
                 });
               }
             }}

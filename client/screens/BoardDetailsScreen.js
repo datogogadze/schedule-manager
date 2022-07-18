@@ -38,7 +38,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
 
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       }),
@@ -51,7 +51,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
 
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       })
@@ -74,7 +74,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
 
       Toast.show({
         type: 'error',
-        text1: 'Whoops',
+        text1: 'შეცდომა',
         text2: message,
       });
     });
@@ -84,13 +84,13 @@ const BoardDetailsScreen = ({ navigation, route }) => {
     Clipboard.setString(board.code);
     Toast.show({
       type: 'info',
-      text1: 'Code copied to clipboard',
+      text1: 'კოდი დაკოპირებულია',
     });
   };
 
   const renderItem = ({ item }) => (
     <ListItem
-      title={item.display_name + (item.id === userId ? ' (You)' : '')}
+      title={item.display_name + (item.id === userId ? ' (მე)' : '')}
     />
   );
   
@@ -99,16 +99,16 @@ const BoardDetailsScreen = ({ navigation, route }) => {
       <View style={styles.container}>
         <Header text={board?.name} navigation={navigation} smallHeader showMenu backButton/>
         { board && <>
-          <Text style={styles.infoHeader} category='h5'>Board Information</Text>
+          <Text style={styles.infoHeader} category='h5'>კალენდრის ინფორმაცია</Text>
 
 
           <View style={styles.textGroup}>
-            <Text style={styles.text} category='s1'>Board Name</Text>
+            <Text style={styles.text} category='s1'>სახელი</Text>
             <Text style={styles.text} category='p1'>{ board.name }</Text>
           </View>
 
           <View style={styles.textGroup}>
-            <Text style={styles.text} category='s1'>Board Code</Text>
+            <Text style={styles.text} category='s1'>გვარი</Text>
             <View style={styles.code} onPress={handleCopyCode}>
               <Text style={styles.codeText} category='s1' onPress={handleCopyCode}>{ board.code }</Text>
               <Icon name="copy-outline" style={styles.copyIcon} fill="#3366FE" />
@@ -116,7 +116,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
           </View>
           <Divider/>
 
-          <Text style={styles.infoHeader} category='h6'>Board Users</Text>
+          <Text style={styles.infoHeader} category='h6'>კალენდრის მომხმარებლები</Text>
 
           <List
             style={{backgroundColor: 'white'}}
@@ -131,7 +131,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
             status="danger"
             onPress={handleLeaveBoard}
           >
-            {board?.creator_id == userId ? 'Delete Board' : 'Leave Board'}
+            {board?.creator_id == userId ? 'კალენდარის წაშლა' : 'კალენდარის დატოვება'}
           </Button>
         </> }
 
