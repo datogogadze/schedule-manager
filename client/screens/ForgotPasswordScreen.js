@@ -28,7 +28,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
       setLoading(false);
       const { success, message} = res.data;
       const type = success ? 'success' : 'error';
-      const text1 = success ? 'Success' : 'Error';
+      const text1 = success ? 'წარმატება' : 'შეცდომა';
 
       Toast.show({
         type,
@@ -41,7 +41,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 
       Toast.show({
         type: 'error',
-        text1: 'Error',
+        text1: 'შეცდომა',
         text2: message,
       });
     });
@@ -50,11 +50,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="Reset Password" />
+        <Header text="პაროლის აღდგენა" />
         <Input
           value={email}
-          label="Email"
-          placeholder="Email"
+          label="მეილი"
+          placeholder="მეილი"
           status='basic'
           onChangeText={setEmail}
           keyboardType='email-address'
@@ -67,11 +67,11 @@ const ForgotPasswordScreen = ({ navigation }) => {
           onPress={handleSubmit}
           disabled={loading}
         >
-          Send Reset Password Mail
+          აღდგენის მეილის გაგზავნა
         </Button>
 
         <Button size="small" appearance="ghost" status="primary" onPress={() => navigation.navigate('Login')}>
-          Go to login page
+          ავტორიზაციის გვერდზე გადასვლა
         </Button>
         <Toast/>
       </View>

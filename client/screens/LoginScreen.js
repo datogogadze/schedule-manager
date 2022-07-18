@@ -71,8 +71,8 @@ const LoginScreen = ({ navigation }) => {
             } else {
               Toast.show({
                 type: 'error',
-                text1: 'Whoops',
-                text2: 'Facebook Login Error',
+                text1: 'შეცდომა',
+                text2: 'Facebook-ით ავტორიზაციის პრობლემა',
               });
             }
           })
@@ -81,8 +81,8 @@ const LoginScreen = ({ navigation }) => {
             setLoading(false);
             Toast.show({
               type: 'error',
-              text1: 'Whoops',
-              text2: 'Facebook Login Error',
+              text1: 'შეცდომა',
+              text2: 'Facebook-ით ავტორიზაციის პრობლემა',
             });
           });
       } else {
@@ -90,8 +90,8 @@ const LoginScreen = ({ navigation }) => {
         console.log(`Facebook Login type is not success: ${type}`);
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Facebook Login Error',
+          text1: 'შეცდომა',
+          text2: 'Facebook-ით ავტორიზაციის პრობლემა',
         });
       }
     } catch ({ message }) {
@@ -99,8 +99,8 @@ const LoginScreen = ({ navigation }) => {
       console.log(`Facebook Login Error: ${message}`);
       Toast.show({
         type: 'error',
-        text1: 'Whoops',
-        text2: 'Facebook Login Error',
+        text1: 'შეცდომა',
+        text2: 'Facebook-ით ავტორიზაციის პრობლემა',
       });
     }
   }
@@ -124,8 +124,8 @@ const LoginScreen = ({ navigation }) => {
               } else {
                 Toast.show({
                   type: 'error',
-                  text1: 'Whoops',
-                  text2: 'Google Login Error',
+                  text1: 'შეცდომა',
+                  text2: 'Google-ით ავტორიზაციის პრობლემა',
                 });
               }
             })
@@ -134,8 +134,8 @@ const LoginScreen = ({ navigation }) => {
               setLoading(false);
               Toast.show({
                 type: 'error',
-                text1: 'Whoops',
-                text2: 'Google Login Error',
+                text1: 'შეცდომა',
+                text2: 'Google-ით ავტორიზაციის პრობლემა',
               });
             });
         })
@@ -144,8 +144,8 @@ const LoginScreen = ({ navigation }) => {
           setLoading(false);
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
-            text2: 'Google Login Error',
+            text1: 'შეცდომა',
+            text2: 'Google-ით ავტორიზაციის პრობლემა',
           });
         });
     } else {
@@ -153,8 +153,8 @@ const LoginScreen = ({ navigation }) => {
       if (response) {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Google Login Error',
+          text1: 'შეცდომა',
+          text2: 'Google-ით ავტორიზაციის პრობლემა',
         });
       }
     }
@@ -201,7 +201,7 @@ const LoginScreen = ({ navigation }) => {
         } else {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
             text2: message,
           });
         }
@@ -214,7 +214,7 @@ const LoginScreen = ({ navigation }) => {
 
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       });
@@ -228,7 +228,7 @@ const LoginScreen = ({ navigation }) => {
             behavior="position"
             keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0}
           >
-            <Header text="Log In" />
+            <Header text="ავტორიზაცია" />
             <Formik
               innerRef={refForm}
               initialValues={{
@@ -246,8 +246,8 @@ const LoginScreen = ({ navigation }) => {
                 <>
                   <Input
                     value={values.email}
-                    label="Email"
-                    placeholder="Email"
+                    label="მეილი"
+                    placeholder="მეილი"
                     status={errors.email ? 'danger' : 'basic'}
                     caption={errors.email || ' '}
                     onChangeText={handleChange('email')}
@@ -261,8 +261,8 @@ const LoginScreen = ({ navigation }) => {
 
                   <Input
                     value={values.password}
-                    label="Password"
-                    placeholder="Password"
+                    label="პაროლი"
+                    placeholder="პაროლი"
                     status={errors.password ? 'danger' : 'basic'}
                     caption={errors.password || ' '}
                     onChangeText={handleChange('password')}
@@ -285,7 +285,7 @@ const LoginScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('ForgotPassword')}
             style={styles.forgotPassowordButton}
           >
-            Forgot Password? Click here.
+            დაგავიწყდა პაროლი? დააჭირე აქ.
           </Button>
 
           <Button
@@ -294,7 +294,7 @@ const LoginScreen = ({ navigation }) => {
             onPress={handleSubmit}
             disabled={loading}
           >
-            Log In
+            შესვლა
           </Button>
 
           <View style={styles.googleFacebookGroup}>
@@ -344,7 +344,7 @@ const LoginScreen = ({ navigation }) => {
             onPress={() => navigation.navigate('SignUp')}
             disabled={loading}
           >
-            Sign Up
+            დარეგისტრირება
           </Button>
 
           <Toast />
