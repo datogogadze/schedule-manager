@@ -18,7 +18,7 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="Profile" navigation={navigation} smallHeader showMenu />
+        <Header text="Profile" navigation={navigation} smallHeader showMenu backButton />
 
         <Text style={styles.infoHeader} category='h5'>Personal Information</Text>
 
@@ -80,6 +80,9 @@ const styles = StyleSheet.create({
   },
   textInput: {
     marginBottom: 20,
+  },
+  text: {
+    marginTop: 15
   },
   button: {
     width: '45%',

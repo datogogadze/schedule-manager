@@ -97,7 +97,7 @@ const BoardDetailsScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text={board?.name} navigation={navigation} smallHeader showMenu />
+        <Header text={board?.name} navigation={navigation} smallHeader showMenu backButton/>
         { board && <>
           <Text style={styles.infoHeader} category='h5'>Board Information</Text>
 
@@ -158,6 +158,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     marginBottom: 20
+  },
+  text: {
+    marginTop: 15
   },
   header: {
     marginBottom: 30,

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import moment from 'moment';
 import { RRule } from 'rrule';
-import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem } from '@ui-kitten/components';
+import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem, Divider } from '@ui-kitten/components';
 import { deleteEvent, updateEventAll, updateEventFuture, updateEventSingle } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
@@ -49,6 +49,17 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
   const menuVisible = useMemo(() => {
     return menuItemOptions.length > 0;
   }, [menuItemOptions]);
+
+  const notificationTimeFormatted = useMemo(() => {
+    const notificationTimeDays = moment.duration(selectedEvent.notification_time, 'minutes').days();
+    const notificationTimeHoursAndMinutes = moment.utc(moment.duration(selectedEvent.notification_time, 'minutes').asMilliseconds()).format('HH:mm');
+    let res = notificationTimeHoursAndMinutes;
+    if (notificationTimeDays > 0) {
+      res = `${notificationTimeDays} day and ${res}`;
+    }
+    return res;
+  });
+
 
   const initialValues = useMemo(() => {
     const {
@@ -396,15 +407,24 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
             { !isEditing && <>
               <Text style={styles.text} category='s1'>Description</Text>
               <Text style={styles.text} category='p1'>{ selectedEvent.description }</Text>
+              <Divider style={styles.divider}/>
 
               <Text style={styles.text} category='s1'>Star Time</Text>
               <Text style={styles.text} category='p1'>{ moment(selectedEvent.start_date).format('MMMM Do YYYY, h:mm:ss A') }</Text>
+              <Divider style={styles.divider} />
 
               <Text style={styles.text} category='s1'>Duration</Text>
-              <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('H:mm') }</Text>
+              <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('HH:mm') }</Text>
+              <Divider style={styles.divider} />
             
+
+              <Text style={styles.text} category='s1'>Notification time</Text>
+
+              <Text style={styles.text} category='p1'>{ notificationTimeFormatted }</Text>
+              <Divider style={styles.divider} />
+
               <Select
-                style={{flexGrow: 1}}
+                style={{flexGrow: 1, marginTop: 10}}
                 label='Kid'
                 selectedIndex={ new IndexPath(initialValues.kidIndex) }
                 value={boardKids[initialValues.kidIndex]?.['display_name'] || 'Select Kid'}
@@ -486,6 +506,10 @@ const styles = StyleSheet.create({
   },
   footerControl: {
     marginHorizontal: 2,
+  },
+  divider: {
+    marginTop: 10,
+    marginBottom: 10,
   },
   textInput: {
     marginBottom: 20

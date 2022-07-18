@@ -15,3 +15,14 @@ export const getKidColor = (boardKids, kidId) => {
     return 'basic';
   }
 };
+
+export const getKidColorByIndex = (boardKids, kidId) => {
+  const kid = boardKids.find((kid) => kid.id == kidId);
+  const { kid_index } = kid;
+  
+  if (kid_index >= 0) {
+    return  statusColors[kid_index % statusColors.length];
+  } else {
+    return 'basic';
+  }
+};

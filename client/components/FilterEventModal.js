@@ -11,7 +11,7 @@ import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
 import { frequencies, frequencyOptions } from '../utils/select-options';
 import Toast from 'react-native-toast-message';
-import { getKidColor } from '../utils/board-kids';
+import { getKidColor, getKidColorByIndex } from '../utils/board-kids';
 
 
 const FilterEventModal = ({ boardKids, selectedKids, setSelectedKids, visible, onClose }) => { 
@@ -68,7 +68,7 @@ const FilterEventModal = ({ boardKids, selectedKids, setSelectedKids, visible, o
                     setSelectedKids(selectedKids.filter(selectedKidId => selectedKidId != kid.id));
                   }
                 }}
-                status={getKidColor(boardKids, kid.id)}
+                status={getKidColorByIndex(boardKids, kid.id)}
               >
                 {kid.display_name}
               </CheckBox>;
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   modal: {
     width: '85%',
-    height: '55%',
+    height: '70%',
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center'

@@ -20,7 +20,7 @@ import CalendarModal from '../components/CalendarModal';
 import SelectedEventModal from '../components/SelectedEventModal';
 import { ModalOption } from '../utils/enums';
 import FilterEventModal from '../components/FilterEventModal';
-import { getKidColor } from '../utils/board-kids';
+import { getKidColor, getKidColorByIndex } from '../utils/board-kids';
 import dateFns from '@ui-kitten/date-fns';
 
 
@@ -36,11 +36,13 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   const [loading, setLoading] = React.useState(false);
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [boardKids, setBoardKids] = React.useState([]);
-  const [selectedKids, setSelectedKids] = React.useState([]);
+  const [selectedKids, setSelectedKids] = React.useState(null);
   const [refreshing, setRefreshing] = React.useState(false);
   
 
   const isMounted = useRef(false);
+  const boardKidsLoaded = useRef(false);
+  const selectedKidsLoaded = useRef(false);
   const notificationStartDateLoaded = useRef(false);
   const notificationEventIdLoaded = useRef(false);
 
@@ -78,6 +80,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
       const { success, kids } = res.data;
       if (success) {
         setBoardKids(kids);
+        console.log(kids);
         setSelectedKids(kids.map(kid => kid.id));
       } else {
         Toast.show({
@@ -100,11 +103,19 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   }, []);
 
   useEffect(() => {
-    setSelectedKids(boardKids.map(kid => kid.id));
+    if (boardKidsLoaded.current) {
+      setSelectedKids(boardKids.map(kid => kid.id));
+    } else {
+      boardKidsLoaded.current = true;
+    }
   }, [boardKids]);
 
   useEffect(() => {
-    fetchEvents(initialLoad);
+    if (selectedKidsLoaded.current) {
+      fetchEvents(initialLoad);
+    } else {
+      selectedKidsLoaded.current = true;
+    }
   }, [selectedKids]);
 
   useEffect(() => {
@@ -142,8 +153,8 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           }
         });
 
-        if (!notificationEventIdLoaded.current) {
-          if (notificationEventId) {
+        if (!notificationEventIdLoaded.current) {       
+          if (notificationEventId) {        
             const eventToSelect = events.find((e) => e.event_id == notificationEventId);
 
             if (eventToSelect) {
@@ -173,7 +184,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
               .add(event.duration, 'minutes')
               .format('hh:mm A'),
             header: false,
-            color: getKidColor(boardKids, event.kid_id),
+            color: getKidColorByIndex(boardKids, event.kid_id),
             event
           }));
 
@@ -435,7 +446,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   eventCardFooter: {
-    fontSize: 10,
+    fontSize: 11,
     padding: 7,
   },
   backdrop: {
