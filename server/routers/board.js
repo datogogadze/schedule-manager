@@ -45,6 +45,13 @@ router.post('/', auth, async (req, res) => {
       role,
     };
     await UserBoard.create(userBoardPayload);
+    if (role == 'kid') {
+      await KidIndex.create({
+        board_id: createdBoard.id,
+        kid_id: userId,
+        kid_index: 0,
+      });
+    }
     return res.json({ success: true, board: { ...createdBoard.dataValues } });
   } catch (err) {
     logger.error('Error in creating board', err);
@@ -111,11 +118,16 @@ router.post('/add-user', auth, async (req, res) => {
       const kid_indexes = kid_indexes_data.map((m) => m.dataValues.kid_index);
       for (let i = 0; i < 15; i++) {
         if (!kid_indexes.includes(i)) {
-          await KidIndex.create({
-            board_id: board.id,
-            kid_id: userId,
-            kid_index: i,
+          const already = await KidIndex.findOne({
+            where: { board_id: board.id, kid_id: userId },
           });
+          if (!already) {
+            await KidIndex.create({
+              board_id: board.id,
+              kid_id: userId,
+              kid_index: i,
+            });
+          }
           break;
         }
       }
