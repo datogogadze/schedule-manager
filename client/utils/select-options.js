@@ -7,27 +7,27 @@ export const frequencies = [
 ];
   
 export const frequencyOptions = [
-  'Day(s)',
-  'Week(s)',
-  'Month(s)',
+  'დღე',
+  'კვირა',
+  'თვე',
 ];
   
 export const recurrenceEndingOptions = [
-  'On date',
-  'After occurrences'
+  'თარიღზე',
+  'განმეორების შემდეგ'
 ];
 
 export const roleOptions = [
-  'Mother',
-  'Father',
-  'Babysitter',
-  'Grandmother',
-  'Grandfather',
-  'Aunt',
-  'Uncle',
-  'Sister',
-  'Brother',
-  'Kid'
+  'დედა',
+  'მამა',
+  'ძიძა',
+  'ბებია',
+  'ბაბუა',
+  'დეიდა',
+  'ბიძა',
+  'და',
+  'ძმა',
+  'ბავშვი'
 ];
 
 export const roleValues = [

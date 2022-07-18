@@ -38,7 +38,6 @@ const BoardsScreen = ({ navigation }) => {
 
   const handleNotificationResponse = response => {
     const data = response?.notification?.request?.content?.data;
-    console.log('data', data);
 
     navigation.navigate('SelectedBoard', {
       boardId: data.board_id,
@@ -134,7 +133,7 @@ const BoardsScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="My Boards" navigation={navigation} smallHeader showMenu />
+        <Header text="კალენდრები" navigation={navigation} smallHeader showMenu />
         <ScrollView
           style={styles.boardsWrapper}
           showsVerticalScrollIndicator={false}
@@ -161,7 +160,7 @@ const BoardsScreen = ({ navigation }) => {
               </Card>
             ))}
           {!isInitial && boards.length == 0 && (
-            <Text>You have no boards. Join or create one.</Text>
+            <Text>თქვენ არ გაქვთ კალენდარი. შექმენით ან გაწევრიანდით</Text>
           )}
         </ScrollView>
 
@@ -189,7 +188,7 @@ const BoardsScreen = ({ navigation }) => {
             accessoryLeft={<Icon name="plus-circle-outline" />}
             onPress={() => setCreateBoardModalOpen(true)}
           >
-            Create
+            შექმნა
           </Button>
 
           <Button
@@ -200,7 +199,7 @@ const BoardsScreen = ({ navigation }) => {
             accessoryLeft={<Icon name="person-add-outline" />}
             onPress={() => setJoinBoardModalOpen(true)}
           >
-            Join
+            გაწევრიანება
           </Button>
         </Layout>
         <OverlaySpinner visible={loading} />

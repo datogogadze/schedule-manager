@@ -18,7 +18,7 @@ const FilterEventModal = ({ boardKids, selectedKids, setSelectedKids, visible, o
   console.log(visible);
   const CardHeader = (props) => (
     <View {...props}>
-      <Text category='h6'>Filter</Text>
+      <Text category='h6'>გაფილტვრა</Text>
     </View>
   );
   
@@ -30,14 +30,14 @@ const FilterEventModal = ({ boardKids, selectedKids, setSelectedKids, visible, o
         status='basic'
         onPress={onClose}
       >
-        Close
+        დახურვა
       </Button>
       <Button
         style={styles.footerControl}
         size='medium'
         onPress={ () => setSelectedKids(boardKids.map(kid => kid.id))}
       >  
-        Reset Filters
+        ფილტრის გაუქმება
       </Button>
     </View>
   );
@@ -52,7 +52,7 @@ const FilterEventModal = ({ boardKids, selectedKids, setSelectedKids, visible, o
       >
           
         <Card style={styles.createEventCard} header={CardHeader} footer={CardFooter } disabled>
-          <Text style={styles.filterText} category='s1'>Show events of</Text> 
+          <Text style={styles.filterText} category='s1'>გაფილტვრა ბავშვების მიხედვით</Text> 
           <ScrollView style={styles.scrollView} keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
             { boardKids.map(kid => {
               const isChecked = selectedKids?.includes(kid.id);

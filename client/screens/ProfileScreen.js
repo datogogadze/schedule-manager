@@ -18,21 +18,21 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="Profile" navigation={navigation} smallHeader showMenu backButton />
+        <Header text="პროფილი" navigation={navigation} smallHeader showMenu backButton />
 
-        <Text style={styles.infoHeader} category='h5'>Personal Information</Text>
+        <Text style={styles.infoHeader} category='h5'>პერსონალური ინფორმაცია</Text>
 
 
         <View style={styles.textGroup}>
-          <Text style={styles.text} category='s1'>First Name</Text>
+          <Text style={styles.text} category='s1'>სახელი</Text>
           <Text style={styles.text} category='p1'>{  user.first_name }</Text>
         </View>
         <View style={styles.textGroup}>
-          <Text style={styles.text} category='s1'>Last Name</Text>
+          <Text style={styles.text} category='s1'>გვარი</Text>
           <Text style={styles.text} category='p1'>{  user.last_name }</Text>
         </View>
         <View style={styles.textGroup}>
-          <Text style={styles.text} category='s1'>Email Name</Text>
+          <Text style={styles.text} category='s1'>მეილი</Text>
           <Text style={styles.text} category='p1'>{  user.email }</Text>
         </View>
         

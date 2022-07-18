@@ -10,15 +10,19 @@ import { roleOptions, roleValues } from '../utils/select-options';
 const JoinBoardModal = ({ onClose, onSuccess }) => {
   const [code, setCode] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [roleIndex, setRoleIndex] = React.useState(0);
+  const [roleIndex, setRoleIndex] = React.useState(null);
+  const [roleError, setRoleError] = React.useState(false);
 
   const role = useMemo(() => {
     return roleValues[roleIndex];
   }, [roleIndex]);
 
   const handleJoinBoard = () => {
+    if (roleIndex == null) {
+      setRoleError(true);
+      return;
+    }
     setLoading(true);
-    console.log('role', role);
     joinBoard(code, role)
       .then((res) => {
         setLoading(false);
@@ -29,8 +33,8 @@ const JoinBoardModal = ({ onClose, onSuccess }) => {
         } else {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
-            text2: 'Error while creating board',
+            text1: 'შეცდომა',
+            text2: 'შეცდომა კალენდარში გაწევრიანებაზე',
           });
         }
       })
@@ -39,7 +43,7 @@ const JoinBoardModal = ({ onClose, onSuccess }) => {
         const { message } = e.response.data;
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       });
@@ -47,7 +51,7 @@ const JoinBoardModal = ({ onClose, onSuccess }) => {
 
   const CardHeader = (props) => (
     <View {...props}>
-      <Text category="h6">Join Board</Text>
+      <Text category="h6">გაწევრიანება</Text>
     </View>
   );
 
@@ -59,14 +63,14 @@ const JoinBoardModal = ({ onClose, onSuccess }) => {
         status="basic"
         onPress={onClose}
       >
-        Cancel
+        დახურვა
       </Button>
       <Button
         style={styles.footerControl}
         size="medium"
         onPress={handleJoinBoard}
       >
-        Join
+        გაწევრიანება
       </Button>
     </View>
   );
@@ -80,9 +84,9 @@ const JoinBoardModal = ({ onClose, onSuccess }) => {
       >
         <Card style={styles.card} header={CardHeader} footer={CardFooter}>
           <Input
-            label='Board Code'
-            placeholder="Code"
-            status="basic"
+            label='კოდი'
+            placeholder="კოდი"
+            status={ roleError ? 'danger' : 'basic' }
             style={styles.textInput}
             autoCapitalize="none"
             size="large"
@@ -91,10 +95,11 @@ const JoinBoardModal = ({ onClose, onSuccess }) => {
           />
           <Select
             style={{flexGrow: 1}}
-            label='Role'
+            label='როლი'
             selectedIndex={ new IndexPath(roleIndex) }
-            value={roleOptions[roleIndex]}
+            value={roleIndex == null ? 'აირჩიეთ როლი' : roleOptions[roleIndex]}
             onSelect={ (v) => {
+              setRoleError(false);
               setRoleIndex(v.row);
             }}
           >
