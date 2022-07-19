@@ -38,9 +38,12 @@ const BoardsScreen = ({ navigation }) => {
 
   const handleNotificationResponse = response => {
     const data = response?.notification?.request?.content?.data;
+
     navigation.navigate('SelectedBoard', {
       boardId: data.board_id,
-      
+      boardName: data.board_name,
+      notificationStartDate: data.start_date,
+      notificationEventId: data.event_id
     });
   };
 
@@ -130,7 +133,7 @@ const BoardsScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="My Boards" navigation={navigation} smallHeader showMenu />
+        <Header text="კალენდრები" navigation={navigation} smallHeader showMenu />
         <ScrollView
           style={styles.boardsWrapper}
           showsVerticalScrollIndicator={false}
@@ -157,7 +160,7 @@ const BoardsScreen = ({ navigation }) => {
               </Card>
             ))}
           {!isInitial && boards.length == 0 && (
-            <Text>You have no boards. Join or create one.</Text>
+            <Text>თქვენ არ გაქვთ კალენდარი. შექმენით ან გაწევრიანდით</Text>
           )}
         </ScrollView>
 
@@ -185,7 +188,7 @@ const BoardsScreen = ({ navigation }) => {
             accessoryLeft={<Icon name="plus-circle-outline" />}
             onPress={() => setCreateBoardModalOpen(true)}
           >
-            Create
+            შექმნა
           </Button>
 
           <Button
@@ -196,7 +199,7 @@ const BoardsScreen = ({ navigation }) => {
             accessoryLeft={<Icon name="person-add-outline" />}
             onPress={() => setJoinBoardModalOpen(true)}
           >
-            Join
+            გაწევრიანება
           </Button>
         </Layout>
         <OverlaySpinner visible={loading} />
@@ -244,11 +247,24 @@ const styles = StyleSheet.create({
   boardsWrapper: {
     marginTop: 10,
     height: '77%',
+    width: '115%',
+    alignSelf: 'center',
+    paddingRight: 30,
+    paddingLeft: 30,
+    elevation: 20,
+    shadowColor: '#171717',
+    shadowOffset: {width: 2, height: 4},
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
   board: {
-    marginTop: 7,
-    marginBottom: 7,
+    marginTop: 10,
+    marginBottom: 10,
+    paddingTop: 7,
+    paddingBottom: 7,
+    borderColor: 'white'
   },
+
 });
 
 export default BoardsScreen;

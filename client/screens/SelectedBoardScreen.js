@@ -4,12 +4,12 @@ import {
   Text,
   Icon,
   Button,
-  Layout
+  Layout,
 } from '@ui-kitten/components';
 import React, { useEffect, useMemo, useRef } from 'react';
 import moment from 'moment';
 import 'react-native-get-random-values';
-import { View, StyleSheet, SafeAreaView, FlatList, StatusBar, Platform } from 'react-native';
+import { View, StyleSheet, SafeAreaView, FlatList, StatusBar, Platform, RefreshControl } from 'react-native';
 
 import Toast from 'react-native-toast-message';
 import Header from '../components/Header';
@@ -19,17 +19,13 @@ import OverlaySpinner from '../components/OverlaySpinner';
 import CalendarModal from '../components/CalendarModal';
 import SelectedEventModal from '../components/SelectedEventModal';
 import { ModalOption } from '../utils/enums';
+import FilterEventModal from '../components/FilterEventModal';
+import { getKidColor, getKidColorByIndex } from '../utils/board-kids';
+import dateFns from '@ui-kitten/date-fns';
 
-const statusColors = [
-  'primary',
-  'success',
-  'info',
-  'warning',
-  'danger'
-];
 
 const SelectedBoardScreen = ({ navigation, route }) => {
-  const { boardId, boardName } = route.params;
+  const { boardId, boardName, notificationEventId, notificationStartDate } = route.params;
 
   const [selectedModal, setSelectedModal] = React.useState(ModalOption.None);
 
@@ -40,13 +36,29 @@ const SelectedBoardScreen = ({ navigation, route }) => {
   const [loading, setLoading] = React.useState(false);
   const [initialLoad, setInitialLoad] = React.useState(true);
   const [boardKids, setBoardKids] = React.useState([]);
+  const [selectedKids, setSelectedKids] = React.useState(null);
+  const [refreshing, setRefreshing] = React.useState(false);
+  
 
   const isMounted = useRef(false);
+  const boardKidsLoaded = useRef(false);
+  const selectedKidsLoaded = useRef(false);
+  const notificationStartDateLoaded = useRef(false);
+  const notificationEventIdLoaded = useRef(false);
 
 
-  const [startDate, setStartDate] = React.useState(
-    moment().startOf('day').valueOf()
-  );
+  
+  const [startDate, setStartDate] = React.useState(moment().startOf('day').valueOf());
+
+  useEffect(() => {
+    if (!notificationStartDateLoaded.current) {
+      if (notificationStartDate) {
+        setStartDate(notificationStartDate);
+        notificationStartDateLoaded.current = true;
+      }
+    }
+
+  }, [boardId, notificationEventId]);
   
   const [endDate, setEndDate] = React.useState(
     moment().startOf('day').add(2, 'weeks').valueOf() - 1
@@ -68,11 +80,13 @@ const SelectedBoardScreen = ({ navigation, route }) => {
       const { success, kids } = res.data;
       if (success) {
         setBoardKids(kids);
+        console.log(kids);
+        setSelectedKids(kids.map(kid => kid.id));
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Error while creating board',
+          text1: 'შეცდომა',
+          text2: 'მოულოდნელი შეცდომა',
         });
       }
     })
@@ -82,15 +96,27 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         // onError(message);
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       });
   }, []);
 
   useEffect(() => {
-    fetchEvents(initialLoad);
+    if (boardKidsLoaded.current) {
+      setSelectedKids(boardKids.map(kid => kid.id));
+    } else {
+      boardKidsLoaded.current = true;
+    }
   }, [boardKids]);
+
+  useEffect(() => {
+    if (selectedKidsLoaded.current) {
+      fetchEvents(initialLoad);
+    } else {
+      selectedKidsLoaded.current = true;
+    }
+  }, [selectedKids]);
 
   useEffect(() => {
     if (isMounted.current) {
@@ -101,12 +127,12 @@ const SelectedBoardScreen = ({ navigation, route }) => {
     
   }, [startDate, endDate]);
 
-  const fetchEvents = (withReload = false) => {
+  const fetchEvents = (withReload = true) => {
     if (withReload) {
       setLoading(true);
     }
 
-    getEvents(boardId, startDate, endDate)
+    getEvents(boardId, startDate, endDate, selectedKids)
       .then((res) => {
         const { events } = res.data;
         const eventsGroup = {};
@@ -115,28 +141,40 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         const b = moment(endDate);
 
         for (var m = moment(a); m.isBefore(b); m.add(1, 'days')) {
-          eventsGroup[m.format('MMMM DD - dddd')] = [];
+          eventsGroup[m.format('MMMM DD - dddd')] = {dateVal: m.startOf('day').valueOf(), events: []};
         }
 
         events.forEach((event) => {
           const day = moment(event.start_date).format('MMMM DD - dddd');
           if (day in eventsGroup) {
-            eventsGroup[day] = [...eventsGroup[day], event];
+            eventsGroup[day]['events'] = [...eventsGroup[day]['events'], event];
           } else {
-            eventsGroup[day] = [];
+            eventsGroup[day] = {dateVal: moment(event.start_date).startOf('day').valueOf(), events: []};
           }
         });
 
+        if (!notificationEventIdLoaded.current) {       
+          if (notificationEventId) {        
+            const eventToSelect = events.find((e) => e.event_id == notificationEventId);
+
+            if (eventToSelect) {
+              setSelectedEvent(eventToSelect);
+              setSelectedModal(ModalOption.Select);
+            }
+            notificationEventIdLoaded.current = true;
+          }
+        }
+
         let newEventsCalendar = [];
 
-        for (const key in eventsGroup) {
+        for (const key of Object.keys(eventsGroup).sort((a, b) => eventsGroup[a].dateVal - eventsGroup[b].dateVal)) {
           const calendarHeader = {
             id: key,
             name: key,
             header: true,
           };
 
-          const eventsForDay = eventsGroup[key];
+          const eventsForDay = eventsGroup[key]['events'];
           eventsForDay.sort((a, b) => a.start_date - b.start_date);
           const calendarItems = eventsForDay.map((event) => ({
             id: event.event_id + event.current_event_timestamp,
@@ -146,7 +184,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
               .add(event.duration, 'minutes')
               .format('hh:mm A'),
             header: false,
-            colorIndex: boardKids.findIndex((kid) => kid.id == event.kid_id),
+            color: getKidColorByIndex(boardKids, event.kid_id),
             event
           }));
 
@@ -154,7 +192,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           if (calendarItems.length == 0) {
             const noEventsPlaceholder = {
               id: key + ' no event',
-              name: 'No events for this day',
+              name: 'დღეს ივენთები არაა',
               header: false,
             };
 
@@ -174,10 +212,12 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         }
         setEventsCalendar(newEventsCalendar);
         setLoading(false);
+        setRefreshing(false);
       })
       .catch((e) => {
         console.log(e);
         setLoading(false);
+        setRefreshing(false);
       });
   };
 
@@ -191,7 +231,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         <Card
           key={item.id}
           style={styles.eventCard}
-          status={item.colorIndex >= 0 ? statusColors[item.colorIndex % statusColors.length] : 'basic'}
+          status={item.color}
           footer={() => (
             <Text style={styles.eventCardFooter}>
               {`${item.hourFrom} - ${item.hourTo}`}
@@ -212,9 +252,12 @@ const SelectedBoardScreen = ({ navigation, route }) => {
     if (modal == ModalOption.Calendar) {
       return <CalendarModal
         date={moment(startDate)}
+        dateService={dateFns}
         onClose={() => setSelectedModal(ModalOption.None)}
         onSelect={(nextDate) => {
-          setStartDate(nextDate.valueOf());
+          const offset = new Date().getTimezoneOffset();
+          const offsetHours = offset / 60;
+          setStartDate(moment(nextDate).add(offsetHours, 'hours').valueOf());
           setEndDate(nextDate.add(3, 'weeks').valueOf());
           setSelectedModal(ModalOption.None);
         }}
@@ -232,7 +275,7 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         onError={(message) => {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
             text2: message,
           });
         }}
@@ -251,7 +294,28 @@ const SelectedBoardScreen = ({ navigation, route }) => {
         onError={(message) => {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
+            text2: message,
+          });
+        }}
+      />;
+    } else if(modal == ModalOption.Filter) {
+      return <FilterEventModal
+        boardId={boardId}
+        boardKids={boardKids}
+        selectedKids={selectedKids}
+        setSelectedKids={setSelectedKids}
+        selectedEvent={selectedEvent}
+        visible={modal == ModalOption.Filter}
+        onSuccess={() => {
+          setSelectedModal(ModalOption.None);
+          fetchEvents();
+        }}
+        onClose={() => setSelectedModal(ModalOption.None)}
+        onError={(message) => {
+          Toast.show({
+            type: 'error',
+            text1: 'შეცდომა',
             text2: message,
           });
         }}
@@ -275,7 +339,15 @@ const SelectedBoardScreen = ({ navigation, route }) => {
           showsVerticalScrollIndicator={false}
           onEndReachedThreshold={0}
           onStartReachedThreshold={0}
-          refreshing={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                fetchEvents(false);
+              }}
+            />
+          }
           onEndReached={ () => {
             setEndDate(moment(endDate).startOf('day').add(1, 'days').add(2, 'weeks').valueOf() - 1);
           }}
@@ -305,7 +377,17 @@ const SelectedBoardScreen = ({ navigation, route }) => {
                 name="plus-circle"
               />
             }
-            onPress={() => setSelectedModal(ModalOption.Create)}
+            onPress={() => {
+              if (boardKids?.length > 0) {
+                setSelectedModal(ModalOption.Create);
+              } else {
+                Toast.show({
+                  type: 'error',
+                  text1: 'შეცდომა',
+                  text2: 'კალენდარში ბავშვები უნდა იყვნენ ივენთის შესაქმნელად',
+                });
+              }
+            }}
           />
           <Button
             size="giant"
@@ -318,6 +400,18 @@ const SelectedBoardScreen = ({ navigation, route }) => {
                 name="funnel-outline"
               />
             }
+            onPress={() => {
+              if (boardKids?.length > 0) {
+                setSelectedModal(ModalOption.Filter);
+              } else {
+                Toast.show({
+                  type: 'error',
+                  text1: 'შეცდომა',
+                  text2: 'კალენდარში ბავშვები უნდა იყვნენ ივენთის გაფილტრისთვის',
+                });
+              }
+            }}
+
           />
         </Layout>
 
@@ -352,7 +446,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   eventCardFooter: {
-    fontSize: 10,
+    fontSize: 11,
     padding: 7,
   },
   backdrop: {

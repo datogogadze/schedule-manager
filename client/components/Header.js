@@ -103,49 +103,52 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
               <Text style={styles.fullName} category="h6">
                 { user.display_name }
               </Text>
-              <Button
-                style={styles.logoutButton}
-                status="basic"
-                accessoryLeft={<Icon name="credit-card-outline" />}
-                appearance="ghost"
-                onPress={() => {
-                  navigation.navigate('Boards', {
-                    user
-                  });
-                  setSideMenuVisible(false);
-                }}
-              >
-                My Boards
-              </Button>
-              <Button
-                style={styles.logoutButton}
-                status="basic"
-                accessoryLeft={<Icon name="person" />}
-                appearance="ghost"
-                onPress={() => {
-                  navigation.navigate('Profile', {
-                    user
-                  });
-                  setSideMenuVisible(false);
-                }}
-              >
-                Profile
-              </Button>
-              { boardId && <Button
-                style={styles.logoutButton}
-                status="basic"
-                accessoryLeft={<Icon name="person" />}
-                appearance="ghost"
-                onPress={() => {
-                  navigation.navigate('BoardDetails', {
-                    boardId,
-                    userId: user.id
-                  });
-                  setSideMenuVisible(false);
-                }}
-              >
-                Board Details
-              </Button> }
+              <View style={styles.navigators}>
+                <Button
+                  style={styles.navigatorButton}
+                  status="basic"
+                  accessoryLeft={<Icon name="credit-card-outline" />}
+                  appearance="ghost"
+                  onPress={() => {
+                    navigation.navigate('Boards', {
+                      user
+                    });
+                    setSideMenuVisible(false);
+                  }}
+                >
+                ჩემი კალენდრები
+                </Button>
+                <Button
+                  style={styles.navigatorButton}
+                  status="basic"
+                  accessoryLeft={<Icon name="person" />}
+                  appearance="ghost"
+                  onPress={() => {
+                    navigation.navigate('Profile', {
+                      user
+                    });
+                    setSideMenuVisible(false);
+                  }}
+                >
+                ჩემი პროფილი
+                </Button>
+                { boardId && <Button
+                  style={styles.navigatorButton}
+                  status="basic"
+                  accessoryLeft={<Icon name="info-outline" />}
+                  appearance="ghost"
+                  // size='giant'
+                  onPress={() => {
+                    navigation.navigate('BoardDetails', {
+                      boardId,
+                      userId: user.id
+                    });
+                    setSideMenuVisible(false);
+                  }}
+                >
+                კალენდრის დეტალები
+                </Button> }
+              </View>
 
               <View style={styles.logoutButtonWrapper}>
                 <Button
@@ -153,7 +156,7 @@ const Header = ({ navigation, text, showMenu, backButton, boardId }) => {
                   status="danger"
                   onPress={handleLogout}
                 >
-                  Log Out
+                  გასვლა
                 </Button>
               </View>
             </View>
@@ -209,6 +212,15 @@ const styles = StyleSheet.create({
   backIconWrapper: {
     position: 'absolute',
     left: 0,
+  },
+  navigators: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    width: '100%'
+  },
+  navigatorButton: {
+    marginTop: 10,
+    width: '100%',
   },
   sideMenu: {
     backgroundColor: 'white',

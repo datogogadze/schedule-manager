@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import moment from 'moment';
 import { RRule } from 'rrule';
-import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem } from '@ui-kitten/components';
+import { Button, Card, Text, Modal, OverflowMenu, MenuItem, Select, IndexPath, SelectItem, Divider, Icon } from '@ui-kitten/components';
 import { deleteEvent, updateEventAll, updateEventFuture, updateEventSingle } from '../utils/api-calls';
 import OverlaySpinner from './OverlaySpinner';
 import EditEventForm from './EditEventForm';
@@ -24,15 +24,15 @@ const updateRequestFunctions = {
 
 const menuItemOptionsAll = [
   {
-    title: 'This event',
+    title: 'მხოლოდ ეს',
     type: UPDATE_TYPE_SINGLE
   },
   {
-    title: 'This and following events',
+    title: 'ეს და მომავალი ივენთები',
     type: UPDATE_TYPE_FUTURE
   },
   {
-    title: 'All events',
+    title: 'ყველა ივენთი',
     type: UPDATE_TYPE_ALL
   },
 ];
@@ -49,6 +49,17 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
   const menuVisible = useMemo(() => {
     return menuItemOptions.length > 0;
   }, [menuItemOptions]);
+
+  const notificationTimeFormatted = useMemo(() => {
+    const notificationTimeDays = moment.duration(selectedEvent.notification_time, 'minutes').days();
+    const notificationTimeHoursAndMinutes = moment.utc(moment.duration(selectedEvent.notification_time, 'minutes').asMilliseconds()).format('HH:mm');
+    let res = notificationTimeHoursAndMinutes;
+    if (notificationTimeDays > 0) {
+      res = `${notificationTimeDays} დღე და ${res}`;
+    }
+    return res;
+  });
+
 
   const initialValues = useMemo(() => {
     const {
@@ -151,19 +162,17 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         || (initialValues.recurrenceEndingIndex == 0 && new Date(initialValues.recurrenceEndDate).getTime() != new Date(values.recurrenceEndDate).getTime())
         || initialValues.recurrenceCount != values.recurrenceCount
       ) {
-        console.log(initialValues.interval != values.interval,
-          initialValues.frequencyIndex != values.frequencyIndex,
-          initialValues.recurrenceEndingIndex != values.recurrenceEndingIndex,
-          new Date(initialValues.recurrenceEndDate), new Date(values.recurrenceEndDate),
-          initialValues.recurrenceCount != values.recurrenceCount);
         if (new Date(initialValues.eventDay).getTime() == new Date(values.eventDay).getTime()) {
           setMenuItemOptions([
             menuItemOptionsAll[1]
           ]);
-        } else {
           setMenuItemOptions([
             menuItemOptionsAll[1],
             menuItemOptionsAll[2]
+          ]);
+        } else {
+          setMenuItemOptions([
+            menuItemOptionsAll[1]
           ]);
         }    
       } else {
@@ -195,8 +204,8 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Error while deleting event',
+          text1: 'შეცდომა',
+          text2: 'შეცდომა ივენთის წაშლისას',
         });
       }
     }).catch(e => {
@@ -205,7 +214,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       console.log(message);
       Toast.show({
         type: 'error',
-        text1: 'Whoops',
+        text1: 'შეცდომა',
         text2: message,
       });
     });
@@ -289,8 +298,8 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       } else {
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
-          text2: 'Error while updating event',
+          text1: 'შეცდომა',
+          text2: 'შეცდომა ივენთის განახლებისას',
         });
       }
     }).catch(e => {
@@ -299,7 +308,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
       console.log(message);
       Toast.show({
         type: 'error',
-        text1: 'Whoops',
+        text1: 'შეცდომა',
         text2: message,
       });
     });
@@ -320,7 +329,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         status='basic'
         onPress={onClose}
       >
-        Close
+        დახურვა
       </Button>
       { !isEditing && <>
         <OverflowMenu
@@ -328,10 +337,9 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
             style={styles.footerControl}
             size='medium'
             status='danger'
+            accessoryLeft={<Icon name="trash" />}
             onPress={ () => setDeleteMenuVisible(true) }
-          >  
-          Delete
-          </Button>}
+          ></Button>}
           visible={deleteMenuVisible}
           placement={'top'}
           onBackdropPress={() => setDeleteMenuVisible(false)}
@@ -345,31 +353,29 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         <Button
           style={styles.footerControl}
           size='medium'
+          accessoryLeft={<Icon name="edit" />}
+          edit-outline
           onPress={ () => setIsEditing(true) }
-        >  
-        Edit
-        </Button>
+        ></Button>
       </> }
       { isEditing && <>
         <Button
           style={styles.footerControl}
           size='medium'
           status='basic'
+          accessoryLeft={<Icon name="close" />}
           onPress={ () => setIsEditing(false) }
-        >
-          Discard
-        </Button>
+        ></Button>
 
         <OverflowMenu
           anchor={() => <Button
             style={styles.footerControl}
             size='medium'
+            accessoryLeft={<Icon name="save" />}
             onPress={() => {
               refForm.current.handleSubmit();
             }}
-          >
-            Save
-          </Button>}
+          ></Button>}
           visible={menuVisible}
           placement={'top'}
           onBackdropPress={() => setMenuItemOptions([])}
@@ -392,22 +398,31 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
         backdropStyle={styles.backdrop}
       >
           
-        <Card style={styles.createEventCard} header={CardHeader} footer={CardFooter } disabled>
+        <Card style={styles.selectedEventCard} header={CardHeader} footer={CardFooter } disabled>
           <ScrollView style={styles.scrollView} keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
             
             { !isEditing && <>
-              <Text style={styles.text} category='s1'>Description</Text>
+              <Text style={styles.text} category='s1'>აღწერა</Text>
               <Text style={styles.text} category='p1'>{ selectedEvent.description }</Text>
+              <Divider style={styles.divider}/>
 
-              <Text style={styles.text} category='s1'>Star Time</Text>
+              <Text style={styles.text} category='s1'>დაწყების დრო</Text>
               <Text style={styles.text} category='p1'>{ moment(selectedEvent.start_date).format('MMMM Do YYYY, h:mm:ss A') }</Text>
+              <Divider style={styles.divider} />
 
-              <Text style={styles.text} category='s1'>Duration</Text>
-              <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('H:mm') }</Text>
+              <Text style={styles.text} category='s1'>ხანგრძლივობა</Text>
+              <Text style={styles.text} category='p1'>{ moment.utc(moment.duration(selectedEvent.duration, 'minutes').asMilliseconds()).format('HH:mm') }</Text>
+              <Divider style={styles.divider} />
             
+
+              <Text style={styles.text} category='s1'>ნოთიფიკაციის დრო</Text>
+
+              <Text style={styles.text} category='p1'>{ notificationTimeFormatted }</Text>
+              <Divider style={styles.divider} />
+
               <Select
-                style={{flexGrow: 1}}
-                label='Kid'
+                style={{flexGrow: 1, marginTop: 10}}
+                label='ბავშვი'
                 selectedIndex={ new IndexPath(initialValues.kidIndex) }
                 value={boardKids[initialValues.kidIndex]?.['display_name'] || 'Select Kid'}
                 onSelect={ (v) => {
@@ -439,6 +454,8 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
                       if (!frequency || count) {
                         newEvent.end_date = null;
                       }
+                    } else {
+                      newEvent.end_date = null;
                     }
 
                     delete newEvent.event_id;
@@ -450,10 +467,27 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
                     newEvent.frequency = frequency;
                     newEvent.interval = interval;
                     newEvent.count = count;
-
-                    console.log(newEvent);
                     
-                    updateRequestFunctions[type](selectedEvent.event_id, selectedEvent.current_event_timestamp, newEvent);
+                    updateRequestFunctions[type](selectedEvent.event_id, selectedEvent.current_event_timestamp, newEvent).then(res => {
+                      const { success } = res.data;
+                      if (success) {
+                        onSuccess();
+                      } else {
+                        Toast.show({
+                          type: 'error',
+                          text1: 'შეცდომა',
+                          text2: 'შეცდომა ივენთის განახლებისას',
+                        });
+                      }
+                    }).catch(e => {
+                      const { message } = e.response.data;
+                      console.log(message);
+                      Toast.show({
+                        type: 'error',
+                        text1: 'შეცდომა',
+                        text2: message,
+                      });
+                    });
                   }
                 }}
               >
@@ -472,7 +506,7 @@ const SelectedEventModal = ({ boardKids, visible, selectedEvent, boardId, onClos
 };
 
 const styles = StyleSheet.create({
-  createEventCard: {
+  selectedEventCard: {
     width: '100%',
     height: '100%'
   },
@@ -488,6 +522,10 @@ const styles = StyleSheet.create({
   },
   footerControl: {
     marginHorizontal: 2,
+  },
+  divider: {
+    marginTop: 10,
+    marginBottom: 10,
   },
   textInput: {
     marginBottom: 20

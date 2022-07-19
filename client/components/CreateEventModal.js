@@ -90,7 +90,7 @@ const CreateEventModal = ({ boardKids, visible, boardId, onClose, onSuccess, onE
       if (success) {
         onSuccess();
       } else {
-        onError('Error while creating board');
+        onError('ივენთის შექმნისას მოხდა შეცდომა');
       }
     }).catch(e => {
       setLoading(false);
@@ -102,7 +102,7 @@ const CreateEventModal = ({ boardKids, visible, boardId, onClose, onSuccess, onE
 
   const CardHeader = (props) => (
     <View {...props}>
-      <Text category='h6'>Create Event</Text>
+      <Text category='h6'>ივენთის შექმნა</Text>
     </View>
   );
   
@@ -114,7 +114,7 @@ const CreateEventModal = ({ boardKids, visible, boardId, onClose, onSuccess, onE
         status='basic'
         onPress={onClose}
       >
-        Cancel
+        დახურვა
       </Button>
       <Button
         style={styles.footerControl}
@@ -125,7 +125,7 @@ const CreateEventModal = ({ boardKids, visible, boardId, onClose, onSuccess, onE
           }
         }}
       >
-        Create
+        შექმნა
       </Button>
     </View>
   );

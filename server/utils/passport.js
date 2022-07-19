@@ -45,6 +45,11 @@ const oAuthAuthenticateUser = async (req, email, password, done) => {
           message: 'User is registered with email and password',
         });
       }
+      if (user.external_type != profile.external_type) {
+        return done(null, null, {
+          message: 'User is registered with different oauth',
+        });
+      }
       delete user.dataValues.password_hash;
       done(null, user.dataValues);
     } else {

@@ -55,7 +55,7 @@ const SignUpScreen = ({ navigation }) => {
         } else {
           Toast.show({
             type: 'error',
-            text1: 'Whoops',
+            text1: 'შეცდომა',
             text2: message,
           });
         }
@@ -66,7 +66,7 @@ const SignUpScreen = ({ navigation }) => {
 
         Toast.show({
           type: 'error',
-          text1: 'Whoops',
+          text1: 'შეცდომა',
           text2: message,
         });
       });
@@ -76,7 +76,7 @@ const SignUpScreen = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <SafeAreaView style={styles.safe}>
         <View style={styles.container}>
-          <Header text="Sign Up" />
+          <Header text="რეგისტრაცია" />
           <KeyboardAwareScrollView
             style={styles.scrollView}
             showsVerticalScrollIndicator={false}
@@ -101,8 +101,8 @@ const SignUpScreen = ({ navigation }) => {
                 <>
                   <Input
                     value={values.email}
-                    label="Email"
-                    placeholder="Email"
+                    label="მეილი"
+                    placeholder="მეილი"
                     status={errors.email ? 'danger' : 'basic'}
                     caption={errors.email || ' '}
                     onChangeText={handleChange('email')}
@@ -116,8 +116,8 @@ const SignUpScreen = ({ navigation }) => {
 
                   <Input
                     value={values.firstName}
-                    label="First Name"
-                    placeholder="First Name"
+                    label="სახელი"
+                    placeholder="სახელი"
                     status={errors.firstName ? 'danger' : 'basic'}
                     caption={errors.firstName || ' '}
                     onChangeText={handleChange('firstName')}
@@ -130,8 +130,8 @@ const SignUpScreen = ({ navigation }) => {
 
                   <Input
                     value={values.lastName}
-                    label="Last Name"
-                    placeholder="Last Name"
+                    label="გვარი"
+                    placeholder="გვარი"
                     status={errors.lastName ? 'danger' : 'basic'}
                     caption={errors.lastName || ' '}
                     onChangeText={handleChange('lastName')}
@@ -144,8 +144,8 @@ const SignUpScreen = ({ navigation }) => {
 
                   <Input
                     value={values.password}
-                    label="Password"
-                    placeholder="Password"
+                    label="პაროლი"
+                    placeholder="პაროლი"
                     status={errors.password ? 'danger' : 'basic'}
                     caption={errors.password || ' '}
                     onChangeText={handleChange('password')}
@@ -159,8 +159,8 @@ const SignUpScreen = ({ navigation }) => {
 
                   <Input
                     value={values.confirmPassword}
-                    label="Confirm Password"
-                    placeholder="Confirm Password"
+                    label="გაიმეორეთ პაროლი"
+                    placeholder="გაიმეორეთ პაროლი"
                     status={errors.confirmPassword ? 'danger' : 'basic'}
                     caption={errors.confirmPassword || ' '}
                     onChangeText={handleChange('confirmPassword')}
@@ -180,7 +180,7 @@ const SignUpScreen = ({ navigation }) => {
             style={styles.signUpButton}
             onPress={handleSubmit}
           >
-            Sign Up
+            რეგისტრაცია
           </Button>
 
           <Button
@@ -189,7 +189,7 @@ const SignUpScreen = ({ navigation }) => {
             status="primary"
             onPress={() => navigation.navigate('Login')}
           >
-            Already have an account? Log In here.
+            უკვე დარეგისტრირებული ხართ? დააჭირე აქ.
           </Button>
 
           <Toast />

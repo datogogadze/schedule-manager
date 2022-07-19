@@ -12,6 +12,7 @@ const Board = require('../models/index').Board;
 const User = require('../models/index').User;
 const Event = require('../models/index').Event;
 const Exclusion = require('../models/index').Exclusion;
+const KidIndex = require('../models/index').KidIndex;
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { RRule, RRuleSet, rrulestr } = require('rrule');
@@ -44,6 +45,13 @@ router.post('/', auth, async (req, res) => {
       role,
     };
     await UserBoard.create(userBoardPayload);
+    if (role == 'kid') {
+      await KidIndex.create({
+        board_id: createdBoard.id,
+        kid_id: userId,
+        kid_index: 0,
+      });
+    }
     return res.json({ success: true, board: { ...createdBoard.dataValues } });
   } catch (err) {
     logger.error('Error in creating board', err);
@@ -103,6 +111,27 @@ router.post('/add-user', auth, async (req, res) => {
       role,
     };
     const result = await UserBoard.create(addUserPayload);
+    if (role == 'kid') {
+      const kid_indexes_data = await KidIndex.findAll({
+        where: { board_id: board.id },
+      });
+      const kid_indexes = kid_indexes_data.map((m) => m.dataValues.kid_index);
+      for (let i = 0; i < 15; i++) {
+        if (!kid_indexes.includes(i)) {
+          const already = await KidIndex.findOne({
+            where: { board_id: board.id, kid_id: userId },
+          });
+          if (!already) {
+            await KidIndex.create({
+              board_id: board.id,
+              kid_id: userId,
+              kid_index: i,
+            });
+          }
+          break;
+        }
+      }
+    }
     return res.json({ success: true, board: { ...board.dataValues } });
   } catch (err) {
     logger.error('Error in board add user', err);
@@ -252,6 +281,16 @@ router.post('/kids', auth, async (req, res) => {
     });
 
     const usersList = users.map((user) => user.dataValues);
+    let kid_indexes = await KidIndex.findAll({ where: { board_id } });
+    for (let u of usersList) {
+      u.kid_index = 0;
+      for (let ind of kid_indexes) {
+        if (ind.dataValues.kid_id == u.id) {
+          u.kid_index = ind.kid_index;
+        }
+      }
+    }
+
     return res.json({ success: true, kids: usersList });
   } catch (err) {
     logger.error('Error in board users', err);

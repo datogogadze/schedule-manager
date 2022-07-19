@@ -18,17 +18,24 @@ const ProfileScreen = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.container}>
-        <Header text="Profile" navigation={navigation} smallHeader showMenu />
-        <Text style={styles.text} category='h5'>Personal Information</Text>
+        <Header text="პროფილი" navigation={navigation} smallHeader showMenu backButton />
 
-        <Text style={styles.text} category='s1'>First Name</Text>
-        <Text style={styles.text} category='p1'>{ user.first_name }</Text>
+        <Text style={styles.infoHeader} category='h5'>პერსონალური ინფორმაცია</Text>
 
-        <Text style={styles.text} category='s1'>Last Name</Text>
-        <Text style={styles.text} category='p1'>{ user.last_name }</Text>
 
-        <Text style={styles.text} category='s1'>Email</Text>
-        <Text style={styles.text} category='p1'>{ user.email }</Text>
+        <View style={styles.textGroup}>
+          <Text style={styles.text} category='s1'>სახელი</Text>
+          <Text style={styles.text} category='p1'>{  user.first_name }</Text>
+        </View>
+        <View style={styles.textGroup}>
+          <Text style={styles.text} category='s1'>გვარი</Text>
+          <Text style={styles.text} category='p1'>{  user.last_name }</Text>
+        </View>
+        <View style={styles.textGroup}>
+          <Text style={styles.text} category='s1'>მეილი</Text>
+          <Text style={styles.text} category='p1'>{  user.email }</Text>
+        </View>
+        
         <OverlaySpinner visible={false} />
         <Toast />
       </View>
@@ -50,6 +57,18 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 30,
   },
+  infoHeader: {
+    marginTop: 20,
+    marginBottom: 20
+  },
+  textGroup: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+    paddingLeft: 30,
+    paddingRight: 30,
+  },
   imageContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -61,6 +80,9 @@ const styles = StyleSheet.create({
   },
   textInput: {
     marginBottom: 20,
+  },
+  text: {
+    marginTop: 15
   },
   button: {
     width: '45%',
